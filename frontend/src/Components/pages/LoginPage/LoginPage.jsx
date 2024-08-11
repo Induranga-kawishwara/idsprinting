@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import "./Login.scss"; // Ensure this file includes the necessary styles
-import logo from "../Assest/logo.png";
+import "./LoginPage.scss";
+import logo from "../../../Assest/logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
