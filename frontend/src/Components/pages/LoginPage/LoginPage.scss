@@ -18,7 +18,7 @@ body {
   overflow-y: hidden;
   display: flex;
   justify-content: center;
-  align-items: center; // Center vertically
+  align-items: center;
   background: hsl(218deg 50% 91%);
   height: 100vh;
 }
@@ -28,12 +28,12 @@ body {
   gap: 2em;
 
   .login-image {
-    width: 100px; // Adjust as needed
-    height: auto; // Maintain aspect ratio
-    margin-bottom: 1em; // Space between image and form
+    width: 100px;
+    height: auto;
+    margin-bottom: 1em;
     display: block;
     margin-left: auto;
-    margin-right: auto; // Center the image horizontally
+    margin-right: auto;
   }
 
   .logo {
@@ -44,20 +44,20 @@ body {
   .input-group {
     background: hsl(0deg 0% 100%);
     box-shadow: 0 0 2em hsl(231deg 62% 94%);
-    padding: 1em 1em 1em 2.5em; // Adjust padding for icon
+    padding: 1em 1em 1em 2.5em;
     display: flex;
     align-items: center;
     gap: 0.7em;
     border-radius: 20px;
     color: hsl(0deg 0% 30%);
-    position: relative; // Relative positioning for icon
+    position: relative;
 
     input {
       outline: none;
       border: none;
-      text-align: left; // Align placeholder and text to the left
+      text-align: left;
       width: 100%;
-      padding: 0; // Remove default padding
+      padding: 0;
       &::placeholder {
         color: hsl(0, 0%, 56%);
         font-size: 0.9em;
@@ -67,7 +67,7 @@ body {
     .icon-mail,
     .icon-lock {
       position: absolute;
-      left: 1em; // Space between icon and input
+      left: 1em;
       color: hsl(0deg 0% 30%);
     }
   }
@@ -77,25 +77,25 @@ body {
   }
 
   .password {
-    margin-top: 1.5em; // Increased gap between email and password
+    margin-top: 1.5em;
   }
 
   .login {
-    padding: 0.8em 7em; // Adjusted padding for button size
+    padding: 0.8em 7em;
     background: hsl(233deg 36% 38%);
     color: hsl(0 0 100);
     border: none;
     border-radius: 15px;
     font-weight: 600;
-    font-size: 1.1em; // Adjusted font size
-    margin-top: 2em; // Increased gap between password and login button
+    font-size: 1.1em;
+    margin-top: 2em;
     cursor: pointer;
   }
 
   form {
     display: flex;
     flex-direction: column;
-    align-items: stretch; // Stretch form elements
+    align-items: stretch;
   }
 
   .footer {
@@ -134,7 +134,7 @@ body {
   overflow-y: hidden;
   display: flex;
   justify-content: center;
-  align-items: center; // Center vertically
+  align-items: center;
   background: hsl(218deg 50% 91%);
   height: 100vh;
 }
@@ -144,12 +144,12 @@ body {
   gap: 2em;
 
   .login-image {
-    width: 100px; // Adjust as needed
-    height: auto; // Maintain aspect ratio
-    margin-bottom: 1em; // Space between image and form
+    width: 100px;
+    height: auto;
+    margin-bottom: 1em;
     display: block;
     margin-left: auto;
-    margin-right: auto; // Center the image horizontally
+    margin-right: auto;
   }
 
   .logo {
@@ -160,20 +160,20 @@ body {
   .input-group {
     background: hsl(0deg 0% 100%);
     box-shadow: 0 0 2em hsl(231deg 62% 94%);
-    padding: 1em 1em 1em 2.5em; // Adjust padding for icon
+    padding: 1em 1em 1em 2.5em;
     display: flex;
     align-items: center;
     gap: 0.7em;
     border-radius: 20px;
     color: hsl(0deg 0% 30%);
-    position: relative; // Relative positioning for icon
+    position: relative;
 
     input {
       outline: none;
       border: none;
-      text-align: left; // Align placeholder and text to the left
+      text-align: left;
       width: 100%;
-      padding: 0; // Remove default padding
+      padding: 0;
       &::placeholder {
         color: hsl(0, 0%, 56%);
         font-size: 0.9em;
@@ -183,7 +183,7 @@ body {
     .icon-mail,
     .icon-lock {
       position: absolute;
-      left: 1em; // Space between icon and input
+      left: 1em;
       color: hsl(0deg 0% 30%);
     }
   }
@@ -193,25 +193,25 @@ body {
   }
 
   .password {
-    margin-top: 1.5em; // Increased gap between email and password
+    margin-top: 1.5em;
   }
 
   .login {
-    padding: 0.8em 7em; // Adjusted padding for button size
+    padding: 0.8em 7em;
     background: hsl(233deg 36% 38%);
     color: hsl(0 0 100);
     border: none;
     border-radius: 15px;
     font-weight: 600;
-    font-size: 1.1em; // Adjusted font size
-    margin-top: 2em; // Increased gap between password and login button
+    font-size: 1.1em;
+    margin-top: 2em;
     cursor: pointer;
   }
 
   form {
     display: flex;
     flex-direction: column;
-    align-items: stretch; // Stretch form elements
+    align-items: stretch;
   }
 
   .footer {
