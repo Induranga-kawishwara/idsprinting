@@ -1,0 +1,99 @@
+:root {
+  --primaryitemcolor: #001aff; /* Font color on hover */
+}
+
+.navbar {
+  background-color: rgb(174, 226, 134);
+  padding: 10px 5rem;
+}
+
+.navbar_brand {
+  cursor: pointer;
+}
+
+.navbar .toggle {
+  border: none;
+}
+
+.navbar .toggle:focus {
+  border: none;
+  box-shadow: none;
+}
+
+.navbar .nav__linkgroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.navbar .nav__link {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.navbar .nav__link a {
+  color: white;
+  text-decoration: none;
+}
+
+.navbar .nav__link a:hover,
+.navbar .nav__link a:focus {
+  color: var(--primaryitemcolor);
+  text-decoration: none;
+}
+
+.navbar .nav__link:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.navbar .nav__link .active {
+  color: var(--primaryitemcolor) !important;
+  text-decoration: none;
+}
+
+.navbar .lastnav__link {
+  color: var(--primaryitemcolor);
+}
+
+.navbar .nav__link:hover {
+  color: var(--primaryitemcolor);
+}
+
+.navbar .login__link {
+  margin-left: 1rem;
+}
+
+.navbar .login__button {
+  background-color: rgb(255, 0, 0); /* Set the button color to blue */
+  color: white; /* Text color */
+  border: none;
+  padding: 5px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+
+.navbar .login__button:hover {
+  background-color: white; /* Change background to white on hover */
+  color: rgb(255, 0, 0); /* Change text color to blue on hover */
+}
+
+/* TheNavbar.module.css */
+.iconSize {
+  font-size: 30px; /* Adjust the size as needed */
+  margin-right: 8px; /* Add space between icon and text */
+}
+
+@media only screen and (max-width: 1200px) {
+  .navbar {
+    padding: 7px 1rem;
+  }
+
+  .navbar .nav__linkgroup {
+    position: relative;
+    display: block;
+  }
+}
