@@ -15,7 +15,7 @@ import {
   FcBiotech,
 } from "react-icons/fc";
 import classes from "./TheNavbar.module.css";
-import Logo from "../Assest/logo.png";
+import Logo from "../../../Assest/logo.png";
 
 const TheNavbar = (props) => {
   const isLoggedIn = false; // Replace this with your actual login state

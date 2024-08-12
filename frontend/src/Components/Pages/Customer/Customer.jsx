@@ -4,7 +4,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-import NavBar from "../../Components/NavBar";
+import "./Customer.scss";
 
 // Sample data
 const initialCustomers = [
@@ -99,11 +99,7 @@ const Customer = () => {
   };
 
   return (
-    <div>
-      <NavBar />
-      <br />
-      <br />
-      <br />
+    <div className="customer">
       <div className="container mt-4">
         <Button
           variant="contained"
