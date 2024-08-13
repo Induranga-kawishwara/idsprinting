@@ -127,9 +127,8 @@ const Customer = () => {
       <div className="container mt-4">
         <Button
           variant="contained"
-          color="primary"
           onClick={() => setIsModalOpen(true)}
-          className="newclient-btn"
+          className="newitem-btn"
         >
           New Client
         </Button>

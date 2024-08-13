@@ -1,8 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=Grey+Qo&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
-
 body,
-.custom-modal-dialog,
-.custom-modal-content,
+.supplier-modal-dialog,
+.supplier-modal-content,
 .modal-header,
 .modal-body,
 .modal-footer {
@@ -11,29 +9,29 @@ body,
   font-style: normal; // Consistent font style
 }
 
-.customer {
-  padding-top: 100px;
+.supplier {
+  padding-top: 100px; // Adjust top padding as needed
 }
 
-.custom-modal-dialog {
+.supplier-modal-dialog {
   max-width: 500px; // Adjust width as needed
   width: 100%;
   margin: 0 auto; // Center the dialog horizontally
   z-index: 1050; // Ensure it is above other elements
   background-color: #9fb873; // Modal background color
-  border-radius: 15px;
+  border-radius: 15px; // Rounded corners
   padding: 25px;
   margin-top: 100px;
   font-size: large;
   font-weight: bold;
 }
 
-.custom-modal-content {
+.supplier-modal-content {
   max-height: 80vh; // Adjust height as needed
-  overflow-y: auto;
+  overflow-y: auto; // Allow scrolling if content overflows
 
-  border-radius: 8px; // Optional: rounded corners
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0); // Optional: add shadow for popup effect
+  border-radius: 8px; // Rounded corners for the modal content
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0); // Optional shadow
   color: #333; // Font color for the entire modal content
 }
 
@@ -52,8 +50,10 @@ body,
 .modal-backdrop {
   background-color: rgba(0, 0, 0, 0.5); // Semi-transparent backdrop
 }
+
 /* Style for input fields */
-input.form-control {
+input.form-control,
+select.form-control {
   background-color: #ccd5c0; // Light grey background color
   border-color: #ccd5c0; // Border color
   font-weight: bold;
@@ -63,10 +63,11 @@ input.form-control {
 }
 
 /* Style for input fields on focus */
-input.form-control:focus {
-  background-color: #ccd5c0; // White background color on focus
+input.form-control:focus,
+select.form-control:focus {
+  background-color: #ccd5c0; // Background color on focus
   border-color: #869274; // Darker border color on focus
-  box-shadow: 0 0 0 0.2rem #38422b22; // Optional: Add a shadow on focus
+  box-shadow: 0 0 0 0.2rem #38422b22; // Optional shadow on focus
 }
 
 /* Edit button */
@@ -81,14 +82,15 @@ input.form-control:focus {
   }
 }
 
-.newitem-btn {
-  background-color: #2196f3; // Blue background for Update button
+/* New Supplier button */
+.newsupplier-btn {
+  background-color: #2196f3; // Blue background for New Supplier button
   color: white; // White text color
   border: none;
   font-weight: bold;
 
   &:hover {
-    background-color: #45a049; // Slightly darker blue on hover
+    background-color: #1976d2; // Slightly darker blue on hover
   }
 }
 
@@ -100,7 +102,7 @@ input.form-control:focus {
   font-weight: bold;
 
   &:hover {
-    background-color: #992725; // Slightly darker red on hover
+    background-color: #d32f2f; // Slightly darker red on hover
   }
 }
 
@@ -112,18 +114,23 @@ input.form-control:focus {
   font-weight: bold;
 
   &:hover {
-    background-color: #45a049; // Slightly darker blue on hover
+    background-color: #1976d2; // Slightly darker blue on hover
   }
 }
 
 /* Cancel button */
 .cancel-btn {
-  background-color: #f44336; // Grey background for Cancel button
+  background-color: #f44336; // Red background for Cancel button
   color: white; // White text color
   border: none;
   font-weight: bold;
 
   &:hover {
-    background-color: #992725; // Slightly darker grey on hover
+    background-color: #d32f2f; // Slightly darker red on hover
   }
+}
+
+/* Additional Data Field */
+.additional-data-field {
+  margin-bottom: 1rem; // Spacing below the field
 }

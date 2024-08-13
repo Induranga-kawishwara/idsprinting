@@ -37,6 +37,13 @@ const ItemSchema = Yup.object().shape({
   // Exclude addedDate and addedTime from validation
 });
 
+const suppliers = [
+  { id: 1, name: "Supplier A" },
+  { id: 2, name: "Supplier B" },
+  { id: 3, name: "Supplier C" },
+  // Add more suppliers as needed
+];
+
 const Item = () => {
   const [items, setItems] = useState(initialItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -103,11 +110,12 @@ const Item = () => {
       { Header: "Color", accessor: "color" },
       { Header: "Qty", accessor: "qty" },
       { Header: "Buying Price", accessor: "buyingPrice" },
+      { Header: "Supplier", accessor: "supplier" }, // Supplier column
       { Header: "Company", accessor: "company" },
       { Header: "Wholesale", accessor: "wholesale" },
       { Header: "Retail Price", accessor: "retailPrice" },
-      { Header: "Added Date", accessor: "addedDate" }, // New column
-      { Header: "Added Time", accessor: "addedTime" }, // New column
+      { Header: "Added Date", accessor: "addedDate" },
+      { Header: "Added Time", accessor: "addedTime" },
       {
         Header: "Actions",
         Cell: ({ row }) => (
@@ -117,7 +125,7 @@ const Item = () => {
               color="primary"
               size="small"
               onClick={() => handleEdit(row.original)}
-              className="edit-btn" // Apply edit button class
+              className="edit-btn"
             >
               Edit
             </Button>{" "}
@@ -126,7 +134,7 @@ const Item = () => {
               color="secondary"
               size="small"
               onClick={() => handleDelete(row.original.id)}
-              className="delete-btn" // Apply delete button class
+              className="delete-btn"
             >
               Delete
             </Button>
@@ -217,7 +225,7 @@ const Item = () => {
                     company: editingItem?.company || "",
                     wholesale: editingItem?.wholesale || "",
                     retailPrice: editingItem?.retailPrice || "",
-                    // Exclude addedDate and addedTime from form initial values
+                    supplier: editingItem?.supplier || "", // Add this line
                   }}
                   validationSchema={ItemSchema}
                   onSubmit={handleSubmit}
@@ -265,6 +273,32 @@ const Item = () => {
                           <div className="text-danger">
                             {errors.buyingPrice}
                           </div>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                        <label>Supplier</label>
+                        <Field
+                          as="select"
+                          name="supplier"
+                          className="form-control"
+                        >
+                          <option
+                            className="form-control"
+                            value=""
+                            label="Select a supplier"
+                          />
+                          {suppliers.map((supplier) => (
+                            <option
+                              className="form-control"
+                              key={supplier.id}
+                              value={supplier.name}
+                            >
+                              {supplier.name}
+                            </option>
+                          ))}
+                        </Field>
+                        {errors.supplier && touched.supplier ? (
+                          <div className="text-danger">{errors.supplier}</div>
                         ) : null}
                       </div>
                       <div className="mb-3">
