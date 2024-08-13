@@ -1,0 +1,41 @@
+.item {
+  padding-top: 70px;
+  .container {
+    margin-top: 20px;
+  }
+
+  .form-control {
+    margin-bottom: 15px;
+  }
+
+  .btn-primary {
+    margin-right: 10px;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .modal-dialog {
+    max-width: 800px;
+  }
+
+  .table {
+    margin-top: 20px;
+    thead {
+      background-color: #f8f9fa;
+    }
+
+    th {
+      font-weight: bold;
+    }
+
+    td {
+      text-align: center;
+    }
+  }
+
+  .text-danger {
+    color: #dc3545;
+  }
+}

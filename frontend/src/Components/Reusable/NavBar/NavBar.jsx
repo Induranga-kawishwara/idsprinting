@@ -4,8 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Link as RouterLink } from "react-router-dom";
 import {
   FcBusinessman,
-  FcBullish,
   FcInTransit,
+  FcList,
   FcAddDatabase,
   FcSalesPerformance,
   FcBearish,
@@ -66,7 +66,7 @@ const TheNavbar = (props) => {
             </Nav.Link>
 
             <Nav.Link className={`${classes.nav__link} me-4`}>
-              <RouterLink to="/add-item">
+              <RouterLink to="/additem">
                 <FcAddDatabase className={classes.iconSize} />
                 Add Item
               </RouterLink>
@@ -76,6 +76,13 @@ const TheNavbar = (props) => {
               <RouterLink to="/supplier">
                 <FcInTransit className={classes.iconSize} />
                 Supplier
+              </RouterLink>
+            </Nav.Link>
+
+            <Nav.Link className={`${classes.nav__link} me-4`}>
+              <RouterLink to="/Quatation">
+                <FcList className={classes.iconSize} />
+                Quatation
               </RouterLink>
             </Nav.Link>
 
