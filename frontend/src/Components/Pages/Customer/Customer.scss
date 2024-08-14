@@ -68,3 +68,62 @@ input.form-control:focus {
   border-color: #869274; // Darker border color on focus
   box-shadow: 0 0 0 0.2rem #38422b22; // Optional: Add a shadow on focus
 }
+
+/* Edit button */
+.edit-btn {
+  background-color: #4caf50; // Green background for Edit button
+  color: white; // White text color
+  border: none;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #45a049; // Slightly darker green on hover
+  }
+}
+
+.newitem-btn {
+  background-color: #2196f3; // Blue background for Update button
+  color: white; // White text color
+  border: none;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #45a049; // Slightly darker blue on hover
+  }
+}
+
+/* Delete button */
+.delete-btn {
+  background-color: #f44336; // Red background for Delete button
+  color: white; // White text color
+  border: none;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #992725; // Slightly darker red on hover
+  }
+}
+
+/* Update button */
+.update-btn {
+  background-color: #2196f3; // Blue background for Update button
+  color: white; // White text color
+  border: none;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #45a049; // Slightly darker blue on hover
+  }
+}
+
+/* Cancel button */
+.cancel-btn {
+  background-color: #f44336; // Grey background for Cancel button
+  color: white; // White text color
+  border: none;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #992725; // Slightly darker grey on hover
+  }
+}

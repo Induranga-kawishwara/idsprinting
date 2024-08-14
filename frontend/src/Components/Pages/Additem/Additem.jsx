@@ -37,6 +37,13 @@ const ItemSchema = Yup.object().shape({
   // Exclude addedDate and addedTime from validation
 });
 
+const suppliers = [
+  { id: 1, name: "Supplier A" },
+  { id: 2, name: "Supplier B" },
+  { id: 3, name: "Supplier C" },
+  // Add more suppliers as needed
+];
+
 const Item = () => {
   const [items, setItems] = useState(initialItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -103,11 +110,12 @@ const Item = () => {
       { Header: "Color", accessor: "color" },
       { Header: "Qty", accessor: "qty" },
       { Header: "Buying Price", accessor: "buyingPrice" },
+      { Header: "Supplier", accessor: "supplier" }, // Supplier column
       { Header: "Company", accessor: "company" },
       { Header: "Wholesale", accessor: "wholesale" },
       { Header: "Retail Price", accessor: "retailPrice" },
-      { Header: "Added Date", accessor: "addedDate" }, // New column
-      { Header: "Added Time", accessor: "addedTime" }, // New column
+      { Header: "Added Date", accessor: "addedDate" },
+      { Header: "Added Time", accessor: "addedTime" },
       {
         Header: "Actions",
         Cell: ({ row }) => (
@@ -117,6 +125,7 @@ const Item = () => {
               color="primary"
               size="small"
               onClick={() => handleEdit(row.original)}
+              className="edit-btn"
             >
               Edit
             </Button>{" "}
@@ -125,6 +134,7 @@ const Item = () => {
               color="secondary"
               size="small"
               onClick={() => handleDelete(row.original.id)}
+              className="delete-btn"
             >
               Delete
             </Button>
@@ -149,6 +159,7 @@ const Item = () => {
           variant="contained"
           color="primary"
           onClick={() => setIsModalOpen(true)}
+          className="newitem-btn"
         >
           New Item
         </Button>
@@ -189,118 +200,150 @@ const Item = () => {
 
         {/* Form Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content p-4">
-              <h4>{editingItem ? "Edit Item" : "New Item"}</h4>
-              <Formik
-                initialValues={{
-                  itemCode: editingItem?.itemCode || "",
-                  itemName: editingItem?.itemName || "",
-                  category: editingItem?.category || "",
-                  color: editingItem?.color || "",
-                  qty: editingItem?.qty || "",
-                  buyingPrice: editingItem?.buyingPrice || "",
-                  company: editingItem?.company || "",
-                  wholesale: editingItem?.wholesale || "",
-                  retailPrice: editingItem?.retailPrice || "",
-                  // Exclude addedDate and addedTime from form initial values
-                }}
-                validationSchema={ItemSchema}
-                onSubmit={handleSubmit}
-              >
-                {({ errors, touched }) => (
-                  <Form>
-                    <div className="mb-3">
-                      <label>Item Code</label>
-                      <Field name="itemCode" className="form-control" />
-                      {errors.itemCode && touched.itemCode ? (
-                        <div className="text-danger">{errors.itemCode}</div>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <label>Item Name</label>
-                      <Field name="itemName" className="form-control" />
-                      {errors.itemName && touched.itemName ? (
-                        <div className="text-danger">{errors.itemName}</div>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <label>Category</label>
-                      <Field name="category" className="form-control" />
-                    </div>
-                    <div className="mb-3">
-                      <label>Color</label>
-                      <Field name="color" className="form-control" />
-                      {errors.color && touched.color ? (
-                        <div className="text-danger">{errors.color}</div>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <label>Qty</label>
-                      <Field name="qty" className="form-control" />
-                    </div>
-                    <div className="mb-3">
-                      <label>Buying Price</label>
-                      <Field
-                        name="buyingPrice"
-                        type="number"
-                        className="form-control"
-                      />
-                      {errors.buyingPrice && touched.buyingPrice ? (
-                        <div className="text-danger">{errors.buyingPrice}</div>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <label>Company</label>
-                      <Field name="company" className="form-control" />
-                    </div>
-                    <div className="mb-3">
-                      <label>Wholesale</label>
-                      <Field name="wholesale" className="form-control" />
-                    </div>
-                    <div className="mb-3">
-                      <label>Retail Price</label>
-                      <Field
-                        name="retailPrice"
-                        type="number"
-                        className="form-control"
-                      />
-                      {errors.retailPrice && touched.retailPrice ? (
-                        <div className="text-danger">{errors.retailPrice}</div>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <label>Added Date</label>
-                      <Field
-                        name="addedDate"
-                        type="date"
-                        className="form-control"
-                        disabled
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label>Added Time</label>
-                      <Field
-                        name="addedTime"
-                        type="time"
-                        className="form-control"
-                        disabled
-                      />
-                    </div>
-                    <Button variant="contained" color="primary" type="submit">
-                      {editingItem ? "Update" : "Add"}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => setIsModalOpen(false)}
-                      className="ms-2"
-                    >
-                      Cancel
-                    </Button>
-                  </Form>
-                )}
-              </Formik>
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+            <div className="modal-content custom-modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {editingItem ? "Edit Item" : "New Item"}
+                </h5>
+                <Button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setIsModalOpen(false)}
+                />
+              </div>
+              <div className="modal-body">
+                <Formik
+                  initialValues={{
+                    itemCode: editingItem?.itemCode || "",
+                    itemName: editingItem?.itemName || "",
+                    category: editingItem?.category || "",
+                    color: editingItem?.color || "",
+                    qty: editingItem?.qty || "",
+                    buyingPrice: editingItem?.buyingPrice || "",
+                    company: editingItem?.company || "",
+                    wholesale: editingItem?.wholesale || "",
+                    retailPrice: editingItem?.retailPrice || "",
+                    supplier: editingItem?.supplier || "", // Add this line
+                  }}
+                  validationSchema={ItemSchema}
+                  onSubmit={handleSubmit}
+                >
+                  {({ errors, touched }) => (
+                    <Form>
+                      <br />
+                      <div className="mb-3">
+                        <label>Item Code</label>
+                        <Field name="itemCode" className="form-control" />
+                        {errors.itemCode && touched.itemCode ? (
+                          <div className="text-danger">{errors.itemCode}</div>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                        <label>Item Name</label>
+                        <Field name="itemName" className="form-control" />
+                        {errors.itemName && touched.itemName ? (
+                          <div className="text-danger">{errors.itemName}</div>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                        <label>Category</label>
+                        <Field name="category" className="form-control" />
+                      </div>
+                      <div className="mb-3">
+                        <label>Color</label>
+                        <Field name="color" className="form-control" />
+                        {errors.color && touched.color ? (
+                          <div className="text-danger">{errors.color}</div>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                        <label>Qty</label>
+                        <Field name="qty" className="form-control" />
+                      </div>
+                      <div className="mb-3">
+                        <label>Buying Price</label>
+                        <Field
+                          name="buyingPrice"
+                          type="number"
+                          className="form-control"
+                        />
+                        {errors.buyingPrice && touched.buyingPrice ? (
+                          <div className="text-danger">
+                            {errors.buyingPrice}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                        <label>Supplier</label>
+                        <Field
+                          as="select"
+                          name="supplier"
+                          className="form-control"
+                        >
+                          <option
+                            className="form-control"
+                            value=""
+                            label="Select a supplier"
+                          />
+                          {suppliers.map((supplier) => (
+                            <option
+                              className="form-control"
+                              key={supplier.id}
+                              value={supplier.name}
+                            >
+                              {supplier.name}
+                            </option>
+                          ))}
+                        </Field>
+                        {errors.supplier && touched.supplier ? (
+                          <div className="text-danger">{errors.supplier}</div>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                        <label>Company</label>
+                        <Field name="company" className="form-control" />
+                      </div>
+                      <div className="mb-3">
+                        <label>Wholesale</label>
+                        <Field name="wholesale" className="form-control" />
+                      </div>
+                      <div className="mb-3">
+                        <label>Retail Price</label>
+                        <Field
+                          name="retailPrice"
+                          type="number"
+                          className="form-control"
+                        />
+                        {errors.retailPrice && touched.retailPrice ? (
+                          <div className="text-danger">
+                            {errors.retailPrice}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="d-flex justify-content-end">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          type="submit"
+                          className="update-btn" // Apply update button class
+                        >
+                          {editingItem ? "Update" : "Add"}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => setIsModalOpen(false)}
+                          className="cancel-btn ms-2" // Apply cancel button class
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              </div>
             </div>
           </div>
         </Modal>

@@ -94,17 +94,17 @@ const Customer = () => {
           <div>
             <Button
               variant="contained"
-              color="primary"
               size="small"
               onClick={() => handleEdit(row.original)}
+              className="edit-btn" // Apply edit button class
             >
               Edit
             </Button>{" "}
             <Button
               variant="contained"
-              color="secondary"
               size="small"
               onClick={() => handleDelete(row.original.id)}
+              className="delete-btn" // Apply delete button class
             >
               Delete
             </Button>
@@ -127,8 +127,8 @@ const Customer = () => {
       <div className="container mt-4">
         <Button
           variant="contained"
-          color="primary"
           onClick={() => setIsModalOpen(true)}
+          className="newitem-btn"
         >
           New Client
         </Button>
@@ -251,16 +251,15 @@ const Customer = () => {
                       <div className="d-flex justify-content-end">
                         <Button
                           variant="contained"
-                          color="primary"
                           type="submit"
+                          className="update-btn" // Apply update button class
                         >
                           {editingCustomer ? "Update" : "Add"}
                         </Button>
                         <Button
                           variant="contained"
-                          color="secondary"
                           onClick={() => setIsModalOpen(false)}
-                          className="ms-2"
+                          className="cancel-btn ms-2" // Apply cancel button class
                         >
                           Cancel
                         </Button>
