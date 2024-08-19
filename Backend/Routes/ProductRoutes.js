@@ -1,9 +1,12 @@
 import express from "express";
-import { createProduct } from "../Controllers/ProductController.js";
+import {
+  createProduct,
+  getProducts,
+} from "../Controllers/ProductController.js";
 
 const router = express.Router();
 
-// router.get("/", getAllCustomers);
+router.get("/", getProducts);
 router.post("/product", createProduct);
 // router.get("/customer/:id", getCustomerById);
 // router.put("/customer/:id", updateCustomer);

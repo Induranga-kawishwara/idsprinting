@@ -36,8 +36,22 @@ export const createProduct = async (req, res) => {
     const docRef = await ProductCollection.add({ ...product });
     res
       .status(201)
-      .json({ message: "Product created successfully", id: docRef.id });
+      .send({ message: "Product created successfully", id: docRef.id });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
+  }
+};
+
+// Get all product
+export const getProducts = async (req, res) => {
+  try {
+    const snapshot = await ProductCollection.get();
+    const products = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    res.status(200).send(products);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
   }
 };

@@ -12,9 +12,9 @@ export const createCustomer = async (req, res) => {
     const docRef = await customersCollection.add({ ...customer });
     res
       .status(201)
-      .json({ message: "Customer created successfully", id: docRef.id });
+      .send({ message: "Customer created successfully", id: docRef.id });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
   }
 };
 
@@ -26,9 +26,9 @@ export const getAllCustomers = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    res.status(200).json(customers);
+    res.status(200).send(customers);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
   }
 };
 
@@ -39,11 +39,11 @@ export const getCustomerById = async (req, res) => {
   try {
     const doc = await customersCollection.doc(id).get();
     if (!doc.exists) {
-      return res.status(404).json({ message: "Customer not found" });
+      return res.status(404).send({ message: "Customer not found" });
     }
-    res.status(200).json({ id: doc.id, ...doc.data() });
+    res.status(200).send({ id: doc.id, ...doc.data() });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
   }
 };
 
@@ -54,9 +54,9 @@ export const updateCustomer = async (req, res) => {
 
   try {
     await customersCollection.doc(id).update(updatedData);
-    res.status(200).json({ message: "Customer updated successfully" });
+    res.status(200).send({ message: "Customer updated successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
   }
 };
 
@@ -66,8 +66,8 @@ export const deleteCustomer = async (req, res) => {
 
   try {
     await customersCollection.doc(id).delete();
-    res.status(200).json({ message: "Customer deleted successfully" });
+    res.status(200).send({ message: "Customer deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
   }
 };
