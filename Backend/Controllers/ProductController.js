@@ -28,6 +28,7 @@ export const createProduct = async (req, res) => {
       oneItemSellingPrice,
       revenue,
       netProfit,
+      createdAt: new Date().toISOString(),
     },
   ]);
 
