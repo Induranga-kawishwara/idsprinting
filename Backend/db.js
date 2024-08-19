@@ -1,8 +1,8 @@
 import admin from "firebase-admin";
-import { firebaseConfig } from "./config.js";
+import { FIREBASE_ADMIN_SDK_KEY } from "./config.js";
 
 admin.initializeApp({
-  credential: admin.credential.cert(firebaseConfig),
+  credential: admin.credential.cert(FIREBASE_ADMIN_SDK_KEY),
   projectId: "ids-printing",
 });
 
