@@ -1,5 +1,6 @@
 import db from "../db.js";
 import Product from "../Models/Product.js";
+import { v4 as uuidv4 } from "uuid";
 
 const ProductCollection = db.collection("products");
 
@@ -20,6 +21,7 @@ export const createProduct = async (req, res) => {
 
   const product = new Product(productID, name, [
     {
+      id: uuidv4(),
       stock,
       stockPrice,
       otherExpenses,
@@ -51,6 +53,18 @@ export const getProducts = async (req, res) => {
       ...doc.data(),
     }));
     res.status(200).send(products);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+};
+
+// Delete a Products
+export const deleteProducts = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await ProductCollection.doc(id).delete();
+    res.status(200).send({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
