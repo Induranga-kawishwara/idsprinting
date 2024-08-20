@@ -131,7 +131,7 @@ export const getstockdetailsById = async (req, res) => {
 
 export const updateStockDetailById = async (req, res) => {
   const { id, detailId } = req.params;
-  const updatedDetail = req.body; // The updated detail data is expected in the request body
+  const updatedDetail = req.body;
 
   try {
     const doc = await ProductCollection.doc(id).get();
@@ -141,7 +141,6 @@ export const updateStockDetailById = async (req, res) => {
 
     const productData = doc.data();
 
-    // Find the index of the detail that matches detailId
     const detailIndex = productData.details.findIndex(
       (detail) => detail.id === detailId
     );
@@ -150,17 +149,46 @@ export const updateStockDetailById = async (req, res) => {
       return res.status(404).send({ message: "Detail not found" });
     }
 
-    // Update the specific detail with the provided data
     productData.details[detailIndex] = {
       ...productData.details[detailIndex],
       ...updatedDetail,
-      updatedAt: new Date().toISOString(), // Optionally add/update a timestamp
+      updatedAt: new Date().toISOString(),
     };
 
     // Save the updated product data back to Firestore
     await ProductCollection.doc(id).update(productData);
 
     res.status(200).send({ message: "Detail updated successfully" });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+};
+
+// Delete a Product's stock detail
+export const deleteProductsStock = async (req, res) => {
+  const { id, detailId } = req.params;
+
+  try {
+    const doc = await ProductCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).send({ message: "Product not found" });
+    }
+
+    const productData = doc.data();
+
+    const detailIndex = productData.details.findIndex(
+      (detail) => detail.id === detailId
+    );
+
+    if (detailIndex === -1) {
+      return res.status(404).send({ message: "Detail not found" });
+    }
+
+    productData.details.splice(detailIndex, 1);
+
+    await ProductCollection.doc(id).update({ details: productData.details });
+
+    res.status(200).send({ message: "Detail deleted successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
