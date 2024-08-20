@@ -98,6 +98,74 @@ export const getProductById = async (req, res) => {
   }
 };
 
+export const getstockdetailsById = async (req, res) => {
+  const { id, detailId } = req.params;
+
+  try {
+    const doc = await ProductCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).send({ message: "Product not found" });
+    }
+
+    const productData = doc.data();
+
+    // If a specific detailId is provided, find the corresponding detail
+    if (detailId) {
+      const matchingDetail = productData.details.find(
+        (detail) => detail.id === detailId
+      );
+
+      if (!matchingDetail) {
+        return res.status(404).send({ message: "Detail not found" });
+      }
+
+      return res.status(200).send({ detail: matchingDetail });
+    }
+
+    // If no detailId is provided, return the entire product
+    res.status(200).send({ id: doc.id, ...productData });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+};
+
+export const updateStockDetailById = async (req, res) => {
+  const { id, detailId } = req.params;
+  const updatedDetail = req.body; // The updated detail data is expected in the request body
+
+  try {
+    const doc = await ProductCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).send({ message: "Product not found" });
+    }
+
+    const productData = doc.data();
+
+    // Find the index of the detail that matches detailId
+    const detailIndex = productData.details.findIndex(
+      (detail) => detail.id === detailId
+    );
+
+    if (detailIndex === -1) {
+      return res.status(404).send({ message: "Detail not found" });
+    }
+
+    // Update the specific detail with the provided data
+    productData.details[detailIndex] = {
+      ...productData.details[detailIndex],
+      ...updatedDetail,
+      updatedAt: new Date().toISOString(), // Optionally add/update a timestamp
+    };
+
+    // Save the updated product data back to Firestore
+    await ProductCollection.doc(id).update(productData);
+
+    res.status(200).send({ message: "Detail updated successfully" });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+};
+
 // Delete a Products
 export const deleteProducts = async (req, res) => {
   const { id } = req.params;
