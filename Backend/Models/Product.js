@@ -1,7 +1,8 @@
 class Product {
-  constructor(productID, name, details = []) {
+  constructor(productID, name, image, details = []) {
     this.productID = productID;
     this.name = name;
+    this.image = image;
     this.details = details;
   }
 }

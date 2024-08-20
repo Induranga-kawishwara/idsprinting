@@ -8,6 +8,7 @@ export const createProduct = async (req, res) => {
   const {
     productID,
     name,
+    image,
     stock,
     stockPrice,
     otherExpenses,
@@ -45,7 +46,7 @@ export const createProduct = async (req, res) => {
     }
 
     // Create a new product if it doesn't exist
-    const product = new Product(productID, name, [
+    const product = new Product(productID, name, image, [
       {
         id: uuidv4(),
         stock,
