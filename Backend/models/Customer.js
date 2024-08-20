@@ -1,7 +1,8 @@
 class Customer {
-  constructor(name, contactInfo, purchaseHistory = []) {
+  constructor(name, email, contactNumber, purchaseHistory = []) {
     this.name = name;
-    this.contactInfo = contactInfo;
+    this.email = email;
+    this.contactNumber = contactNumber;
     this.purchaseHistory = purchaseHistory;
   }
 }
