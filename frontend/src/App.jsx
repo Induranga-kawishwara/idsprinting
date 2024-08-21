@@ -8,7 +8,6 @@ import Login from "./Components/Pages/Login/LoginPage";
 import Home from "./Components/Pages/Dashboard/Home";
 import Customer from "./Components/Pages/Customer/Customer";
 import AddItem from "./Components/Pages/Additem/Additem";
-import Supplier from "./Components/Pages/Supplier/Supplier";
 import NavBar from "./Components/Reusable/NavBar/NavBar";
 
 const Layout = () => {
@@ -21,7 +20,6 @@ const Layout = () => {
         <Route path="/dashboard" element={<Home />} />
         <Route path="/customer" element={<Customer />} />
         <Route path="/additem" element={<AddItem />} />
-        <Route path="/supplier" element={<Supplier />} />
       </Routes>
     </>
   );
