@@ -9,8 +9,8 @@ import "./Customer.scss";
 const initialCustomers = [
   {
     id: 1,
-    surname: "Valoy",
     name: "The J",
+    surname: "Valoy",
     email: "valoy@domain.com",
     phone: "123-456-7890",
     totalSpent: "RD $50.00",
@@ -25,7 +25,7 @@ const initialCustomers = [
 const CustomerSchema = Yup.object().shape({
   surname: Yup.string().required("Surname is required"),
   name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string().email("Invalid email"),
   phone: Yup.string().required("Phone number is required"),
   houseNo: Yup.string(), // Optional field
   street: Yup.string(), // Optional field
@@ -79,8 +79,8 @@ const Customer = () => {
   const columns = useMemo(
     () => [
       { Header: "ID", accessor: "id" },
-      { Header: "Surname", accessor: "surname" },
       { Header: "Name", accessor: "name" },
+      { Header: "Surname", accessor: "surname" },
       { Header: "Email", accessor: "email" },
       { Header: "Phone", accessor: "phone" },
       { Header: "House No", accessor: "houseNo" }, // New column
@@ -127,9 +127,8 @@ const Customer = () => {
       <div className="container mt-4">
         <Button
           variant="contained"
-          color="primary"
           onClick={() => setIsModalOpen(true)}
-          className="newclient-btn"
+          className="newitem-btn"
         >
           New Client
         </Button>
@@ -186,8 +185,8 @@ const Customer = () => {
               <div className="modal-body">
                 <Formik
                   initialValues={{
-                    surname: editingCustomer?.surname || "",
                     name: editingCustomer?.name || "",
+                    surname: editingCustomer?.surname || "",
                     email: editingCustomer?.email || "",
                     phone: editingCustomer?.phone || "",
                     houseNo: editingCustomer?.houseNo || "", // New field
@@ -202,17 +201,17 @@ const Customer = () => {
                     <Form>
                       <br />
                       <div className="mb-3">
-                        <label>Surname</label>
-                        <Field name="surname" className="form-control" />
-                        {errors.surname && touched.surname ? (
-                          <div className="text-danger">{errors.surname}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
                         <label>Name</label>
                         <Field name="name" className="form-control" />
                         {errors.name && touched.name ? (
                           <div className="text-danger">{errors.name}</div>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                        <label>Surname</label>
+                        <Field name="surname" className="form-control" />
+                        {errors.surname && touched.surname ? (
+                          <div className="text-danger">{errors.surname}</div>
                         ) : null}
                       </div>
                       <div className="mb-3">

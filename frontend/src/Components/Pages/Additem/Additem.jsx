@@ -37,6 +37,19 @@ const ItemSchema = Yup.object().shape({
   // Exclude addedDate and addedTime from validation
 });
 
+// const suppliers = [
+//   { id: 1, name: "Supplier A" },
+//   { id: 2, name: "Supplier B" },
+//   { id: 3, name: "Supplier C" },
+//   // Add more suppliers as needed
+// ];
+const category = [
+  { id: 1, name: "category A" },
+  { id: 2, name: "category B" },
+  { id: 3, name: "category C" },
+  // Add more category as needed
+];
+
 const Item = () => {
   const [items, setItems] = useState(initialItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,15 +112,18 @@ const Item = () => {
       { Header: "ID", accessor: "id" },
       { Header: "Item Code", accessor: "itemCode" },
       { Header: "Item Name", accessor: "itemName" },
-      { Header: "Category", accessor: "category" },
+      { Header: "Stock Category", accessor: "category" },
+      { Header: "Size Category", accessor: "size" },
+      { Header: "Thickness GSM", accessor: "gsmthickness " },
       { Header: "Color", accessor: "color" },
       { Header: "Qty", accessor: "qty" },
       { Header: "Buying Price", accessor: "buyingPrice" },
+      // { Header: "Supplier", accessor: "supplier" }, // Supplier column
       { Header: "Company", accessor: "company" },
       { Header: "Wholesale", accessor: "wholesale" },
       { Header: "Retail Price", accessor: "retailPrice" },
-      { Header: "Added Date", accessor: "addedDate" }, // New column
-      { Header: "Added Time", accessor: "addedTime" }, // New column
+      { Header: "Added Date", accessor: "addedDate" },
+      { Header: "Added Time", accessor: "addedTime" },
       {
         Header: "Actions",
         Cell: ({ row }) => (
@@ -117,7 +133,7 @@ const Item = () => {
               color="primary"
               size="small"
               onClick={() => handleEdit(row.original)}
-              className="edit-btn" // Apply edit button class
+              className="edit-btn"
             >
               Edit
             </Button>{" "}
@@ -126,7 +142,7 @@ const Item = () => {
               color="secondary"
               size="small"
               onClick={() => handleDelete(row.original.id)}
-              className="delete-btn" // Apply delete button class
+              className="delete-btn"
             >
               Delete
             </Button>
@@ -217,7 +233,7 @@ const Item = () => {
                     company: editingItem?.company || "",
                     wholesale: editingItem?.wholesale || "",
                     retailPrice: editingItem?.retailPrice || "",
-                    // Exclude addedDate and addedTime from form initial values
+                    supplier: editingItem?.supplier || "", // Add this line
                   }}
                   validationSchema={ItemSchema}
                   onSubmit={handleSubmit}
@@ -239,10 +255,39 @@ const Item = () => {
                           <div className="text-danger">{errors.itemName}</div>
                         ) : null}
                       </div>
-                      <div className="mb-3">
-                        <label>Category</label>
+                      {/* <div className="mb-3">
+                        <label>Stock Category</label>
                         <Field name="category" className="form-control" />
-                      </div>
+                      </div> */}
+<div className="mb-3">
+  <label>Stock Category</label>
+  <Field
+    as="select"
+    name="category"
+    className="form-control"
+  >
+    <option
+      className="form-control"
+      value=""
+      label="Select a type of stock"
+      disabled
+      hidden
+    />
+    {category.map((category) => (
+      <option
+        className="form-control"
+        key={category.id}
+        value={category.name}
+      >
+        {category.name}
+      </option>
+    ))}
+  </Field>
+  {errors.category && touched.category ? (
+    <div className="text-danger">{errors.category}</div>
+  ) : null}
+</div>
+
                       <div className="mb-3">
                         <label>Color</label>
                         <Field name="color" className="form-control" />
@@ -267,6 +312,35 @@ const Item = () => {
                           </div>
                         ) : null}
                       </div>
+                      {/* <div className="mb-3">
+  <label>Supplier</label>
+  <Field
+    as="select"
+    name="supplier"
+    className="form-control"
+  >
+    <option
+      className="form-control"
+      value=""
+      label="Select a supplier"
+      disabled
+      hidden
+    />
+    {suppliers.map((supplier) => (
+      <option
+        className="form-control"
+        key={supplier.id}
+        value={supplier.name}
+      >
+        {supplier.name}
+      </option>
+    ))}
+  </Field>
+  {errors.supplier && touched.supplier ? (
+    <div className="text-danger">{errors.supplier}</div>
+  ) : null}
+</div> */}
+
                       <div className="mb-3">
                         <label>Company</label>
                         <Field name="company" className="form-control" />

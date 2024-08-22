@@ -71,6 +71,13 @@ const TheNavbar = (props) => {
                 Add Item
               </RouterLink>
             </Nav.Link>
+            
+            <Nav.Link className={`${classes.nav__link} me-4`}>
+              <RouterLink to="/category">
+                <FcSalesPerformance className={classes.iconSize} />
+                Stock Category
+              </RouterLink>
+            </Nav.Link>
 
             <Nav.Link className={`${classes.nav__link} me-4`}>
               <RouterLink to="/supplier">
@@ -104,13 +111,6 @@ const TheNavbar = (props) => {
               <RouterLink to="/reports">
                 <FcBiotech className={classes.iconSize} />
                 Reports
-              </RouterLink>
-            </Nav.Link>
-
-            <Nav.Link className={`${classes.nav__link} me-4`}>
-              <RouterLink to="/money-management">
-                <FcSalesPerformance className={classes.iconSize} />
-                Money Management
               </RouterLink>
             </Nav.Link>
 
