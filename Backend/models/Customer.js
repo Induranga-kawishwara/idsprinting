@@ -1,23 +1,8 @@
 class Customer {
-  constructor(
-    surName,
-    name,
-    email,
-    contactNumber,
-    HouseNo,
-    street,
-    city,
-    postCode,
-    purchaseHistory = []
-  ) {
-    this.surName = surName;
+  constructor(name, email, contactNumber, purchaseHistory = []) {
     this.name = name;
     this.email = email;
     this.contactNumber = contactNumber;
-    this.HouseNo = HouseNo;
-    this.street = street;
-    this.city = city;
-    this.postCode = postCode;
     this.purchaseHistory = purchaseHistory;
   }
 }

@@ -5,17 +5,7 @@ const customersCollection = db.collection("customers");
 
 // Create a new customer
 export const createCustomer = async (req, res) => {
-  const {
-    surName,
-    name,
-    email,
-    contactNumber,
-    HouseNo,
-    street,
-    city,
-    postCode,
-    purchaseHistory,
-  } = req.body;
+  const { name, email, contactNumber, purchaseHistory } = req.body;
 
   try {
     // Check if a product with the same productID or name already exists
@@ -49,27 +39,7 @@ export const createCustomer = async (req, res) => {
         .send({ message: "Customer with this Contact Number already exists." });
     }
 
-    const existingCustomerHomeNoSnapshot = await customersCollection
-      .where("HouseNo", "==", HouseNo)
-      .get();
-
-    if (!existingCustomerHomeNoSnapshot.empty) {
-      return res
-        .status(400)
-        .send({ message: "Customer with this HouseNo already exists." });
-    }
-
-    const customer = new Customer(
-      surName,
-      name,
-      email,
-      contactNumber,
-      HouseNo,
-      street,
-      city,
-      postCode,
-      purchaseHistory
-    );
+    const customer = new Customer(name, email, contactNumber, purchaseHistory);
 
     const docRef = await customersCollection.add({ ...customer });
     res

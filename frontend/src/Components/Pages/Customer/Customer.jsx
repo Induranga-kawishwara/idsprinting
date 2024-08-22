@@ -1,55 +1,43 @@
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { useTable } from "react-table";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
 import "./Customer.scss";
-import axios from "axios";
+
+const initialCustomers = [
+  {
+    id: 1,
+    surname: "Valoy",
+    name: "The J",
+    email: "valoy@domain.com",
+    phone: "123-456-7890",
+    totalSpent: "RD $50.00",
+    houseNo: "",
+    street: "",
+    city: "",
+    postalCode: "",
+  },
+  // Add more customers if needed
+];
 
 const CustomerSchema = Yup.object().shape({
   surname: Yup.string().required("Surname is required"),
   name: Yup.string().required("Name is required"),
   email: Yup.string().email("Invalid email").required("Email is required"),
   phone: Yup.string().required("Phone number is required"),
-  houseNo: Yup.string(),
-  street: Yup.string(),
-  city: Yup.string(),
-  postalCode: Yup.string(),
+  houseNo: Yup.string(), // Optional field
+  street: Yup.string(), // Optional field
+  city: Yup.string(), // Optional field
+  postalCode: Yup.string(), // Optional field
 });
 
 const Customer = () => {
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState(initialCustomers);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await axios.get("http://localhost:8080/customers");
-
-        const transformedData = result.data.map((customer) => ({
-          id: customer.id,
-          surname: "",
-          name: customer.name,
-          email: customer.contactInfo,
-          phone: "",
-          totalSpent: "",
-          houseNo: "",
-          street: "",
-          city: "",
-          postalCode: "",
-        }));
-
-        setCustomers(transformedData);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const handleEdit = (customer) => {
     setEditingCustomer(customer);
@@ -66,29 +54,16 @@ const Customer = () => {
   );
 
   const handleSubmit = (values) => {
-    const newCustomer = {
-      // id: customers.length + 1, // Generate a new ID (ensure unique IDs in production)
-      surname: values.surname || "",
-      name: values.name || "",
-      email: values.email || "",
-      phone: values.phone || "",
-      totalSpent: values.totalSpent || "",
-      houseNo: values.houseNo || "",
-      street: values.street || "",
-      city: values.city || "",
-      postalCode: values.postalCode || "",
-    };
-
     if (editingCustomer) {
       setCustomers(
         customers.map((customer) =>
           customer.id === editingCustomer.id
-            ? { ...newCustomer, id: editingCustomer.id }
+            ? { ...values, id: editingCustomer.id }
             : customer
         )
       );
     } else {
-      setCustomers([...customers, newCustomer]);
+      setCustomers([...customers, { ...values, id: customers.length + 1 }]);
     }
     setIsModalOpen(false);
     setEditingCustomer(null);
