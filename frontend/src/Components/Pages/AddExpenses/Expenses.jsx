@@ -51,7 +51,9 @@ const Expenses = () => {
 
   const handleDelete = useCallback(
     (id) => {
-      setExpenses((prevExpenses) => prevExpenses.filter((expense) => expense.id !== id));
+      setExpenses((prevExpenses) =>
+        prevExpenses.filter((expense) => expense.id !== id)
+      );
     },
     [setExpenses]
   );
@@ -89,9 +91,8 @@ const Expenses = () => {
     setEditingExpense(null);
   };
 
-  const filteredExpenses = expenses.filter(
-    (expense) =>
-      expense.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredExpenses = expenses.filter((expense) =>
+    expense.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const columns = useMemo(
@@ -229,7 +230,9 @@ const Expenses = () => {
                         <label>Type of Expenses</label>
                         <Field as="select" name="type" className="form-control">
                           <option value="" label="Select a type" disabled />
-                          <option value="Electricity Bill">Electricity Bill</option>
+                          <option value="Electricity Bill">
+                            Electricity Bill
+                          </option>
                           <option value="Water Bill">Water Bill</option>
                           <option value="Internet Bill">Internet Bill</option>
                           <option value="Suppliers">Suppliers</option>
@@ -259,11 +262,19 @@ const Expenses = () => {
                       )}
                       <div className="mb-3">
                         <label>Description</label>
-                        <Field name="description" as="textarea" className="form-control" />
+                        <Field
+                          name="description"
+                          as="textarea"
+                          className="form-control"
+                        />
                       </div>
                       <div className="mb-3">
                         <label>Amount Rs</label>
-                        <Field name="amount" type="number" className="form-control" />
+                        <Field
+                          name="amount"
+                          type="number"
+                          className="form-control"
+                        />
                         {errors.amount && touched.amount ? (
                           <div className="text-danger">{errors.amount}</div>
                         ) : null}
@@ -275,7 +286,10 @@ const Expenses = () => {
                           type="date"
                           className="form-control"
                           readOnly
-                          value={editingExpense?.addedDate || new Date().toISOString().split("T")[0]}
+                          value={
+                            editingExpense?.addedDate ||
+                            new Date().toISOString().split("T")[0]
+                          }
                         />
                       </div>
                       <div className="mb-3">
@@ -285,11 +299,18 @@ const Expenses = () => {
                           type="time"
                           className="form-control"
                           readOnly
-                          value={editingExpense?.addedTime || new Date().toTimeString().split(" ")[0]}
+                          value={
+                            editingExpense?.addedTime ||
+                            new Date().toTimeString().split(" ")[0]
+                          }
                         />
                       </div>
                       <div className="modal-footer">
-                        <Button type="submit" variant="contained" color="primary">
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          color="primary"
+                        >
                           {editingExpense ? "Update" : "Add"}
                         </Button>
                         <Button
