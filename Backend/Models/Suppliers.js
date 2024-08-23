@@ -1,25 +1,26 @@
-class Customer {
+class Suppliers {
   constructor(
     name,
-    surName,
     email,
     contactNumber,
-    houseNo,
-    street,
+    address1,
+    address2,
     city,
     postalcode,
-    purchaseHistory = []
+    businessId,
+    additionalData
   ) {
     this.name = name;
     this.surName = surName;
     this.email = email;
     this.contactNumber = contactNumber;
-    this.houseNo = houseNo;
-    this.street = street;
+    this.address1 = address1;
+    this.address2 = address2;
     this.city = city;
     this.postalcode = postalcode;
-    this.purchaseHistory = purchaseHistory;
+    this.businessId = businessId;
+    this.additionalData = additionalData;
   }
 }
 
-export default Customer;
+export default Suppliers;

@@ -5,7 +5,16 @@ const customersCollection = db.collection("customers");
 
 // Create a new customer
 export const createCustomer = async (req, res) => {
-  const { name, email, contactNumber, purchaseHistory } = req.body;
+  const {
+    name,
+    surName,
+    email,
+    contactNumber,
+    houseNo,
+    street,
+    city,
+    postalcode,
+  } = req.body;
 
   try {
     // Check if a product with the same productID or name already exists
@@ -39,7 +48,16 @@ export const createCustomer = async (req, res) => {
         .send({ message: "Customer with this Contact Number already exists." });
     }
 
-    const customer = new Customer(name, email, contactNumber, purchaseHistory);
+    const customer = new Customer(
+      name,
+      surName,
+      email,
+      contactNumber,
+      houseNo,
+      street,
+      city,
+      postalcode
+    );
 
     const docRef = await customersCollection.add({ ...customer });
     res
