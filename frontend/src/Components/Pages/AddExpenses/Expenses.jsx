@@ -496,10 +496,7 @@ const Expenses = () => {
                       )}
                       <div className="mb-3">
                         <label htmlFor="invoiceNumber">Invoice Number</label>
-                        <Field
-                          name="invoiceNumber"
-                          className="form-control"
-                        />
+                        <Field name="invoiceNumber" className="form-control" />
                       </div>
                       <div className="mb-3">
                         <label htmlFor="photo">Upload Photo</label>
