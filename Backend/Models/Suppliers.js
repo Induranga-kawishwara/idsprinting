@@ -11,7 +11,6 @@ class Suppliers {
     additionalData
   ) {
     this.name = name;
-    this.surName = surName;
     this.email = email;
     this.contactNumber = contactNumber;
     this.address1 = address1;
