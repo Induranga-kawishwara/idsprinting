@@ -12,6 +12,7 @@ import Supplier from "./Components/Pages/Supplier/Supplier";
 import NavBar from "./Components/Reusable/NavBar/NavBar";
 import Category from "./Components/Pages/AddCategory/AddCategory";
 import Expenses from "./Components/Pages/AddExpenses/Expenses";
+import CashUp from "./Components/Pages/CashUp/Cashup";
 
 const Layout = () => {
   const location = useLocation();
@@ -26,6 +27,7 @@ const Layout = () => {
         <Route path="/supplier" element={<Supplier />} />
         <Route path="/category" element={<Category />} />
         <Route path="/expenses" element={<Expenses />} />
+        <Route path="/cashups" element={<CashUp />} />
       </Routes>
     </>
   );

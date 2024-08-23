@@ -4,6 +4,8 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "./Expenses.scss"; // Create this file for your styles
 
 const initialExpenses = [
@@ -13,12 +15,22 @@ const initialExpenses = [
     type: "Electricity Bill",
     supplier: "",
     other: "",
-    description: "Monthly office rent payment",
+    description: "",
     amount: "2000.00",
     addedDate: "2024-08-13",
     addedTime: "14:30",
+    invoiceNumber: "",
+    photo: "",
+    paymentMethod: "Card",
   },
   // Add more expenses if needed
+];
+
+const suppliers = [
+  { id: 1, name: "Supplier A" },
+  { id: 2, name: "Supplier B" },
+  { id: 3, name: "Supplier C" },
+  // Add more suppliers as needed
 ];
 
 const ExpenseSchema = Yup.object().shape({
@@ -36,6 +48,19 @@ const ExpenseSchema = Yup.object().shape({
   }),
   description: Yup.string(),
   amount: Yup.number().required("Amount is required"),
+  invoiceNumber: Yup.string().nullable(),
+  photo: Yup.mixed().nullable(),
+  paymentMethod: Yup.string().required("Payment method is required"),
+  bankTransferNumber: Yup.string().when("paymentMethod", {
+    is: "Bank Transfer",
+    then: (schema) => schema.required("Bank Transfer Number is required"),
+    otherwise: (schema) => schema.notRequired().nullable(),
+  }),
+  chequeNumber: Yup.string().when("paymentMethod", {
+    is: "Cheque",
+    then: (schema) => schema.required("Cheque Number is required"),
+    otherwise: (schema) => schema.notRequired().nullable(),
+  }),
 });
 
 const Expenses = () => {
@@ -43,6 +68,9 @@ const Expenses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
 
   const handleEdit = (expense) => {
     setEditingExpense(expense);
@@ -91,9 +119,23 @@ const Expenses = () => {
     setEditingExpense(null);
   };
 
-  const filteredExpenses = expenses.filter((expense) =>
-    expense.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredExpenses = expenses.filter((expense) => {
+    const searchString = searchQuery.toLowerCase().trim();
+    const expenseDate = new Date(expense.addedDate);
+    const isWithinDateRange =
+      (!startDate || expenseDate >= startDate) &&
+      (!endDate || expenseDate <= endDate);
+    const matchesPaymentMethod =
+      !paymentMethodFilter || expense.paymentMethod === paymentMethodFilter;
+
+    return (
+      isWithinDateRange &&
+      matchesPaymentMethod &&
+      (expense.name.toLowerCase().includes(searchString) ||
+        expense.invoiceNumber.toLowerCase().includes(searchString) ||
+        expense.amount.toString().includes(searchString))
+    );
+  });
 
   const columns = useMemo(
     () => [
@@ -104,8 +146,16 @@ const Expenses = () => {
       { Header: "Other", accessor: "other" },
       { Header: "Description", accessor: "description" },
       { Header: "Amount Rs", accessor: "amount" },
+      { Header: "Payment Method", accessor: "paymentMethod" },
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
+      { Header: "Invoice Number", accessor: "invoiceNumber" },
+      {
+        Header: "Photo",
+        accessor: "photo",
+        Cell: ({ value }) =>
+          value ? <span>{value.name}</span> : <span>No file uploaded</span>,
+      },
       {
         Header: "Actions",
         Cell: ({ row }) => (
@@ -157,10 +207,48 @@ const Expenses = () => {
           <input
             type="text"
             className="form-control"
-            placeholder="Search by name"
+            placeholder="Search by Name, Amount, and Invoice Number"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+        </div>
+        <div className="mb-3">
+          <label>Filter by Date Range:</label>
+          <div className="d-flex">
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              placeholderText="Start Date"
+              className="form-control me-2"
+            />
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
+              placeholderText="End Date"
+              className="form-control"
+            />
+          </div>
+        </div>
+        <div className="mb-3">
+          <label>Filter by Payment Method:</label>
+          <select
+            className="form-control"
+            value={paymentMethodFilter}
+            onChange={(e) => setPaymentMethodFilter(e.target.value)}
+          >
+            <option value="">All</option>
+            <option value="Card">Card</option>
+            <option value="Cash">Cash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cheque">Cheque</option>
+          </select>
         </div>
         <table {...getTableProps()} className="table table-striped mt-3">
           <thead>
@@ -188,20 +276,17 @@ const Expenses = () => {
           </tbody>
         </table>
 
-        {/* Form Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
+          <div className="modal-dialog">
+            <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {editingExpense ? "Edit Expense" : "New Expense"}
+                  {editingExpense ? "Edit Expense" : "Add New Expense"}
                 </h5>
                 <Button
-                  type="button"
                   className="btn-close"
-                  aria-label="Close"
                   onClick={() => setIsModalOpen(false)}
-                />
+                ></Button>
               </div>
               <div className="modal-body">
                 <Formik
@@ -212,114 +297,231 @@ const Expenses = () => {
                     other: editingExpense?.other || "",
                     description: editingExpense?.description || "",
                     amount: editingExpense?.amount || "",
-                    // Remove these fields from initialValues
+                    invoiceNumber: editingExpense?.invoiceNumber || "",
+                    photo: editingExpense?.photo || null,
+                    paymentMethod: editingExpense?.paymentMethod || "",
+                    bankTransferNumber:
+                      editingExpense?.bankTransferNumber || "",
+                    chequeNumber: editingExpense?.chequeNumber || "",
                   }}
                   validationSchema={ExpenseSchema}
                   onSubmit={handleSubmit}
                 >
-                  {({ values, errors, touched }) => (
+                  {({ setFieldValue, errors, touched, values }) => (
                     <Form>
                       <div className="mb-3">
-                        <label>Name</label>
-                        <Field name="name" className="form-control" />
+                        <label htmlFor="name">Name</label>
+                        <Field
+                          name="name"
+                          className={`form-control ${
+                            errors.name && touched.name
+                              ? "is-invalid"
+                              : touched.name
+                              ? "is-valid"
+                              : ""
+                          }`}
+                        />
                         {errors.name && touched.name ? (
-                          <div className="text-danger">{errors.name}</div>
+                          <div className="invalid-feedback">{errors.name}</div>
                         ) : null}
                       </div>
                       <div className="mb-3">
-                        <label>Type of Expenses</label>
-                        <Field as="select" name="type" className="form-control">
-                          <option value="" label="Select a type" disabled />
+                        <label htmlFor="type">Type of Expenses</label>
+                        <Field
+                          as="select"
+                          name="type"
+                          className={`form-control ${
+                            errors.type && touched.type
+                              ? "is-invalid"
+                              : touched.type
+                              ? "is-valid"
+                              : ""
+                          }`}
+                        >
+                          <option value="">Select Type</option>
+                          <option value="Suppliers">Suppliers</option>
+                          <option value="Others">Others</option>
                           <option value="Electricity Bill">
                             Electricity Bill
                           </option>
-                          <option value="Water Bill">Water Bill</option>
-                          <option value="Internet Bill">Internet Bill</option>
-                          <option value="Suppliers">Suppliers</option>
-                          <option value="Others">Others</option>
+                          <option value="Gas Bill">Gas Bill</option>
+                          <option value="Phone Bill">Phone Bill</option>
                         </Field>
                         {errors.type && touched.type ? (
-                          <div className="text-danger">{errors.type}</div>
+                          <div className="invalid-feedback">{errors.type}</div>
                         ) : null}
                       </div>
                       {values.type === "Suppliers" && (
                         <div className="mb-3">
-                          <label>Supplier</label>
-                          <Field name="supplier" className="form-control" />
+                          <label htmlFor="supplier">Supplier</label>
+                          <Field
+                            as="select"
+                            name="supplier"
+                            className={`form-control ${
+                              errors.supplier && touched.supplier
+                                ? "is-invalid"
+                                : touched.supplier
+                                ? "is-valid"
+                                : ""
+                            }`}
+                          >
+                            <option value="">Select Supplier</option>
+                            {suppliers.map((supplier) => (
+                              <option key={supplier.id} value={supplier.name}>
+                                {supplier.name}
+                              </option>
+                            ))}
+                          </Field>
                           {errors.supplier && touched.supplier ? (
-                            <div className="text-danger">{errors.supplier}</div>
+                            <div className="invalid-feedback">
+                              {errors.supplier}
+                            </div>
                           ) : null}
                         </div>
                       )}
                       {values.type === "Others" && (
                         <div className="mb-3">
-                          <label>Other</label>
-                          <Field name="other" className="form-control" />
+                          <label htmlFor="other">Other Details</label>
+                          <Field
+                            name="other"
+                            className={`form-control ${
+                              errors.other && touched.other
+                                ? "is-invalid"
+                                : touched.other
+                                ? "is-valid"
+                                : ""
+                            }`}
+                          />
                           {errors.other && touched.other ? (
-                            <div className="text-danger">{errors.other}</div>
+                            <div className="invalid-feedback">
+                              {errors.other}
+                            </div>
                           ) : null}
                         </div>
                       )}
                       <div className="mb-3">
-                        <label>Description</label>
+                        <label htmlFor="description">Description</label>
                         <Field
                           name="description"
                           as="textarea"
                           className="form-control"
-                          style={{ resize: "none" }}
                         />
                       </div>
                       <div className="mb-3">
-                        <label>Amount Rs</label>
+                        <label htmlFor="amount">Amount Rs</label>
                         <Field
                           name="amount"
-                          type="number"
-                          className="form-control"
+                          className={`form-control ${
+                            errors.amount && touched.amount
+                              ? "is-invalid"
+                              : touched.amount
+                              ? "is-valid"
+                              : ""
+                          }`}
                         />
                         {errors.amount && touched.amount ? (
-                          <div className="text-danger">{errors.amount}</div>
+                          <div className="invalid-feedback">
+                            {errors.amount}
+                          </div>
                         ) : null}
                       </div>
                       <div className="mb-3">
-                        <label>Added Date</label>
+                        <label htmlFor="paymentMethod">Payment Method</label>
                         <Field
-                          name="addedDate"
-                          type="date"
+                          as="select"
+                          name="paymentMethod"
+                          className={`form-control ${
+                            errors.paymentMethod && touched.paymentMethod
+                              ? "is-invalid"
+                              : touched.paymentMethod
+                              ? "is-valid"
+                              : ""
+                          }`}
+                        >
+                          <option value="">Select Payment Method</option>
+                          <option value="Card">Card</option>
+                          <option value="Cash">Cash</option>
+                          <option value="Bank Transfer">Bank Transfer</option>
+                          <option value="Cheque">Cheque</option>
+                        </Field>
+                        {errors.paymentMethod && touched.paymentMethod ? (
+                          <div className="invalid-feedback">
+                            {errors.paymentMethod}
+                          </div>
+                        ) : null}
+                      </div>
+                      {values.paymentMethod === "Bank Transfer" && (
+                        <div className="mb-3">
+                          <label htmlFor="bankTransferNumber">
+                            Bank Transfer Number
+                          </label>
+                          <Field
+                            name="bankTransferNumber"
+                            className={`form-control ${
+                              errors.bankTransferNumber &&
+                              touched.bankTransferNumber
+                                ? "is-invalid"
+                                : touched.bankTransferNumber
+                                ? "is-valid"
+                                : ""
+                            }`}
+                          />
+                          {errors.bankTransferNumber &&
+                          touched.bankTransferNumber ? (
+                            <div className="invalid-feedback">
+                              {errors.bankTransferNumber}
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
+                      {values.paymentMethod === "Cheque" && (
+                        <div className="mb-3">
+                          <label htmlFor="chequeNumber">Cheque Number</label>
+                          <Field
+                            name="chequeNumber"
+                            className={`form-control ${
+                              errors.chequeNumber && touched.chequeNumber
+                                ? "is-invalid"
+                                : touched.chequeNumber
+                                ? "is-valid"
+                                : ""
+                            }`}
+                          />
+                          {errors.chequeNumber && touched.chequeNumber ? (
+                            <div className="invalid-feedback">
+                              {errors.chequeNumber}
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
+                      <div className="mb-3">
+                        <label htmlFor="invoiceNumber">Invoice Number</label>
+                        <Field
+                          name="invoiceNumber"
                           className="form-control"
-                          readOnly
-                          value={
-                            editingExpense?.addedDate ||
-                            new Date().toISOString().split("T")[0]
-                          }
                         />
                       </div>
                       <div className="mb-3">
-                        <label>Added Time</label>
-                        <Field
-                          name="addedTime"
-                          type="time"
-                          className="form-control"
-                          readOnly
-                          value={
-                            editingExpense?.addedTime ||
-                            new Date().toTimeString().split(" ")[0]
+                        <label htmlFor="photo">Upload Photo</label>
+                        <input
+                          type="file"
+                          name="photo"
+                          onChange={(event) =>
+                            setFieldValue("photo", event.target.files[0])
                           }
+                          className="form-control"
                         />
                       </div>
                       <div className="modal-footer">
                         <Button
-                          type="submit"
-                          variant="contained"
-                          color="primary"
-                        >
-                          {editingExpense ? "Update" : "Add"}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="secondary"
+                          type="button"
                           onClick={() => setIsModalOpen(false)}
+                          className="btn btn-secondary"
                         >
                           Cancel
+                        </Button>
+                        <Button type="submit" className="btn btn-primary">
+                          {editingExpense ? "Update Expense" : "Add Expense"}
                         </Button>
                       </div>
                     </Form>
