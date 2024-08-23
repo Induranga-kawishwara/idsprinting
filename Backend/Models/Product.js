@@ -1,5 +1,5 @@
 class Product {
-  constructor(productID, test, name, image, details = []) {
+  constructor(productID, name, image, details = []) {
     this.productID = productID;
     this.name = name;
     this.image = image;
