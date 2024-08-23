@@ -1,5 +1,5 @@
-import db from "../db.js";
-import Customer from "../models/Customer.js";
+import db from "./db.js";
+import Customer from "./models/Customer.js";
 
 const customersCollection = db.collection("customers");
 
