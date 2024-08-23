@@ -266,6 +266,7 @@ const Expenses = () => {
                           name="description"
                           as="textarea"
                           className="form-control"
+                          style={{ resize: "none" }}
                         />
                       </div>
                       <div className="mb-3">
