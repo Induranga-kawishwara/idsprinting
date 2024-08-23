@@ -45,7 +45,7 @@ export const createProduct = async (req, res) => {
         .send({ message: "Product with this name already exists." });
     }
 
-    // Create a new product if it doesn't exist
+    // Create a new product if it doesn't exista
     const product = new Product(productID, name, image, [
       {
         id: uuidv4(),
