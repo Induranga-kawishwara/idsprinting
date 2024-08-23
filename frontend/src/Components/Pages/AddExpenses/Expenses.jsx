@@ -26,13 +26,13 @@ const ExpenseSchema = Yup.object().shape({
   type: Yup.string().required("Type of Expenses is required"),
   supplier: Yup.string().when("type", {
     is: "Suppliers",
-    then: Yup.string().required("Supplier is required"),
-    otherwise: Yup.string().nullable(),
+    then: (schema) => schema.required("Supplier is required"),
+    otherwise: (schema) => schema.notRequired().nullable(),
   }),
   other: Yup.string().when("type", {
     is: "Others",
-    then: Yup.string().required("Other details are required"),
-    otherwise: Yup.string().nullable(),
+    then: (schema) => schema.required("Other details are required"),
+    otherwise: (schema) => schema.notRequired().nullable(),
   }),
   description: Yup.string(),
   amount: Yup.number().required("Amount is required"),
