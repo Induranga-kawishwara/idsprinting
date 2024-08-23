@@ -68,15 +68,6 @@
   label {
     font-weight: 500;
   }
-  textarea.form-control {
-    resize: none !important; /* Disables resizing */
-    height: 150px !important; /* Set a fixed height or adjust as needed */
-    padding: 12px !important; /* Adjust padding if necessary */
-    font-size: 1rem !important; /* Adjust font size */
-    line-height: 1.5 !important; /* Adjust line height for better readability */
-    box-sizing: border-box !important; /* Ensure padding and border are included in the element's total width and height */
-  }
-
   .text-danger {
     color: #dc3545;
   }
