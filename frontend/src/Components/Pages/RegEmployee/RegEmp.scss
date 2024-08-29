@@ -1,0 +1,57 @@
+.reg-emp {
+    padding-top: 75px;
+
+    .container {
+      .new-emp-btn {
+        margin-bottom: 15px;
+      }
+      .edit-btn,
+      .delete-btn {
+        margin-right: 5px;
+      }
+      .table {
+        th {
+          text-align: center;
+        }
+        td {
+          text-align: center;
+        }
+      }
+    }
+  
+    .custom-modal-dialog {
+      max-width: 600px;
+      margin: 1.75rem auto;
+  
+      .custom-modal-content {
+        padding: 20px;
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          h5 {
+            margin: 0;
+          }
+          .btn-close {
+            background: none;
+            border: none;
+          }
+        }
+        .modal-body {
+          .form-control {
+            margin-bottom: 10px;
+          }
+          .text-danger {
+            font-size: 0.875em;
+          }
+          .text-end {
+            margin-top: 20px;
+            .btn {
+              padding: 5px 10px;
+            }
+          }
+        }
+      }
+    }
+  }
+  

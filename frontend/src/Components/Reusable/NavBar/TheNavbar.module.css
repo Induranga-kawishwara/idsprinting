@@ -3,70 +3,77 @@
 }
 
 .navbar {
-  background-color: rgb(174, 226, 134);
   padding: 10px 5rem;
+  background: linear-gradient(172deg, #000000, #909090);
+  background-size: 400% 400%;
+  animation: AnimationName 0s ease infinite;
+
 }
 
 .navbar_brand {
   cursor: pointer;
+  margin-right: auto; /* Ensure the brand is on the left */
+  padding-left: 25px; /* Add padding to the left of the logo */
 }
 
-.navbar .toggle {
+.toggle {
   border: none;
 }
 
-.navbar .toggle:focus {
+.toggle:focus {
   border: none;
   box-shadow: none;
 }
 
-.navbar .nav__linkgroup {
+.nav__linkgroup {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.navbar .nav__link {
+.nav__link {
   font-size: 16px;
   font-weight: 500;
-}
-
-.navbar .nav__link a {
   color: white;
   text-decoration: none;
 }
 
-.navbar .nav__link a:hover,
-.navbar .nav__link a:focus {
+.nav__link a {
+  color: white;
+  text-decoration: none;
+}
+
+.nav__link a:hover,
+.nav__link a:focus {
   color: var(--primaryitemcolor);
   text-decoration: none;
 }
 
-.navbar .nav__link:focus {
+.nav__link:focus {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
 }
 
-.navbar .nav__link .active {
+.nav__link .active {
   color: var(--primaryitemcolor) !important;
   text-decoration: none;
 }
 
-.navbar .lastnav__link {
+.lastnav__link {
   color: var(--primaryitemcolor);
 }
 
-.navbar .nav__link:hover {
+.nav__link:hover {
   color: var(--primaryitemcolor);
 }
 
-.navbar .login__link {
+.login__link {
   margin-left: 1rem;
 }
 
-.navbar .login__button {
-  background-color: rgb(255, 0, 0); /* Set the button color to blue */
+.login__button {
+  background-color: rgb(255, 0, 0); /* Set the button color to red */
   color: white; /* Text color */
   border: none;
   padding: 5px 15px;
@@ -74,14 +81,14 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+  margin-right: 35px;
 }
 
-.navbar .login__button:hover {
+.login__button:hover {
   background-color: white; /* Change background to white on hover */
-  color: rgb(255, 0, 0); /* Change text color to blue on hover */
+  color: rgb(255, 0, 0); /* Change text color to red on hover */
 }
 
-/* TheNavbar.module.css */
 .iconSize {
   font-size: 30px; /* Adjust the size as needed */
   margin-right: 8px; /* Add space between icon and text */
@@ -92,7 +99,7 @@
     padding: 7px 1rem;
   }
 
-  .navbar .nav__linkgroup {
+  .nav__linkgroup {
     position: relative;
     display: block;
   }

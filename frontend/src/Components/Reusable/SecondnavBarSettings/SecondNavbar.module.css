@@ -1,0 +1,46 @@
+.secondaryNavbar {
+  background-color: rgb(200, 200, 200); /* Adjust color as needed */
+  padding: 10px 2rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.nav__linkgroup {
+  display: flex;
+  align-items: center;
+}
+
+.nav__link {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.nav__link a {
+  color: #333;
+  text-decoration: none;
+}
+
+.nav__link a:hover,
+.nav__link a:focus {
+  color: var(--primaryitemcolor);
+  text-decoration: none;
+}
+
+.iconSize {
+  font-size: 24px; /* Adjust size as needed */
+  margin-right: 8px;
+}
+
+/* Mobile view adjustments */
+@media (max-width: 1200px) {
+  .secondaryNavbar {
+    padding: 10px 3rem;
+  }
+
+  .iconSize {
+    font-size: 20px; /* Smaller icon size for mobile */
+  }
+
+  .nav__link {
+    font-size: 12px; /* Smaller font size for mobile */
+  }
+}

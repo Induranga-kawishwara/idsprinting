@@ -344,7 +344,7 @@ const Expenses = () => {
                           <option value="Electricity Bill">
                             Electricity Bill
                           </option>
-                          <option value="Gas Bill">Gas Bill</option>
+                          <option value="Gas Bill">Fuel Bill</option>
                           <option value="Phone Bill">Phone Bill</option>
                         </Field>
                         {errors.type && touched.type ? (

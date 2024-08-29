@@ -14,7 +14,10 @@
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
     "bourbon": "^7.3.0",
+    "clsx": "^2.1.1",
     "formik": "^2.4.6",
+    "framer-motion": "^11.3.31",
+    "jspdf": "^2.5.1",
     "mdb-react-ui-kit": "^8.0.0",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.4",
@@ -30,6 +33,7 @@
     "resolve-url-loader": "^5.0.0",
     "sass": "^1.77.8",
     "sass-loader": "^14.2.1",
+    "tailwind-merge": "^2.5.2",
     "web-vitals": "^2.1.4",
     "yup": "^1.4.0"
   },
