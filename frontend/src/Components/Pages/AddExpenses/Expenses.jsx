@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTable } from "react-table";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
@@ -7,24 +7,7 @@ import { Button, Modal } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./Expenses.scss"; // Create this file for your styles
-
-const initialExpenses = [
-  {
-    id: 1,
-    name: "Office Rent",
-    type: "Electricity Bill",
-    supplier: "",
-    other: "",
-    description: "",
-    amount: "2000.00",
-    addedDate: "2024-08-13",
-    addedTime: "14:30",
-    invoiceNumber: "",
-    photo: "",
-    paymentMethod: "Card",
-  },
-  // Add more expenses if needed
-];
+import axios from "axios";
 
 const suppliers = [
   { id: 1, name: "Supplier A" },
@@ -64,7 +47,7 @@ const ExpenseSchema = Yup.object().shape({
 });
 
 const Expenses = () => {
-  const [expenses, setExpenses] = useState(initialExpenses);
+  const [expenses, setExpenses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -118,6 +101,31 @@ const Expenses = () => {
     setIsModalOpen(false);
     setEditingExpense(null);
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const expensesData = await axios.get("http://localhost:8080/expenses/");
+
+        const formattedExpenses = expensesData.data.map((expense, index) => ({
+          id: index + 1,
+          name: expense.expensesname,
+          type: expense.expensesType,
+          description: expense.description,
+          amount: expense.amount,
+          addedDate: "2024-08-13",
+          addedTime: "14:30",
+          invoiceNumber: expense.invoiceNumber,
+          photo: expense.image,
+          paymentMethod: expense.paymentMethod,
+        }));
+        setExpenses(formattedExpenses);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const filteredExpenses = expenses.filter((expense) => {
     const searchString = searchQuery.toLowerCase().trim();

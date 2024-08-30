@@ -10,10 +10,11 @@ export const createExpenses = async (req, res) => {
     expensesType,
     description,
     amount,
-    pymentMethod,
+    paymentMethod,
     invoiceNumber,
-    Image,
+    image,
   } = req.body;
+  console.log(req.body);
 
   try {
     const expenses = new Expenses(
@@ -21,9 +22,9 @@ export const createExpenses = async (req, res) => {
       expensesType,
       description,
       amount,
-      pymentMethod,
+      paymentMethod,
       invoiceNumber,
-      Image
+      image
     );
 
     const docRef = await ExpensessCollection.add({ ...expenses });
