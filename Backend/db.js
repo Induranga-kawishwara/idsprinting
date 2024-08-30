@@ -28,6 +28,7 @@ const serviceAccount = {
 };
 
 console.log(serviceAccount);
+console.log(process.env.PORT);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
