@@ -259,34 +259,34 @@ const Item = () => {
                         <label>Stock Category</label>
                         <Field name="category" className="form-control" />
                       </div> */}
-<div className="mb-3">
-  <label>Stock Category</label>
-  <Field
-    as="select"
-    name="category"
-    className="form-control"
-  >
-    <option
-      className="form-control"
-      value=""
-      label="Select a type of stock"
-      disabled
-      hidden
-    />
-    {category.map((category) => (
-      <option
-        className="form-control"
-        key={category.id}
-        value={category.name}
-      >
-        {category.name}
-      </option>
-    ))}
-  </Field>
-  {errors.category && touched.category ? (
-    <div className="text-danger">{errors.category}</div>
-  ) : null}
-</div>
+                      <div className="mb-3">
+                        <label>Stock Category</label>
+                        <Field
+                          as="select"
+                          name="category"
+                          className="form-control"
+                        >
+                          <option
+                            className="form-control"
+                            value=""
+                            label="Select a type of stock"
+                            disabled
+                            hidden
+                          />
+                          {category.map((category) => (
+                            <option
+                              className="form-control"
+                              key={category.id}
+                              value={category.name}
+                            >
+                              {category.name}
+                            </option>
+                          ))}
+                        </Field>
+                        {errors.category && touched.category ? (
+                          <div className="text-danger">{errors.category}</div>
+                        ) : null}
+                      </div>
 
                       <div className="mb-3">
                         <label>Color</label>

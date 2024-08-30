@@ -8,6 +8,8 @@ class Customer {
     street,
     city,
     postalcode,
+    customerType,
+    addedDateAndTime,
     purchaseHistory = []
   ) {
     this.name = name;
@@ -18,6 +20,8 @@ class Customer {
     this.street = street;
     this.city = city;
     this.postalcode = postalcode;
+    this.customerType = customerType;
+    this.addedDateAndTime = addedDateAndTime;
     this.purchaseHistory = purchaseHistory;
   }
 }
