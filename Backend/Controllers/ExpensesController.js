@@ -14,7 +14,6 @@ export const createExpenses = async (req, res) => {
     invoiceNumber,
     image,
   } = req.body;
-  console.log(req.body);
 
   try {
     const expenses = new Expenses(
