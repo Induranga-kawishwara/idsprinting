@@ -27,9 +27,6 @@ const serviceAccount = {
   universe_domain: process.env.universe_domain,
 };
 
-console.log(serviceAccount);
-console.log(process.env.PORT);
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   projectId: "ids-printing",
