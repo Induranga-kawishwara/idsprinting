@@ -11,6 +11,12 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+// Welcome route to display the message
+app.get("/", (req, res) => {
+  res.send("Welcome to the server!");
+});
+
 app.use("/customers", Customer);
 app.use("/item", Item);
 app.use("/suppliers", Supplier);
