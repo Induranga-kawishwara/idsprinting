@@ -14,6 +14,8 @@ export const createCustomer = async (req, res) => {
     street,
     city,
     postalcode,
+    customerType,
+    addedDateAndTime,
   } = req.body;
 
   try {
@@ -56,7 +58,9 @@ export const createCustomer = async (req, res) => {
       houseNo,
       street,
       city,
-      postalcode
+      postalcode,
+      customerType,
+      addedDateAndTime
     );
 
     const docRef = await customersCollection.add({ ...customer });

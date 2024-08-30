@@ -1,8 +1,8 @@
 import db from "../db.js";
-import Product from "../Models/Product.js";
+import Product from "../Models/Item.js";
 import { v4 as uuidv4 } from "uuid";
 
-const ProductCollection = db.collection("products");
+const ItemCollection = db.collection("products");
 
 export const createProduct = async (req, res) => {
   const {
@@ -21,7 +21,7 @@ export const createProduct = async (req, res) => {
 
   try {
     // Check if a product with the same productID or name already exists
-    const existingProductSnapshot = await ProductCollection.where(
+    const existingProductSnapshot = await ItemCollection.where(
       "productID",
       "==",
       productID
@@ -33,7 +33,7 @@ export const createProduct = async (req, res) => {
         .send({ message: "Product with this ID already exists." });
     }
 
-    const existingNameSnapshot = await ProductCollection.where(
+    const existingNameSnapshot = await ItemCollection.where(
       "name",
       "==",
       name
@@ -61,7 +61,7 @@ export const createProduct = async (req, res) => {
       },
     ]);
 
-    const docRef = await ProductCollection.add({ ...product });
+    const docRef = await ItemCollection.add({ ...product });
     res
       .status(201)
       .send({ message: "Product created successfully", id: docRef.id });
@@ -73,7 +73,7 @@ export const createProduct = async (req, res) => {
 // Get all product
 export const getProducts = async (req, res) => {
   try {
-    const snapshot = await ProductCollection.get();
+    const snapshot = await ItemCollection.get();
     const products = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -89,7 +89,7 @@ export const getProductById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const doc = await ProductCollection.doc(id).get();
+    const doc = await ItemCollection.doc(id).get();
     if (!doc.exists) {
       return res.status(404).send({ message: "Product not found" });
     }
@@ -103,7 +103,7 @@ export const getstockdetailsById = async (req, res) => {
   const { id, detailId } = req.params;
 
   try {
-    const doc = await ProductCollection.doc(id).get();
+    const doc = await ItemCollection.doc(id).get();
     if (!doc.exists) {
       return res.status(404).send({ message: "Product not found" });
     }
@@ -135,7 +135,7 @@ export const updateStockDetailById = async (req, res) => {
   const updatedDetail = req.body;
 
   try {
-    const doc = await ProductCollection.doc(id).get();
+    const doc = await ItemCollection.doc(id).get();
     if (!doc.exists) {
       return res.status(404).send({ message: "Product not found" });
     }
@@ -157,7 +157,7 @@ export const updateStockDetailById = async (req, res) => {
     };
 
     // Save the updated product data back to Firestore
-    await ProductCollection.doc(id).update(productData);
+    await ItemCollection.doc(id).update(productData);
 
     res.status(200).send({ message: "Detail updated successfully" });
   } catch (error) {
@@ -170,7 +170,7 @@ export const deleteProductsStock = async (req, res) => {
   const { id, detailId } = req.params;
 
   try {
-    const doc = await ProductCollection.doc(id).get();
+    const doc = await ItemCollection.doc(id).get();
     if (!doc.exists) {
       return res.status(404).send({ message: "Product not found" });
     }
@@ -187,7 +187,7 @@ export const deleteProductsStock = async (req, res) => {
 
     productData.details.splice(detailIndex, 1);
 
-    await ProductCollection.doc(id).update({ details: productData.details });
+    await ItemCollection.doc(id).update({ details: productData.details });
 
     res.status(200).send({ message: "Detail deleted successfully" });
   } catch (error) {
@@ -200,7 +200,7 @@ export const deleteProducts = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await ProductCollection.doc(id).delete();
+    await ItemCollection.doc(id).delete();
     res.status(200).send({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });

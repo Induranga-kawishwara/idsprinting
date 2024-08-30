@@ -7,7 +7,7 @@ import {
   getstockdetailsById,
   updateStockDetailById,
   deleteProductsStock,
-} from "../Controllers/ProductController.js";
+} from "../Controllers/ItemController.js";
 
 const router = express.Router();
 
