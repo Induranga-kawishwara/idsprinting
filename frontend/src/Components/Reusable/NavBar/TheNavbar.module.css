@@ -7,7 +7,6 @@
   background: linear-gradient(172deg, #000000, #909090);
   background-size: 400% 400%;
   animation: AnimationName 0s ease infinite;
-
 }
 
 .navbar_brand {
@@ -24,7 +23,15 @@
   border: none;
   box-shadow: none;
 }
+.navbartogglericon {
+  color: aliceblue;
+  width: 1.5em;
+  height: 1.5em;
+}
 
+.navbartogglericon:hover {
+  color: red;
+}
 .nav__linkgroup {
   position: relative;
   display: flex;

@@ -14,6 +14,7 @@ import {
   FcFolder,
   FcBiotech,
 } from "react-icons/fc";
+import { FiAlignJustify } from "react-icons/fi";
 import classes from "./TheNavbar.module.css"; // Import the CSS module
 import Logo from "../../../Assest/logo.png";
 
@@ -43,21 +44,23 @@ const TheNavbar = () => {
         data-aos-easing="ease-out"
         data-aos-duration="2000"
       >
-<Navbar.Brand className={`ms-3 ${classes.navbar_brand}`}>
-  <RouterLink to="/dashboard" onClick={closeNavbar}>
-    <img
-      src={Logo}
-      alt="My logo"
-      style={{ width: "100px", height: "auto" }}
-    />
-  </RouterLink>
-</Navbar.Brand>
+        <Navbar.Brand className={`ms-3 ${classes.navbar_brand}`}>
+          <RouterLink to="/dashboard" onClick={closeNavbar}>
+            <img
+              src={Logo}
+              alt="My logo"
+              style={{ width: "100px", height: "auto" }}
+            />
+          </RouterLink>
+        </Navbar.Brand>
 
         <Navbar.Toggle
           aria-controls="basic-navbar-nav"
           className={classes.toggle}
-          onClick={handleToggle} // Toggle the navbar on click
-        />
+          onClick={handleToggle}
+        >
+          <FiAlignJustify className={classes.navbartogglericon} />
+        </Navbar.Toggle>
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className={`${classes.nav__linkgroup} ms-auto`}>
             <Nav.Link
