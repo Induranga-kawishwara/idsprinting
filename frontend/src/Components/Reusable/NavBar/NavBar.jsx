@@ -116,7 +116,7 @@ const TheNavbar = () => {
               className={`${classes.nav__link} me-4`}
               onClick={closeNavbar}
             >
-              <RouterLink to="/Quatation">
+              <RouterLink to="/quatation">
                 <FcList className={classes.iconSize} />
                 Quatation
               </RouterLink>
