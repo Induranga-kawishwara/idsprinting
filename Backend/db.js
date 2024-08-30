@@ -47,7 +47,6 @@ console.log(serviceAccount1);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  projectId: "ids-printing",
 });
 
 const db = admin.firestore();
