@@ -20,3 +20,5 @@ app.use("/cashup", Cashup);
 app.listen(port, () =>
   console.log(`App is listening on url http://localhost:${port}`)
 );
+
+export default app;
