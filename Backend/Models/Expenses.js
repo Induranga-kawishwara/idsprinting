@@ -4,17 +4,17 @@ class Expenses {
     expensesType,
     description,
     amount,
-    pymentMethod,
+    paymentMethod,
     invoiceNumber,
-    Image
+    image
   ) {
     this.expensesname = expensesname;
     this.expensesType = expensesType;
     this.description = description;
     this.amount = amount;
-    this.pymentMethod = pymentMethod;
+    this.paymentMethod = paymentMethod;
     this.invoiceNumber = invoiceNumber;
-    this.Image = Image;
+    this.image = image;
   }
 }
 
