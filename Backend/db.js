@@ -46,7 +46,7 @@ console.log(serviceAccount);
 console.log(serviceAccount1);
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount1),
   projectId: "ids-printing",
 });
 
