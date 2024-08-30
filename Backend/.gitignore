@@ -1,1 +1,14 @@
-/node_module
+.vercel
+# Node.js
+node_modules/
+
+# Logs
+*.log
+
+# Compiled files
+dist/
+build/
+
+# IDE/Editor specific files
+.vscode/
+.idea/
