@@ -28,6 +28,7 @@ const initialCreditCustomers = [
 const CreditCustomers = () => {
   const [creditCustomers, setCreditCustomers] = useState(initialCreditCustomers);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   const handleEditCredit = (customer) => {
@@ -36,9 +37,8 @@ const CreditCustomers = () => {
   };
 
   const handleDeleteCredit = (id) => {
-    const customer = creditCustomers.find((customer) => customer.id === id);
-    setSelectedCustomer(customer);
-    setIsPaymentModalOpen(true);
+    const updatedCustomers = creditCustomers.filter((customer) => customer.id !== id);
+    setCreditCustomers(updatedCustomers);
   };
 
   const handlePaymentSubmit = (values) => {
@@ -48,9 +48,11 @@ const CreditCustomers = () => {
         const newCreditBalance = customer.creditBalance - paidAmount;
         if (newCreditBalance <= 0) {
           generatePDFReceipt(customer, paidAmount, 0); // Generate receipt for full payment
+          promptReceiptOptions(customer, paidAmount, 0); // Prompt user for receipt options
           return null; // Customer is fully paid, remove from list
         }
         generatePDFReceipt(customer, paidAmount, newCreditBalance); // Generate receipt for partial payment
+        promptReceiptOptions(customer, paidAmount, newCreditBalance); // Prompt user for receipt options
         return { ...customer, creditBalance: newCreditBalance };
       }
       return customer;
@@ -88,8 +90,98 @@ const CreditCustomers = () => {
     doc.save(`receipt_${customer.name}_${customer.surname}.pdf`);
   };
 
+  // Function to prompt the user for receipt options after payment
+  const promptReceiptOptions = (customer, paidAmount, remainingBalance) => {
+    const choice = window.confirm(
+      "Payment completed. Would you like to download the PDF, print the receipt, or share it?"
+    );
+
+    if (choice) {
+      setSelectedCustomer(customer); // Set the customer to display in the receipt modal
+      setIsReceiptModalOpen(true); // Open the receipt modal
+    }
+  };
+
+  // Function to open the receipt modal
+  const handleOpenReceiptModal = (customer) => {
+    setSelectedCustomer(customer);
+    setIsReceiptModalOpen(true);
+  };
+
+  // Function to download the receipt
+  const downloadReceipt = () => {
+    if (!selectedCustomer) return;
+    const doc = new jsPDF();
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString();
+    const formattedTime = currentDate.toLocaleTimeString();
+
+    doc.setFontSize(18);
+    doc.text("Payment Receipt", 14, 22);
+    doc.setFontSize(12);
+    doc.text(`Date: ${formattedDate}`, 14, 30);
+    doc.text(`Time: ${formattedTime}`, 14, 36);
+    doc.text(`Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`, 14, 50);
+    doc.text(`Email: ${selectedCustomer.email}`, 14, 56);
+    doc.text(`Phone: ${selectedCustomer.phone}`, 14, 62);
+    doc.text(`Credit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}`, 14, 80);
+
+    doc.save(`receipt_${selectedCustomer.name}_${selectedCustomer.surname}.pdf`);
+  };
+
+  // Function to print the receipt
+  const printReceipt = () => {
+    const printContents = document.getElementById('receipt-contents').innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload(); // Reload the page to restore the original state
+  };
+
+  // Function to share the receipt via WhatsApp and email
+  const shareReceipt = () => {
+    if (!selectedCustomer) return;
+    
+    const doc = new jsPDF();
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString();
+    const formattedTime = currentDate.toLocaleTimeString();
+
+    doc.setFontSize(18);
+    doc.text("Payment Receipt", 14, 22);
+    doc.setFontSize(12);
+    doc.text(`Date: ${formattedDate}`, 14, 30);
+    doc.text(`Time: ${formattedTime}`, 14, 36);
+    doc.text(`Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`, 14, 50);
+    doc.text(`Email: ${selectedCustomer.email}`, 14, 56);
+    doc.text(`Phone: ${selectedCustomer.phone}`, 14, 62);
+    doc.text(`Credit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}`, 14, 80);
+
+    const pdfBlob = doc.output('blob');
+    const pdfURL = URL.createObjectURL(pdfBlob);
+
+    const whatsappMessage = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}\nCredit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}\nDownload PDF: ${pdfURL}`;
+    const whatsappURL = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
+
+    const emailSubject = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}`;
+    const emailBody = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}\nCredit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}\nDownload PDF: ${pdfURL}`;
+    const mailtoURL = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    
+    window.open(whatsappURL, '_blank'); // Open WhatsApp
+    window.open(mailtoURL, '_blank'); // Open Email
+  };
+
+  // Function to handle closing the receipt modal
+  const handleCloseReceiptModal = () => {
+    setIsReceiptModalOpen(false);
+    setSelectedCustomer(null);
+  };
+
   return (
     <div className="credit-customers">
+        <br/><br/><br/><br/>
       <div className="container mt-4">
         <h3>Credit Customers</h3>
         <table className="table table-striped mt-3">
@@ -120,6 +212,13 @@ const CreditCustomers = () => {
                     onClick={() => handleEditCredit(customer)}
                   >
                     Edit
+                  </Button>{" "}
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleOpenReceiptModal(customer)}
+                  >
+                    View Receipt
                   </Button>{" "}
                   <Button
                     variant="contained"
@@ -180,6 +279,62 @@ const CreditCustomers = () => {
                   )}
                 </Formik>
               </div>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Receipt Modal */}
+        <Modal open={isReceiptModalOpen} onClose={handleCloseReceiptModal}>
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+            <div className="modal-content custom-modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Receipt Details</h5>
+                <Button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={handleCloseReceiptModal}
+                />
+              </div>
+              {selectedCustomer && (
+                <div className="modal-body" id="receipt-contents">
+                  <p><strong>Customer:</strong> {selectedCustomer.name} {selectedCustomer.surname}</p>
+                  <p><strong>Email:</strong> {selectedCustomer.email}</p>
+                  <p><strong>Phone:</strong> {selectedCustomer.phone}</p>
+                  <p><strong>Total Spent:</strong> {selectedCustomer.totalSpent}</p>
+                  <p><strong>Credit Balance:</strong> Rs. {selectedCustomer.creditBalance.toFixed(2)}</p>
+                  <div className="d-flex justify-content-end">
+                    <Button
+                      variant="contained"
+                      onClick={downloadReceipt}
+                      className="download-btn me-2"
+                    >
+                      Download PDF
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={printReceipt}
+                      className="print-btn me-2"
+                    >
+                      Print Receipt
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={shareReceipt}
+                      className="share-btn me-2"
+                    >
+                      Share
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleCloseReceiptModal}
+                      className="close-btn"
+                    >
+                      Close
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </Modal>
