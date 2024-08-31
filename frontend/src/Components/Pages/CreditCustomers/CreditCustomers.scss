@@ -1,29 +1,34 @@
 .credit-customers {
-    .container {
-      margin-top: 20px;
-    }
+    padding: 20px;
+  }
   
-    table {
-      margin-top: 15px;
+  .table {
+    width: 100%;
+    margin-top: 20px;
+  }
   
-      th,
-      td {
-        text-align: left;
-        padding: 8px;
-      }
-    }
+  button {
+    margin-top: 10px;
+    margin-right: 10px;
+  }
   
-    .modal-dialog {
-      max-width: 500px;
-    }
-    
-    .modal-content {
-      padding: 20px;
-    }
+  .custom-modal-dialog {
+    max-width: 500px;
+    margin: 30px auto;
+  }
   
-    .update-btn,
-    .cancel-btn {
-      margin-top: 10px;
-    }
+  .custom-modal-content {
+    padding: 20px;
+  }
+  
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
+  .download-btn, .close-btn {
+    margin: 5px;
   }
   
