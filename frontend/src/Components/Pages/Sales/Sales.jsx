@@ -3,42 +3,41 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Modal } from '@mui/material';
-import './Sales.scss'; // Ensure the correct CSS file is imported
-import jsPDF from 'jspdf';  // Import jspdf
-
+import './Sales.scss';
+import jsPDF from 'jspdf';
+import { useNavigate } from 'react-router-dom'; // Use useNavigate instead of useHistory
 
 const initialProducts = [
-    {
-      id: 1,
-      name: 'Shirts',
-      price: 9.99,
-      gsm: 180,
-      color: 'Red'
-    },
-    {
-      id: 2,
-      name: 'Pants',
-      price: 14.99,
-      gsm: 200,
-      color: 'Blue'
-    },
-    {
-      id: 3,
-      name: 'Dresses',
-      price: 19.99,
-      gsm: 150,
-      color: 'Green'
-    },
-    {
-      id: 4,
-      name: 'Shoes',
-      price: 14.99,
-      gsm: null,
-      color: 'Black'
-    },
-    // Add more products as needed
-  ];
-
+  {
+    id: 1,
+    name: 'Shirts',
+    price: 9.99,
+    gsm: 180,
+    color: 'Red'
+  },
+  {
+    id: 2,
+    name: 'Pants',
+    price: 14.99,
+    gsm: 200,
+    color: 'Blue'
+  },
+  {
+    id: 3,
+    name: 'Dresses',
+    price: 19.99,
+    gsm: 150,
+    color: 'Green'
+  },
+  {
+    id: 4,
+    name: 'Shoes',
+    price: 14.99,
+    gsm: null,
+    color: 'Black'
+  },
+  // Add more products as needed
+];
 
 const initialCustomers = [
   {
@@ -102,15 +101,15 @@ const Sales = () => {
     net: 0.0,
   });
 
+  const [daySales, setDaySales] = useState(0); // State to track day sales
+  const [salesHistory, setSalesHistory] = useState([]); // State to track sales history
 
-
-  const [invoiceNumber, setInvoiceNumber] = useState(null); // Add state for invoice number
-
-
+  const navigate = useNavigate(); // Use useNavigate for navigation
   
+  const [invoiceNumber, setInvoiceNumber] = useState(null);
   const [products] = useState(initialProducts);
   const [productSearchQuery, setProductSearchQuery] = useState('');
-  const [searchField, setSearchField] = useState('name'); // Default search field
+  const [searchField, setSearchField] = useState('name');
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -127,7 +126,6 @@ const Sales = () => {
     });
   }, [productSearchQuery, searchField, products]);
 
-
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
 
@@ -140,7 +138,7 @@ const Sales = () => {
             customer.name.toLowerCase().includes(customerSearchQuery.toLowerCase()) ||
             customer.phone.includes(customerSearchQuery)
         )
-        .slice(0, 5), // Limit to top 5 customers
+        .slice(0, 5),
     [customerSearchQuery, customers]
   );
 
@@ -212,11 +210,11 @@ const Sales = () => {
       alert('Please select a customer before proceeding to payment.');
     }
   };
+
   const clearSearch = () => {
     setProductSearchQuery('');
-    setSearchField('name'); // Reset search field to default value
+    setSearchField('name');
   };
-
 
   const handlePaymentSubmit = (values) => {
     // Handle different payment methods
@@ -233,18 +231,17 @@ const Sales = () => {
       alert(`Credit payment of ${values.creditAmount} recorded.`);
     }
 
-        // Generate a unique invoice number
-        const newInvoiceNumber = `INV-${new Date().getTime()}`;
-        setInvoiceNumber(newInvoiceNumber);
+    // Generate a unique invoice number
+    const newInvoiceNumber = `INV-${new Date().getTime()}`;
+    setInvoiceNumber(newInvoiceNumber);
 
-        
-     // Ask the user if they want a receipt
-     const wantsReceipt = window.confirm('Would you like to download a receipt?');
+    // Ask the user if they want a receipt
+    const wantsReceipt = window.confirm('Would you like to download a receipt?');
 
     // Generate PDF if user wants a receipt
     if (wantsReceipt) {
-        generatePDF(values);
-      }
+      generatePDF(values);
+    }
 
     // Clear the transaction table after payment
     setTransaction({
@@ -258,21 +255,18 @@ const Sales = () => {
     setIsPaymentModalOpen(false);
   };
 
-
-
-
   const generatePDF = (paymentDetails, invoiceNumber) => {
     const doc = new jsPDF();
     
     // Get current date and time
     const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString(); // Format: MM/DD/YYYY
-    const formattedTime = currentDate.toLocaleTimeString(); // Format: HH:MM:SS AM/PM
+    const formattedDate = currentDate.toLocaleDateString();
+    const formattedTime = currentDate.toLocaleTimeString();
 
     doc.setFontSize(18);
     doc.text('Transaction Receipt', 14, 22);
     doc.setFontSize(12);
-    doc.text(`Invoice Number: ${invoiceNumber}`, 14, 30); // Add invoice number
+    doc.text(`Invoice Number: ${invoiceNumber}`, 14, 30);
     doc.text(`Date: ${formattedDate}`, 14, 36);
     doc.text(`Time: ${formattedTime}`, 14, 42);
 
@@ -287,22 +281,22 @@ const Sales = () => {
     transaction.products.forEach((product, index) => {
       const y = 86 + index * 6;
       doc.text(
-        `${product.name} - ${product.qty} x $${product.price.toFixed(2)} = $${(product.qty * product.price).toFixed(2)}`,
+        `${product.name} - ${product.qty} x Rs.${product.price.toFixed(2)} = Rs.${(product.qty * product.price).toFixed(2)}`,
         14,
         y
       );
     });
 
-    doc.text(`Total: $${transaction.total.toFixed(2)}`, 14, 120);
-    doc.text(`Discount: $${transaction.discount.toFixed(2)}`, 14, 126);
-    doc.text(`Net: $${transaction.net.toFixed(2)}`, 14, 132);
+    doc.text(`Total: Rs.${transaction.total.toFixed(2)}`, 14, 120);
+    doc.text(`Discount: Rs.${transaction.discount.toFixed(2)}`, 14, 126);
+    doc.text(`Net: Rs.${transaction.net.toFixed(2)}`, 14, 132);
 
     doc.text('Payment Details:', 14, 150);
     doc.text(`Method: ${paymentDetails.paymentMethod}`, 14, 156);
     if (paymentDetails.paymentMethod === 'Cash') {
-      doc.text(`Cash Given: $${paymentDetails.cashGiven}`, 14, 162);
+      doc.text(`Cash Given: Rs.${paymentDetails.cashGiven}`, 14, 162);
       const changeDue = paymentDetails.cashGiven - transaction.net;
-      doc.text(`Change Due: $${changeDue.toFixed(2)}`, 14, 168);
+      doc.text(`Change Due: Rs.${changeDue.toFixed(2)}`, 14, 168);
     } else if (paymentDetails.paymentMethod === 'Card') {
       doc.text(`Card Details: ${paymentDetails.cardDetails}`, 14, 162);
     } else if (paymentDetails.paymentMethod === 'Bank Transfer') {
@@ -310,16 +304,15 @@ const Sales = () => {
     } else if (paymentDetails.paymentMethod === 'Cheque') {
       doc.text(`Cheque Number: ${paymentDetails.chequeNumber}`, 14, 162);
     } else if (paymentDetails.paymentMethod === 'Credit') {
-      doc.text(`Credit Amount: $${paymentDetails.creditAmount}`, 14, 162);
+      doc.text(`Credit Amount: Rs.${paymentDetails.creditAmount}`, 14, 162);
     }
 
     doc.save('transaction_receipt.pdf');
   };
 
-
   const handleAddProductSubmit = (values) => {
     const newProduct = {
-      id: new Date().getTime(), // Generate a unique id
+      id: new Date().getTime(),
       name: values.name,
       price: Number(values.price),
       qty: Number(values.qty),
@@ -338,7 +331,7 @@ const Sales = () => {
 
   const handleSelectCustomer = (customer) => {
     setSelectedCustomer(customer);
-    setCustomerSearchQuery(''); // Clear search input after selection
+    setCustomerSearchQuery('');
   };
 
   const handleRemoveCustomer = () => {
@@ -346,327 +339,352 @@ const Sales = () => {
   };
 
   return (
-    <div className="sales-page"> 
-    <div className="sales-dashboard">
+    <div className="sales-page">
+      <div className="sales-dashboard">
         <br />
         <br />
-      <div className="sales-body">
-        <div className="left-panel">
-          {/* Net Amount Box */}
-          <div className="net-amount-box">
-            <h2>Net Amount</h2>
-            <p>{transaction.net.toFixed(2)}</p>
-          </div>
+        <div className="sales-body">
+          <div className="left-panel">
+            {/* Net Amount Box */}
+            <div className="net-amount-box">
+              <h2>Net Amount</h2>
+              <p>Rs. {transaction.net.toFixed(2)}</p>
+            </div>
+            
+            <Button
+              variant="contained"
+              onClick={() => navigate('/credit-customers')} // Use navigate instead of history.push
+            >
+              Show Credit Customers
+            </Button>
 
-          <div className="customer-info">
-            {selectedCustomer ? (
-              <div className="customer-selected">
-                <div className="customer-details">
-                  <h3>
-                    {selectedCustomer.name} {selectedCustomer.surname}
-                  </h3>
-                  <p>{selectedCustomer.loyaltyStatus || 'Regular Customer'}</p>
-                  <div className="customer-metrics">
-                    <span>Email: {selectedCustomer.email}</span>
-                    <br />
-                    <span>Phone: {selectedCustomer.phone}</span>
+
+
+
+                        {/* Display Day Sales */}
+                        <div className="day-sales-box">
+              <h3>Day's Sales</h3>
+              <p>Rs. {daySales.toFixed(2)}</p>
+            </div>
+
+            {/* Sales History Button */}
+            <Button
+              variant="contained"
+              onClick={() => navigate('/sales-history')} // Navigate to SalesHistory.jsx
+            >
+              Sales History
+            </Button>
+
+            
+            <div className="customer-info">
+              {selectedCustomer ? (
+                <div className="customer-selected">
+                  <div className="customer-details">
+                    <h3>
+                      {selectedCustomer.name} {selectedCustomer.surname}
+                    </h3>
+                    <p>{selectedCustomer.loyaltyStatus || 'Regular Customer'}</p>
+                    <div className="customer-metrics">
+                      <span>Email: {selectedCustomer.email}</span>
+                      <br />
+                      <span>Phone: {selectedCustomer.phone}</span>
+                    </div>
                   </div>
+                  <button onClick={handleRemoveCustomer} className="remove-customer-button">
+                    Remove Customer
+                  </button>
                 </div>
-                <button onClick={handleRemoveCustomer} className="remove-customer-button">
-                  Remove Customer
-                </button>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search customer by name, surname, or phone"
+                    value={customerSearchQuery}
+                    onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                  />
+                  <ul className="customer-search-list">
+                    {filteredCustomers.map((customer) => (
+                      <li key={customer.id} onClick={() => handleSelectCustomer(customer)}>
+                        {customer.name} {customer.surname} - {customer.phone}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+
+            <div className="transaction-summary">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transaction.products.map((product) => (
+                    <tr key={product.id}>
+                      <td>{product.name}</td>
+                      <td>
+                        <input
+                          type="number"
+                          value={product.qty}
+                          min="1"
+                          onChange={(e) => updateProductQty(product.id, e.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          value={product.price}
+                          min="0"
+                          step="0.01"
+                          onChange={(e) => updateProductPrice(product.id, e.target.value)}
+                        />
+                      </td>
+                      <td>Rs. {(product.qty * product.price).toFixed(2)}</td>
+                      <td>
+                        <button onClick={() => removeProduct(product.id)}>Remove</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Plus Button to Add Products Manually */}
+              <div className="add-product-button-container">
+                <Button onClick={() => setIsAddProductModalOpen(true)} className="button-add-product">
+                  + Add Product
+                </Button>
               </div>
-            ) : (
-              <>
+
+              <div className="totals">
+                <p>
+                  Discount:{' '}
+                  <input
+                    type="number"
+                    value={transaction.discount}
+                    min="0"
+                    step="0.01"
+                    onChange={(e) => updateDiscount(e.target.value)}
+                  />
+                </p>
+                <p>Net: Rs. {transaction.net.toFixed(2)}</p>
+              </div>
+            </div>
+            <div className="action-buttons">
+              <button onClick={completeSale} className="button-pay" disabled={!selectedCustomer}>
+                Pay
+              </button>
+            </div>
+          </div>
+          <div className="right-panel">
+            {/* Product Search and Filter */}
+            <div className="product-search">
+              <div className="input-group">
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Search customer by name, surname, or phone"
-                  value={customerSearchQuery}
-                  onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                  placeholder={`Search by ${searchField}`}
+                  value={productSearchQuery}
+                  onChange={(e) => setProductSearchQuery(e.target.value)}
                 />
-                <ul className="customer-search-list">
-                  {filteredCustomers.map((customer) => (
-                    <li key={customer.id} onClick={() => handleSelectCustomer(customer)}>
-                      {customer.name} {customer.surname} - {customer.phone}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-
-          <div className="transaction-summary">
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Qty</th>
-                  <th>Price</th>
-                  <th>Total</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transaction.products.map((product) => (
-                  <tr key={product.id}>
-                    <td>{product.name}</td>
-                    <td>
-                      <input
-                        type="number"
-                        value={product.qty}
-                        min="1"
-                        onChange={(e) => updateProductQty(product.id, e.target.value)}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        value={product.price}
-                        min="0"
-                        step="0.01"
-                        onChange={(e) => updateProductPrice(product.id, e.target.value)}
-                      />
-                    </td>
-                    <td>{(product.qty * product.price).toFixed(2)}</td>
-                    <td>
-                      <button onClick={() => removeProduct(product.id)}>Remove</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Plus Button to Add Products Manually */}
-            <div className="add-product-button-container">
-              <Button onClick={() => setIsAddProductModalOpen(true)} className="button-add-product">
-                + Add Product
-              </Button>
+                <button className="btn btn-outline-secondary" onClick={clearSearch}>
+                  Clear
+                </button>
+              </div>
+              <select
+                className="form-control mt-2"
+                value={searchField}
+                onChange={(e) => setSearchField(e.target.value)}
+              >
+                <option value="name">Name</option>
+                <option value="price">Price</option>
+                <option value="gsm">GSM</option>
+                <option value="color">Color</option>
+              </select>
             </div>
+            <div className="product-grid">
+              {filteredProducts.map((product) => (
+                <button key={product.id} className="product-button" onClick={() => addProductToTransaction(product)}>
+                  {product.name}
+                  <span>Rs. {product.price.toFixed(2)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
-            <div className="totals">
-              <p>
-                Discount:{' '}
-                <input
-                  type="number"
-                  value={transaction.discount}
-                  min="0"
-                  step="0.01"
-                  onChange={(e) => updateDiscount(e.target.value)}
+        {/* Payment Modal */}
+        <Modal open={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)}>
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+            <div className="modal-content custom-modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Payment</h5>
+                <Button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setIsPaymentModalOpen(false)}
                 />
-              </p>
-              <p>Net: {transaction.net.toFixed(2)}</p>
+              </div>
+              <div className="modal-body">
+                <Formik
+                  initialValues={{
+                    paymentMethod: '',
+                    cashGiven: '',
+                    cardDetails: '',
+                    bankTransferNumber: '',
+                    chequeNumber: '',
+                    creditAmount: '',
+                  }}
+                  validationSchema={PaymentSchema}
+                  onSubmit={handlePaymentSubmit}
+                >
+                  {({ values, errors, touched }) => (
+                    <Form>
+                      <div className="mb-3">
+                        <label>Payment Method</label>
+                        <Field as="select" name="paymentMethod" className="form-control">
+                          <option value="" label="Select" disabled />
+                          <option value="Cash">Cash</option>
+                          <option value="Card">Card</option>
+                          <option value="Bank Transfer">Bank Transfer</option>
+                          <option value="Cheque">Cheque</option>
+                          <option value="Credit">Credit</option>
+                        </Field>
+                        {errors.paymentMethod && touched.paymentMethod ? (
+                          <div className="text-danger">{errors.paymentMethod}</div>
+                        ) : null}
+                      </div>
+                      {values.paymentMethod === 'Cash' && (
+                        <div className="mb-3">
+                          <label>Cash Given</label>
+                          <Field name="cashGiven" type="number" className="form-control" />
+                          {errors.cashGiven && touched.cashGiven ? (
+                            <div className="text-danger">{errors.cashGiven}</div>
+                          ) : null}
+                        </div>
+                      )}
+                      {values.paymentMethod === 'Card' && (
+                        <div className="mb-3">
+                          <label>Card Holder's Name or Last 4 Digits</label>
+                          <Field name="cardDetails" className="form-control" />
+                          {errors.cardDetails && touched.cardDetails ? (
+                            <div className="text-danger">{errors.cardDetails}</div>
+                          ) : null}
+                        </div>
+                      )}
+                      {values.paymentMethod === 'Bank Transfer' && (
+                        <div className="mb-3">
+                          <label>Bank Transfer Number</label>
+                          <Field name="bankTransferNumber" className="form-control" />
+                          {errors.bankTransferNumber && touched.bankTransferNumber ? (
+                            <div className="text-danger">{errors.bankTransferNumber}</div>
+                          ) : null}
+                        </div>
+                      )}
+                      {values.paymentMethod === 'Cheque' && (
+                        <div className="mb-3">
+                          <label>Cheque Number</label>
+                          <Field name="chequeNumber" className="form-control" />
+                          {errors.chequeNumber && touched.chequeNumber ? (
+                            <div className="text-danger">{errors.chequeNumber}</div>
+                          ) : null}
+                        </div>
+                      )}
+                      {values.paymentMethod === 'Credit' && (
+                        <div className="mb-3">
+                          <label>Paying Amount</label>
+                          <Field name="creditAmount" type="number" className="form-control" />
+                          {errors.creditAmount && touched.creditAmount ? (
+                            <div className="text-danger">{errors.creditAmount}</div>
+                          ) : null}
+                        </div>
+                      )}
+                      <div className="modal-footer">
+                        <Button variant="secondary" onClick={() => setIsPaymentModalOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" variant="primary">
+                          Submit Payment
+                        </Button>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              </div>
             </div>
           </div>
-          <div className="action-buttons">
-            <button onClick={completeSale} className="button-pay" disabled={!selectedCustomer}>
-              Pay
-            </button>
-          </div>
-        </div>
-        <div className="right-panel">
-          {/* Product Search and Filter */}
-          <div className="product-search">
-          <div className="input-group">
-              <input
-                type="text"
-                className="form-control"
-                placeholder={`Search by ${searchField}`}
-                value={productSearchQuery}
-                onChange={(e) => setProductSearchQuery(e.target.value)}
-              />
-              <button className="btn btn-outline-secondary" onClick={clearSearch}>
-                Clear
-              </button>
-            </div>
-            <select
-              className="form-control mt-2"
-              value={searchField}
-              onChange={(e) => setSearchField(e.target.value)}
-            >
-              <option value="name">Name</option>
-              <option value="price">Price</option>
-              <option value="gsm">GSM</option>
-              <option value="color">Color</option>
-            </select>
-          </div>
-          <div className="product-grid">
-            {filteredProducts.map((product) => (
-              <button key={product.id} className="product-button" onClick={() => addProductToTransaction(product)}>
-                {product.name}
-                <span>{product.price.toFixed(2)}</span>
-              </button>
-            ))}
-          </div>
-          </div>
-      </div>
+        </Modal>
 
-      {/* Payment Modal */}
-      <Modal open={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)}>
-        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-          <div className="modal-content custom-modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Payment</h5>
-              <Button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={() => setIsPaymentModalOpen(false)}
-              />
-            </div>
-            <div className="modal-body">
-              <Formik
-                initialValues={{
-                  paymentMethod: '',
-                  cashGiven: '',
-                  cardDetails: '',
-                  bankTransferNumber: '',
-                  chequeNumber: '',
-                  creditAmount: '',
-                }}
-                validationSchema={PaymentSchema}
-                onSubmit={handlePaymentSubmit}
-              >
-                {({ values, errors, touched }) => (
-                  <Form>
-                    <div className="mb-3">
-                      <label>Payment Method</label>
-                      <Field as="select" name="paymentMethod" className="form-control">
-                        <option value="" label="Select" disabled />
-                        <option value="Cash">Cash</option>
-                        <option value="Card">Card</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
-                        <option value="Cheque">Cheque</option>
-                        <option value="Credit">Credit</option>
-                      </Field>
-                      {errors.paymentMethod && touched.paymentMethod ? (
-                        <div className="text-danger">{errors.paymentMethod}</div>
-                      ) : null}
-                    </div>
-                    {values.paymentMethod === 'Cash' && (
+        {/* Add Product Modal */}
+        <Modal open={isAddProductModalOpen} onClose={() => setIsAddProductModalOpen(false)}>
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+            <div className="modal-content custom-modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Add Product</h5>
+                <Button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setIsAddProductModalOpen(false)}
+                />
+              </div>
+              <div className="modal-body">
+                <Formik
+                  initialValues={{
+                    name: '',
+                    price: '',
+                    qty: '',
+                  }}
+                  validationSchema={ProductSchema}
+                  onSubmit={handleAddProductSubmit}
+                >
+                  {({ errors, touched }) => (
+                    <Form>
                       <div className="mb-3">
-                        <label>Cash Given</label>
-                        <Field name="cashGiven" type="number" className="form-control" />
-                        {errors.cashGiven && touched.cashGiven ? (
-                          <div className="text-danger">{errors.cashGiven}</div>
+                        <label>Product Name</label>
+                        <Field name="name" className="form-control" />
+                        {errors.name && touched.name ? (
+                          <div className="text-danger">{errors.name}</div>
                         ) : null}
                       </div>
-                    )}
-                    {values.paymentMethod === 'Card' && (
                       <div className="mb-3">
-                        <label>Card Holder's Name or Last 4 Digits</label>
-                        <Field name="cardDetails" className="form-control" />
-                        {errors.cardDetails && touched.cardDetails ? (
-                          <div className="text-danger">{errors.cardDetails}</div>
+                        <label>Price</label>
+                        <Field name="price" type="number" className="form-control" />
+                        {errors.price && touched.price ? (
+                          <div className="text-danger">{errors.price}</div>
                         ) : null}
                       </div>
-                    )}
-                    {values.paymentMethod === 'Bank Transfer' && (
                       <div className="mb-3">
-                        <label>Bank Transfer Number</label>
-                        <Field name="bankTransferNumber" className="form-control" />
-                        {errors.bankTransferNumber && touched.bankTransferNumber ? (
-                          <div className="text-danger">{errors.bankTransferNumber}</div>
+                        <label>Quantity</label>
+                        <Field name="qty" type="number" className="form-control" />
+                        {errors.qty && touched.qty ? (
+                          <div className="text-danger">{errors.qty}</div>
                         ) : null}
                       </div>
-                    )}
-                    {values.paymentMethod === 'Cheque' && (
-                      <div className="mb-3">
-                        <label>Cheque Number</label>
-                        <Field name="chequeNumber" className="form-control" />
-                        {errors.chequeNumber && touched.chequeNumber ? (
-                          <div className="text-danger">{errors.chequeNumber}</div>
-                        ) : null}
+                      <div className="modal-footer">
+                        <Button variant="secondary" onClick={() => setIsAddProductModalOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" variant="primary">
+                          Add Product
+                        </Button>
                       </div>
-                    )}
-                    {values.paymentMethod === 'Credit' && (
-                      <div className="mb-3">
-                        <label>Paying Amount</label>
-                        <Field name="creditAmount" type="number" className="form-control" />
-                        {errors.creditAmount && touched.creditAmount ? (
-                          <div className="text-danger">{errors.creditAmount}</div>
-                        ) : null}
-                      </div>
-                    )}
-                    <div className="modal-footer">
-                      <Button variant="secondary" onClick={() => setIsPaymentModalOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" variant="primary">
-                        Submit Payment
-                      </Button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
+                    </Form>
+                  )}
+                </Formik>
+              </div>
             </div>
           </div>
-        </div>
-      </Modal>
-
-      {/* Add Product Modal */}
-      <Modal open={isAddProductModalOpen} onClose={() => setIsAddProductModalOpen(false)}>
-        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-          <div className="modal-content custom-modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Add Product</h5>
-              <Button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={() => setIsAddProductModalOpen(false)}
-              />
-            </div>
-            <div className="modal-body">
-              <Formik
-                initialValues={{
-                  name: '',
-                  price: '',
-                  qty: '',
-                }}
-                validationSchema={ProductSchema}
-                onSubmit={handleAddProductSubmit}
-              >
-                {({ errors, touched }) => (
-                  <Form>
-                    <div className="mb-3">
-                      <label>Product Name</label>
-                      <Field name="name" className="form-control" />
-                      {errors.name && touched.name ? (
-                        <div className="text-danger">{errors.name}</div>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <label>Price</label>
-                      <Field name="price" type="number" className="form-control" />
-                      {errors.price && touched.price ? (
-                        <div className="text-danger">{errors.price}</div>
-                      ) : null}
-                    </div>
-                    <div className="mb-3">
-                      <label>Quantity</label>
-                      <Field name="qty" type="number" className="form-control" />
-                      {errors.qty && touched.qty ? (
-                        <div className="text-danger">{errors.qty}</div>
-                      ) : null}
-                    </div>
-                    <div className="modal-footer">
-                      <Button variant="secondary" onClick={() => setIsAddProductModalOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" variant="primary">
-                        Add Product
-                      </Button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-            </div>
-          </div>
-        </div>
-      </Modal>
+        </Modal>
       </div>
-      </div>
+    </div>
   );
 };
 
