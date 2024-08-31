@@ -7,17 +7,17 @@ $secondary-color: #ffc107;
 $success-color: #28a745;
 $danger-color: #dc3545;
 $shadow-color: rgba(0, 0, 0, 0.05);
-$button-pay-bg: $success-color;
-$button-pay-bg-hover: darken($success-color, 10%);
+$button-generate-bg: $success-color;
+$button-generate-bg-hover: darken($success-color, 10%);
 $button-save-bg: $secondary-color;
 $button-save-bg-hover: darken($secondary-color, 10%);
 $button-text-color: $white;
 $box-shadow-light: 0 4px 8px $shadow-color;
 $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-.sales-page { // Begin scoping styles
+.quotation-page { // Begin scoping styles
 
-  .sales-body {
+  .quotation-body {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -40,29 +40,6 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
 
     &:hover {
       transform: translateY(-2px);
-    }
-  }
-
-  /* Net Amount Box */
-  .net-amount-box {
-    background-color: $primary-color;
-    color: $white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
-
-    h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    p {
-      margin: 5px 0 0 0;
-      font-size: 50px;
-      font-weight: bold;
     }
   }
 
@@ -141,7 +118,7 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   /* Buttons */
-  .button-pay,
+  .button-generate-pdf,
   .button-save {
     padding: 10px 20px;
     font-size: 16px;
@@ -152,12 +129,12 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
   }
 
-  .button-pay {
-    background-color: $button-pay-bg;
+  .button-generate-pdf {
+    background-color: $button-generate-bg;
     color: $button-text-color;
 
     &:hover {
-      background-color: $button-pay-bg-hover;
+      background-color: $button-generate-bg-hover;
     }
   }
 
@@ -173,6 +150,14 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
   .action-buttons {
     display: flex;
     justify-content: flex-start;
+    align-items: center; // Center items vertically
+    gap: 10px; // Add space between dropdown and buttons
+  }
+
+  /* Dropdown for Print or Soft Copy */
+  .copy-type-dropdown {
+    width: 150px;
+    margin-right: 10px;
   }
 
   /* Customer Search */
@@ -253,7 +238,7 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   /* Media Query for Larger Screens */
   @media (min-width: 768px) {
-    .sales-body {
+    .quotation-body {
       flex-direction: row;
       padding: 20px;
       gap: 20px;
@@ -286,11 +271,15 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
       font-size: 18px;
     }
 
-    .button-pay,
+    .button-generate-pdf,
     .button-save {
       padding: 12px 24px;
       font-size: 18px;
       margin-right: 12px;
+    }
+
+    .copy-type-dropdown {
+      width: 180px;
     }
   }
 } // End of scoping
