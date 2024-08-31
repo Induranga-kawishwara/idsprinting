@@ -16,6 +16,7 @@ import CashUp from "./Components/Pages/CashUp/Cashup";
 import Sales from "./Components/Pages/Sales/Sales";
 import Settings from "./Components/Pages/RegEmployee/RegEmp";
 import AdminReg from "./Components/Pages/RegAdmin/AdminReg";
+import Quatation from "./Components/Pages/Quotation/Quotation";
 
 const Layout = () => {
   const location = useLocation();
@@ -34,6 +35,7 @@ const Layout = () => {
         <Route path="/sales" element={<Sales />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/adminreg" element={<AdminReg />} />
+        <Route path="/quatation" element={<Quatation />} />
       </Routes>
     </>
   );
