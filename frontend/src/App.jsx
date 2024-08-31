@@ -7,7 +7,9 @@ import {
 import Login from "./Components/Pages/Login/LoginPage";
 import Home from "./Components/Pages/Dashboard/Home";
 import Customer from "./Components/Pages/Customer/Customer";
+import CreditCustomers from "./Components/Pages/CreditCustomers/CreditCustomers";
 import AddItem from "./Components/Pages/Additem/Additem";
+import SalesHistory from "./Components/Pages/SalesHistory/SalesHistory";
 import Supplier from "./Components/Pages/Supplier/Supplier";
 import NavBar from "./Components/Reusable/NavBar/NavBar";
 import Category from "./Components/Pages/AddCategory/AddCategory";
@@ -36,6 +38,8 @@ const Layout = () => {
         <Route path="/settings" element={<Settings />} />
         <Route path="/adminreg" element={<AdminReg />} />
         <Route path="/quatation" element={<Quatation />} />
+        <Route path="/credit-customers" element={<CreditCustomers />} />
+        <Route path="/sales-history" element={<SalesHistory />} />
       </Routes>
     </>
   );
