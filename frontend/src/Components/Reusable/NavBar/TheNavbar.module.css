@@ -30,7 +30,7 @@
 }
 
 .navbartogglericon:hover {
-  color: rgb(7, 7, 7);
+  color: red;
 }
 .nav__linkgroup {
   position: relative;
