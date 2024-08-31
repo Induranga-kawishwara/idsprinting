@@ -1,8 +1,11 @@
 import admin from "firebase-admin";
-import { FIREBASE_ADMIN_SDK_KEY } from "./config.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 admin.initializeApp({
-  credential: admin.credential.cert(FIREBASE_ADMIN_SDK_KEY),
+  credential: admin.credential.cert(
+    JSON.parse(process.env.FIREBASE_ADMIN_SDK_KEYS)
+  ),
   projectId: "ids-printing",
 });
 
