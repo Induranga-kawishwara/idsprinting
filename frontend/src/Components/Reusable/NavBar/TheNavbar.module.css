@@ -11,8 +11,8 @@
 
 .navbar_brand {
   cursor: pointer;
-  margin-right: auto; /* Ensure the brand is on the left */
-  padding-left: 25px; /* Add padding to the left of the logo */
+  margin-right: auto;
+  padding-left: 25px;
 }
 
 .toggle {
@@ -21,7 +21,7 @@
 
 .toggle:focus {
   border: none;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 .navbartogglericon {
   color: aliceblue;
