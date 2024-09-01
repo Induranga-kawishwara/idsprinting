@@ -55,6 +55,52 @@ const Expenses = () => {
   const [endDate, setEndDate] = useState(null);
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const expensesData = await axios.get(
+          "https://idsprinting.vercel.app/expenses/"
+          // "http://localhost:8080/expenses/"
+        );
+
+        const formattedExpenses = expensesData.data.map((expense, index) => {
+          const utcDate = new Date(expense.dateAndTime);
+          const sltDate = new Date(
+            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+          );
+
+          return {
+            id: expense.id,
+            name: expense.expensesname,
+            type: expense.expensesType,
+            supplier: expense.supplier,
+            other: expense.other,
+            description: expense.description,
+            amount: expense.amount,
+            paymentMethod: expense.paymentMethod,
+            addedDate: sltDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }),
+            addedTime: sltDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            invoiceNumber: expense.invoiceNumber,
+            photo: expense.image,
+          };
+        });
+
+        setExpenses(formattedExpenses);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleEdit = (expense) => {
     setEditingExpense(expense);
     setIsModalOpen(true);
@@ -142,51 +188,6 @@ const Expenses = () => {
     setIsModalOpen(false);
     setEditingExpense(null);
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const expensesData = await axios.get(
-          "https://idsprinting.vercel.app/expenses/"
-          // "http://localhost:8080/expenses/"
-        );
-
-        const formattedExpenses = expensesData.data.map((expense, index) => {
-          const utcDate = new Date(expense.dateAndTime);
-          const sltDate = new Date(
-            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-          );
-
-          return {
-            id: expense.id,
-            name: expense.expensesname,
-            type: expense.expensesType,
-            supplier: expense.supplier,
-            other: expense.other,
-            description: expense.description,
-            amount: expense.amount,
-            paymentMethod: expense.paymentMethod,
-            addedDate: sltDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }),
-            addedTime: sltDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            invoiceNumber: expense.invoiceNumber,
-            photo: expense.image,
-          };
-        });
-
-        setExpenses(formattedExpenses);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const filteredExpenses = expenses.filter((expense) => {
     const searchString = searchQuery.toLowerCase().trim();
