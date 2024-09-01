@@ -10,6 +10,7 @@ import "./Expenses.scss"; // Create this file for your styles
 import axios from "axios";
 import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
 import SyncLoader from "react-spinners/SyncLoader";
+import _ from "lodash";
 
 const suppliers = [
   { id: 1, name: "Supplier A" },
@@ -378,13 +379,16 @@ const Expenses = () => {
         </div>
 
         <div className="table-responsive">
-          {loading || error ? (
+          {loading || error || _.isEmpty(data) ? (
             <div className="message-container">
               {loading && <SyncLoader />}
               {error && (
                 <p className="error-message">
                   Error loading data: {error.message}
                 </p>
+              )}
+              {_.isEmpty(data) && (
+                <p className="no-data-message">Don't Have Data to Show</p>
               )}
             </div>
           ) : (
