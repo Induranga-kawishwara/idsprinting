@@ -146,8 +146,8 @@ const Expenses = () => {
     const fetchData = async () => {
       try {
         const expensesData = await axios.get(
-          // "https://idsprinting.vercel.app/expenses/"
-          "http://localhost:8080/expenses/"
+          "https://idsprinting.vercel.app/expenses/"
+          // "http://localhost:8080/expenses/"
         );
 
         const formattedExpenses = expensesData.data.map((expense, index) => {
