@@ -107,19 +107,25 @@ const Expenses = () => {
   };
 
   const handleDelete = useCallback(
-    async (id) => {
-      try {
-        const response = await axios.delete(
-          `https://idsprinting.vercel.app/expenses/expenses/${id}`
-        );
+    async (name, id) => {
+      const confirmDelete = window.confirm(
+        `Do you want to delete the expense: ${name}?`
+      );
 
-        setExpenses((prevExpenses) =>
-          prevExpenses.filter((expense) => expense.id !== id)
-        );
-        alert(response.data.message);
-      } catch (error) {
-        console.error("Error deleting expense:", error);
-        alert("Failed to delete the expense. Please try again.");
+      if (confirmDelete) {
+        try {
+          const response = await axios.delete(
+            `https://idsprinting.vercel.app/expenses/expenses/${id}`
+          );
+
+          setExpenses((prevExpenses) =>
+            prevExpenses.filter((expense) => expense.id !== id)
+          );
+          alert(response.data.message);
+        } catch (error) {
+          console.error("Error deleting expense:", error);
+          alert("Failed to delete the expense. Please try again.");
+        }
       }
     },
     [setExpenses]
@@ -255,7 +261,7 @@ const Expenses = () => {
               variant="contained"
               color="secondary"
               size="small"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDelete(row.original.name, row.original.id)}
               className="delete-btn"
             >
               Delete
