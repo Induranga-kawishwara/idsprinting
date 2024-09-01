@@ -132,11 +132,6 @@ const Expenses = () => {
     },
     [setExpenses]
   );
-
-  const handleViewClick = async (img) => {
-    console.log(img);
-  };
-
   const handleSubmit = async (values) => {
     const currentDate = new Date();
     if (editingExpense) {
@@ -258,8 +253,8 @@ const Expenses = () => {
         Cell: ({ value }) =>
           value ? (
             <div>
-              {/* <Button onClick={() => window.open(value, "_blank")}>View</Button> */}
-              <button onClick={() => handleViewClick(value)}>View</button>
+              <Button onClick={() => window.open(value, "_blank")}>View</Button>
+              {/* <button onClick={() => handleViewClick(value)}>View</button> */}
             </div>
           ) : (
             <span>No File</span>
