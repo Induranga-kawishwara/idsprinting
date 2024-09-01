@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "./Expenses.scss"; // Create this file for your styles
 import axios from "axios";
 import { ImageUploder } from "../../Reusable/ImageUploder/ImageUploder.js";
+import SyncLoader from "react-spinners/SyncLoader";
 
 const suppliers = [
   { id: 1, name: "Supplier A" },
@@ -55,6 +56,8 @@ const Expenses = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,8 +97,11 @@ const Expenses = () => {
         });
 
         setExpenses(formattedExpenses);
+        setLoading(false); // Data fetched, set loading to false
       } catch (error) {
         console.error("Failed to fetch data:", error);
+        setError(error); // Optional: Set error state
+        setLoading(false); // Data fetching failed, set loading to false
       }
     };
 
@@ -355,32 +361,43 @@ const Expenses = () => {
           </select>
         </div>
 
-        <div class="table-responsive">
-          <table {...getTableProps()} className="table table-striped mt-3">
-            <thead>
-              {headerGroups.map((headerGroup) => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <th {...column.getHeaderProps()}>
-                      {column.render("Header")}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody {...getTableBodyProps()}>
-              {rows.map((row) => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map((cell) => (
-                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+        <div className="table-responsive">
+          {loading || error ? (
+            <div className="message-container">
+              {loading && <SyncLoader />}
+              {error && (
+                <p className="error-message">
+                  Error loading data: {error.message}
+                </p>
+              )}
+            </div>
+          ) : (
+            <table {...getTableProps()} className="table table-striped mt-3">
+              <thead>
+                {headerGroups.map((headerGroup) => (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      <th {...column.getHeaderProps()}>
+                        {column.render("Header")}
+                      </th>
                     ))}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </thead>
+              <tbody {...getTableBodyProps()}>
+                {rows.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => (
+                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
