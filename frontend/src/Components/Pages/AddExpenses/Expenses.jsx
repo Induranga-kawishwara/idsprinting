@@ -8,7 +8,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./Expenses.scss"; // Create this file for your styles
 import axios from "axios";
-import { ImageUploder } from "../../Reusable/ImageUploder/ImageUploder.js";
+import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
 import SyncLoader from "react-spinners/SyncLoader";
 
 const suppliers = [
@@ -139,46 +139,62 @@ const Expenses = () => {
   );
   const handleSubmit = async (values) => {
     const currentDate = new Date();
+
+    const downloadURL = await ImageUploader(
+      values.name,
+      currentDate,
+      "Expencess",
+      values.photo
+    );
+
+    const data = {
+      expensesname: values.name,
+      expensesType: values.type,
+      supplier: values.supplier,
+      other: values.other,
+      description: values.description,
+      amount: values.amount,
+      paymentMethod: values.paymentMethod,
+      bankTranferNum: values.bankTransferNumber,
+      chequeNum: values.chequeNumber,
+      invoiceNumber: values.invoiceNumber,
+      image: downloadURL,
+    };
+
     if (editingExpense) {
-      setExpenses(
-        expenses.map((expense) =>
-          expense.id === editingExpense.id
-            ? {
-                ...values,
-                id: editingExpense.id,
-                addedDate: expense.addedDate,
-                addedTime: expense.addedTime,
-              }
-            : expense
-        )
-      );
-    } else {
       try {
-        const downloadURL = await ImageUploder(
-          values.name,
-          currentDate,
-          "Expencess",
-          values.photo
+        const dateObject = new Date(
+          `${editingExpense.addedDate} ${editingExpense.addedTime}`
         );
 
-        const data = {
-          expensesname: values.name,
-          expensesType: values.type,
-          supplier: values.supplier,
-          other: values.other,
-          description: values.description,
-          amount: values.amount,
-          paymentMethod: values.paymentMethod,
-          bankTranferNum: values.bankTransferNumber,
-          chequeNum: values.chequeNumber,
-          invoiceNumber: values.invoiceNumber,
-          dateAndTime: currentDate,
-          image: downloadURL,
-        };
+        const isoDateString = dateObject.toISOString();
 
+        const response = await axios.put(
+          `https://idsprinting.vercel.app/expenses/expenses/${editingExpense.id}`,
+          { ...data, dateAndTime: isoDateString }
+        );
+        setExpenses(
+          expenses.map((expense) =>
+            expense.id === editingExpense.id
+              ? {
+                  ...values,
+                  id: editingExpense.id,
+                  addedDate: expense.addedDate,
+                  addedTime: expense.addedTime,
+                }
+              : expense
+          )
+        );
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error updating expense:", error);
+        alert("Failed to update the expense. Please try again.");
+      }
+    } else {
+      try {
         const response = await axios.post(
           "https://idsprinting.vercel.app/expenses/expenses",
-          data
+          { ...data, dateAndTime: currentDate }
         );
 
         setExpenses([

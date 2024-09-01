@@ -6,10 +6,19 @@ initializeApp(firebaseConfig);
 
 const storage = getStorage();
 
-export const ImageUploder = async (name, date, collectinName, file) => {
+function isFirebaseURL(url) {
+  return url.startsWith("https://firebasestorage.googleapis.com/");
+}
+
+export const ImageUploader = async (name, date, collectionName, file) => {
   if (!file) return null;
 
-  const storageRef = ref(storage, `${collectinName}/${name + "+" + date}`);
+  if (typeof file === "string" && isFirebaseURL(file)) {
+    console.log("File is already a Firebase URL:", file);
+    return file;
+  }
+
+  const storageRef = ref(storage, `${collectionName}/${name + "+" + date}`);
 
   try {
     await uploadBytes(storageRef, file);
