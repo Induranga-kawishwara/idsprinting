@@ -471,52 +471,54 @@ const Sales = () => {
               )}
             </div>
 
-            <div className="table-responsive transaction-summary">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transaction.products.map((product) => (
-                    <tr key={product.id}>
-                      <td>{product.name}</td>
-                      <td>
-                        <input
-                          type="number"
-                          value={product.qty}
-                          min="1"
-                          onChange={(e) =>
-                            updateProductQty(product.id, e.target.value)
-                          }
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          value={product.price}
-                          min="0"
-                          step="0.01"
-                          onChange={(e) =>
-                            updateProductPrice(product.id, e.target.value)
-                          }
-                        />
-                      </td>
-                      <td>Rs. {(product.qty * product.price).toFixed(2)}</td>
-                      <td>
-                        <button onClick={() => removeProduct(product.id)}>
-                          Remove
-                        </button>
-                      </td>
+            <div className="transaction-summary">
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Qty</th>
+                      <th>Price</th>
+                      <th>Total</th>
+                      <th>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {transaction.products.map((product) => (
+                      <tr key={product.id}>
+                        <td>{product.name}</td>
+                        <td>
+                          <input
+                            type="number"
+                            value={product.qty}
+                            min="1"
+                            onChange={(e) =>
+                              updateProductQty(product.id, e.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            value={product.price}
+                            min="0"
+                            step="0.01"
+                            onChange={(e) =>
+                              updateProductPrice(product.id, e.target.value)
+                            }
+                          />
+                        </td>
+                        <td>Rs. {(product.qty * product.price).toFixed(2)}</td>
+                        <td>
+                          <button onClick={() => removeProduct(product.id)}>
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               {/* Plus Button to Add Products Manually */}
               <div className="add-product-button-container">
