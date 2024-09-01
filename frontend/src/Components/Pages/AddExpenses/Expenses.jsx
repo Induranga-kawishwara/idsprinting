@@ -8,6 +8,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./Expenses.scss"; // Create this file for your styles
 import axios from "axios";
+import { ImageUploder } from "../../Reusable/ImageUploder/ImageUploder.js";
 
 const suppliers = [
   { id: 1, name: "Supplier A" },
@@ -93,6 +94,7 @@ const Expenses = () => {
         });
 
         setExpenses(formattedExpenses);
+        console.log(formattedExpenses);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
@@ -131,6 +133,10 @@ const Expenses = () => {
     [setExpenses]
   );
 
+  const handleViewClick = async (img) => {
+    console.log(img);
+  };
+
   const handleSubmit = async (values) => {
     const currentDate = new Date();
     if (editingExpense) {
@@ -148,6 +154,13 @@ const Expenses = () => {
       );
     } else {
       try {
+        const downloadURL = await ImageUploder(
+          values.name,
+          currentDate,
+          "Expencess",
+          values.photo
+        );
+
         const data = {
           expensesname: values.name,
           expensesType: values.type,
@@ -160,7 +173,7 @@ const Expenses = () => {
           chequeNum: values.chequeNumber,
           invoiceNumber: values.invoiceNumber,
           dateAndTime: currentDate,
-          image: values.photo,
+          image: downloadURL,
         };
 
         const response = await axios.post(
@@ -181,6 +194,7 @@ const Expenses = () => {
               hour: "2-digit",
               minute: "2-digit",
             }),
+            image: downloadURL,
           },
           ...expenses,
         ]);
@@ -242,8 +256,16 @@ const Expenses = () => {
         Header: "Photo",
         accessor: "photo",
         Cell: ({ value }) =>
-          value ? <span>{value.name}</span> : <span>No file uploaded</span>,
+          value ? (
+            <div>
+              {/* <Button onClick={() => window.open(value, "_blank")}>View</Button> */}
+              <button onClick={() => handleViewClick(value)}>View</button>
+            </div>
+          ) : (
+            <span>No File</span>
+          ),
       },
+
       {
         Header: "Actions",
         Cell: ({ row }) => (
