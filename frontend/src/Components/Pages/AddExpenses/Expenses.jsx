@@ -61,19 +61,26 @@ const Expenses = () => {
   };
 
   const handleDelete = useCallback(
-    (id) => {
-      setExpenses((prevExpenses) =>
-        prevExpenses.filter((expense) => expense.id !== id)
-      );
+    async (id) => {
+      try {
+        const response = await axios.delete(
+          `https://idsprinting.vercel.app/expenses/expenses/${id}`
+        );
+
+        setExpenses((prevExpenses) =>
+          prevExpenses.filter((expense) => expense.id !== id)
+        );
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting expense:", error);
+        alert("Failed to delete the expense. Please try again.");
+      }
     },
     [setExpenses]
   );
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
-    const formattedTime = currentDate.toTimeString().split(" ")[0]; // HH:MM:SS
-
     if (editingExpense) {
       setExpenses(
         expenses.map((expense) =>
@@ -88,15 +95,29 @@ const Expenses = () => {
         )
       );
     } else {
-      setExpenses([
-        ...expenses,
-        {
-          ...values,
-          id: expenses.length + 1,
-          addedDate: formattedDate,
-          addedTime: formattedTime,
-        },
-      ]);
+      console.log(values);
+
+      try {
+        //   const response = await axios.post(
+        //     `https://idsprinting.vercel.app/expenses/`
+        //   );
+
+        setExpenses([
+          ...expenses,
+          {
+            ...values,
+            id: expenses.length + 1,
+            // id: response.data.id,
+            addedDate: currentDate.split("T")[0],
+            addedTime: currentDate.split("T")[1].slice(0, 5),
+          },
+        ]);
+
+        // alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting expense:", error);
+        alert("Failed to add the expense. Please try again.");
+      }
     }
     setIsModalOpen(false);
     setEditingExpense(null);
@@ -109,7 +130,7 @@ const Expenses = () => {
         );
 
         const formattedExpenses = expensesData.data.map((expense, index) => ({
-          id: index + 1,
+          id: expense.id,
           name: expense.expensesname,
           type: expense.expensesType,
           description: expense.description,
@@ -149,7 +170,11 @@ const Expenses = () => {
 
   const columns = useMemo(
     () => [
-      { Header: "ID", accessor: "id" },
+      {
+        Header: "No",
+        accessor: "id",
+        Cell: ({ row }) => row.index + 1,
+      },
       { Header: "Name", accessor: "name" },
       { Header: "Type of Expenses", accessor: "type" },
       { Header: "Supplier", accessor: "supplier" },
