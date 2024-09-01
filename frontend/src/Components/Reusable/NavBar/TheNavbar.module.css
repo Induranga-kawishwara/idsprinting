@@ -21,7 +21,7 @@
 
 .toggle:focus {
   border: none;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 .navbartogglericon {
   color: aliceblue;
