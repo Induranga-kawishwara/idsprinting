@@ -31,3 +31,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IDS_PRINTING }}
           channelId: live
           projectId: ids-printing
+          entryPoint: frontend  # Specify the directory containing firebase.json
