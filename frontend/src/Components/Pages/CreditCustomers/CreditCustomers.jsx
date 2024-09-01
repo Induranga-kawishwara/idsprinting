@@ -26,7 +26,9 @@ const initialCreditCustomers = [
 ];
 
 const CreditCustomers = () => {
-  const [creditCustomers, setCreditCustomers] = useState(initialCreditCustomers);
+  const [creditCustomers, setCreditCustomers] = useState(
+    initialCreditCustomers
+  );
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -37,26 +39,30 @@ const CreditCustomers = () => {
   };
 
   const handleDeleteCredit = (id) => {
-    const updatedCustomers = creditCustomers.filter((customer) => customer.id !== id);
+    const updatedCustomers = creditCustomers.filter(
+      (customer) => customer.id !== id
+    );
     setCreditCustomers(updatedCustomers);
   };
 
   const handlePaymentSubmit = (values) => {
     const paidAmount = parseFloat(values.paidAmount);
-    const updatedCustomers = creditCustomers.map((customer) => {
-      if (customer.id === selectedCustomer.id) {
-        const newCreditBalance = customer.creditBalance - paidAmount;
-        if (newCreditBalance <= 0) {
-          generatePDFReceipt(customer, paidAmount, 0); // Generate receipt for full payment
-          promptReceiptOptions(customer, paidAmount, 0); // Prompt user for receipt options
-          return null; // Customer is fully paid, remove from list
+    const updatedCustomers = creditCustomers
+      .map((customer) => {
+        if (customer.id === selectedCustomer.id) {
+          const newCreditBalance = customer.creditBalance - paidAmount;
+          if (newCreditBalance <= 0) {
+            generatePDFReceipt(customer, paidAmount, 0); // Generate receipt for full payment
+            promptReceiptOptions(customer, paidAmount, 0); // Prompt user for receipt options
+            return null; // Customer is fully paid, remove from list
+          }
+          generatePDFReceipt(customer, paidAmount, newCreditBalance); // Generate receipt for partial payment
+          promptReceiptOptions(customer, paidAmount, newCreditBalance); // Prompt user for receipt options
+          return { ...customer, creditBalance: newCreditBalance };
         }
-        generatePDFReceipt(customer, paidAmount, newCreditBalance); // Generate receipt for partial payment
-        promptReceiptOptions(customer, paidAmount, newCreditBalance); // Prompt user for receipt options
-        return { ...customer, creditBalance: newCreditBalance };
-      }
-      return customer;
-    }).filter(Boolean); // Filter out null customers
+        return customer;
+      })
+      .filter(Boolean); // Filter out null customers
 
     setCreditCustomers(updatedCustomers);
     setIsPaymentModalOpen(false);
@@ -121,17 +127,27 @@ const CreditCustomers = () => {
     doc.setFontSize(12);
     doc.text(`Date: ${formattedDate}`, 14, 30);
     doc.text(`Time: ${formattedTime}`, 14, 36);
-    doc.text(`Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`, 14, 50);
+    doc.text(
+      `Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`,
+      14,
+      50
+    );
     doc.text(`Email: ${selectedCustomer.email}`, 14, 56);
     doc.text(`Phone: ${selectedCustomer.phone}`, 14, 62);
-    doc.text(`Credit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}`, 14, 80);
+    doc.text(
+      `Credit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}`,
+      14,
+      80
+    );
 
-    doc.save(`receipt_${selectedCustomer.name}_${selectedCustomer.surname}.pdf`);
+    doc.save(
+      `receipt_${selectedCustomer.name}_${selectedCustomer.surname}.pdf`
+    );
   };
 
   // Function to print the receipt
   const printReceipt = () => {
-    const printContents = document.getElementById('receipt-contents').innerHTML;
+    const printContents = document.getElementById("receipt-contents").innerHTML;
     const originalContents = document.body.innerHTML;
 
     document.body.innerHTML = printContents;
@@ -143,7 +159,7 @@ const CreditCustomers = () => {
   // Function to share the receipt via WhatsApp and email
   const shareReceipt = () => {
     if (!selectedCustomer) return;
-    
+
     const doc = new jsPDF();
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString();
@@ -154,23 +170,43 @@ const CreditCustomers = () => {
     doc.setFontSize(12);
     doc.text(`Date: ${formattedDate}`, 14, 30);
     doc.text(`Time: ${formattedTime}`, 14, 36);
-    doc.text(`Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`, 14, 50);
+    doc.text(
+      `Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`,
+      14,
+      50
+    );
     doc.text(`Email: ${selectedCustomer.email}`, 14, 56);
     doc.text(`Phone: ${selectedCustomer.phone}`, 14, 62);
-    doc.text(`Credit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}`, 14, 80);
+    doc.text(
+      `Credit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}`,
+      14,
+      80
+    );
 
-    const pdfBlob = doc.output('blob');
+    const pdfBlob = doc.output("blob");
     const pdfURL = URL.createObjectURL(pdfBlob);
 
-    const whatsappMessage = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}\nCredit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}\nDownload PDF: ${pdfURL}`;
-    const whatsappURL = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
+    const whatsappMessage = `Receipt for ${selectedCustomer.name} ${
+      selectedCustomer.surname
+    }\nCredit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(
+      2
+    )}\nDownload PDF: ${pdfURL}`;
+    const whatsappURL = `https://wa.me/?text=${encodeURIComponent(
+      whatsappMessage
+    )}`;
 
     const emailSubject = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}`;
-    const emailBody = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}\nCredit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}\nDownload PDF: ${pdfURL}`;
-    const mailtoURL = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-    
-    window.open(whatsappURL, '_blank'); // Open WhatsApp
-    window.open(mailtoURL, '_blank'); // Open Email
+    const emailBody = `Receipt for ${selectedCustomer.name} ${
+      selectedCustomer.surname
+    }\nCredit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(
+      2
+    )}\nDownload PDF: ${pdfURL}`;
+    const mailtoURL = `mailto:?subject=${encodeURIComponent(
+      emailSubject
+    )}&body=${encodeURIComponent(emailBody)}`;
+
+    window.open(whatsappURL, "_blank"); // Open WhatsApp
+    window.open(mailtoURL, "_blank"); // Open Email
   };
 
   // Function to handle closing the receipt modal
@@ -181,60 +217,68 @@ const CreditCustomers = () => {
 
   return (
     <div className="credit-customers">
-        <br/><br/><br/><br/>
+      <br />
+      <br />
+      <br />
+      <br />
       <div className="container mt-4">
         <h3>Credit Customers</h3>
-        <table className="table table-striped mt-3">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Surname</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Credit Balance (Rs.)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {creditCustomers.map((customer) => (
-              <tr key={customer.id}>
-                <td>{customer.id}</td>
-                <td>{customer.name}</td>
-                <td>{customer.surname}</td>
-                <td>{customer.email}</td>
-                <td>{customer.phone}</td>
-                <td>{customer.creditBalance}</td>
-                <td>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleEditCredit(customer)}
-                  >
-                    Edit
-                  </Button>{" "}
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpenReceiptModal(customer)}
-                  >
-                    View Receipt
-                  </Button>{" "}
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleDeleteCredit(customer.id)}
-                  >
-                    Delete
-                  </Button>
-                </td>
+        <div class="table-responsive">
+          <table className="table table-striped mt-3">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Credit Balance (Rs.)</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {creditCustomers.map((customer) => (
+                <tr key={customer.id}>
+                  <td>{customer.id}</td>
+                  <td>{customer.name}</td>
+                  <td>{customer.surname}</td>
+                  <td>{customer.email}</td>
+                  <td>{customer.phone}</td>
+                  <td>{customer.creditBalance}</td>
+                  <td>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleEditCredit(customer)}
+                    >
+                      Edit
+                    </Button>{" "}
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleOpenReceiptModal(customer)}
+                    >
+                      View Receipt
+                    </Button>{" "}
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleDeleteCredit(customer.id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Payment Modal */}
-        <Modal open={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)}>
+        <Modal
+          open={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+        >
           <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
             <div className="modal-content custom-modal-content">
               <div className="modal-header">
@@ -258,13 +302,21 @@ const CreditCustomers = () => {
                     <Form>
                       <div className="mb-3">
                         <label>Paid Amount (Rs.)</label>
-                        <Field name="paidAmount" type="number" className="form-control" />
+                        <Field
+                          name="paidAmount"
+                          type="number"
+                          className="form-control"
+                        />
                         {errors.paidAmount && touched.paidAmount ? (
                           <div className="text-danger">{errors.paidAmount}</div>
                         ) : null}
                       </div>
                       <div className="d-flex justify-content-end">
-                        <Button variant="contained" type="submit" className="update-btn">
+                        <Button
+                          variant="contained"
+                          type="submit"
+                          className="update-btn"
+                        >
                           Submit Payment
                         </Button>
                         <Button
@@ -298,11 +350,23 @@ const CreditCustomers = () => {
               </div>
               {selectedCustomer && (
                 <div className="modal-body" id="receipt-contents">
-                  <p><strong>Customer:</strong> {selectedCustomer.name} {selectedCustomer.surname}</p>
-                  <p><strong>Email:</strong> {selectedCustomer.email}</p>
-                  <p><strong>Phone:</strong> {selectedCustomer.phone}</p>
-                  <p><strong>Total Spent:</strong> {selectedCustomer.totalSpent}</p>
-                  <p><strong>Credit Balance:</strong> Rs. {selectedCustomer.creditBalance.toFixed(2)}</p>
+                  <p>
+                    <strong>Customer:</strong> {selectedCustomer.name}{" "}
+                    {selectedCustomer.surname}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {selectedCustomer.email}
+                  </p>
+                  <p>
+                    <strong>Phone:</strong> {selectedCustomer.phone}
+                  </p>
+                  <p>
+                    <strong>Total Spent:</strong> {selectedCustomer.totalSpent}
+                  </p>
+                  <p>
+                    <strong>Credit Balance:</strong> Rs.{" "}
+                    {selectedCustomer.creditBalance.toFixed(2)}
+                  </p>
                   <div className="d-flex justify-content-end">
                     <Button
                       variant="contained"

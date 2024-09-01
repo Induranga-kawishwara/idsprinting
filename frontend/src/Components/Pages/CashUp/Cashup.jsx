@@ -48,7 +48,8 @@ const Cashup = () => {
       (!endDate || date <= new Date(endDate));
 
     return (
-      (searchTerm === "" || cashup.reasonName.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (searchTerm === "" ||
+        cashup.reasonName.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (filterType === "" || cashup.profitOrOther === filterType) &&
       isWithinDateRange
     );
@@ -72,7 +73,12 @@ const Cashup = () => {
       setCashups(
         cashups.map((cashup) =>
           cashup.id === editingCashup.id
-            ? { ...values, id: editingCashup.id, addedDate: cashup.addedDate, addedTime: cashup.addedTime }
+            ? {
+                ...values,
+                id: editingCashup.id,
+                addedDate: cashup.addedDate,
+                addedTime: cashup.addedTime,
+              }
             : cashup
         )
       );
@@ -140,54 +146,55 @@ const Cashup = () => {
             />
           </div>
         </div>
-
-        <table className="table table-striped mt-3">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Reason Name</th>
-              <th>Profit/Other</th>
-              <th>Reason Details</th>
-              <th>Amount Rs</th>
-              <th>Added Date</th>
-              <th>Added Time</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCashups.map((cashup) => (
-              <tr key={cashup.id}>
-                <td>{cashup.id}</td>
-                <td>{cashup.reasonName}</td>
-                <td>{cashup.profitOrOther}</td>
-                <td>{cashup.reasonDetails || "N/A"}</td>
-                <td>{cashup.amount}</td>
-                <td>{cashup.addedDate}</td>
-                <td>{cashup.addedTime}</td>
-                <td>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={() => handleEdit(cashup)}
-                    className="edit-btn"
-                  >
-                    Edit
-                  </Button>{" "}
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    size="small"
-                    onClick={() => handleDelete(cashup.id)}
-                    className="delete-btn"
-                  >
-                    Delete
-                  </Button>
-                </td>
+        <div class="table-responsive">
+          <table className="table table-striped mt-3">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Reason Name</th>
+                <th>Profit/Other</th>
+                <th>Reason Details</th>
+                <th>Amount Rs</th>
+                <th>Added Date</th>
+                <th>Added Time</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredCashups.map((cashup) => (
+                <tr key={cashup.id}>
+                  <td>{cashup.id}</td>
+                  <td>{cashup.reasonName}</td>
+                  <td>{cashup.profitOrOther}</td>
+                  <td>{cashup.reasonDetails || "N/A"}</td>
+                  <td>{cashup.amount}</td>
+                  <td>{cashup.addedDate}</td>
+                  <td>{cashup.addedTime}</td>
+                  <td>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={() => handleEdit(cashup)}
+                      className="edit-btn"
+                    >
+                      Edit
+                    </Button>{" "}
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      size="small"
+                      onClick={() => handleDelete(cashup.id)}
+                      className="delete-btn"
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
           <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
@@ -243,7 +250,10 @@ const Cashup = () => {
                       {values.profitOrOther === "Other" && (
                         <div className="mb-3">
                           <label>Reason Details</label>
-                          <Field name="reasonDetails" className="form-control" />
+                          <Field
+                            name="reasonDetails"
+                            className="form-control"
+                          />
                           {errors.reasonDetails && touched.reasonDetails ? (
                             <div className="text-danger">
                               {errors.reasonDetails}

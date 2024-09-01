@@ -40,9 +40,13 @@ const RegEmpSchema = Yup.object().shape({
   city: Yup.string().required("City is required"),
   zipCode: Yup.string().required("Zip Code is required"),
   contactNumber: Yup.string().required("Contact Number is required"),
-  refContactNumber: Yup.string().required("Reference Contact Number is required"),
+  refContactNumber: Yup.string().required(
+    "Reference Contact Number is required"
+  ),
   epfEtfNumber: Yup.string().required("EPF/ETF Number is required"),
-  email: Yup.string().email("Invalid email format").required("Email is required"),
+  email: Yup.string()
+    .email("Invalid email format")
+    .required("Email is required"),
   password: Yup.string().required("Password is required"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords must match")
@@ -113,62 +117,63 @@ const RegEmp = () => {
           >
             New Employee
           </Button>
-
-          <table className="table table-striped mt-3">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Surname</th>
-                <th>NIC Number</th>
-                <th>Email</th>
-                <th>Contact Number</th>
-                <th>Reference Contact</th>
-                <th>EPF/ETF Number</th>
-                <th>Sex</th> {/* Added column for Sex */}
-                <th>Updated Date</th>
-                <th>Updated Time</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((employee) => (
-                <tr key={employee.id}>
-                  <td>{employee.id}</td>
-                  <td>{employee.name}</td>
-                  <td>{employee.surname}</td>
-                  <td>{employee.nicNumber}</td>
-                  <td>{employee.email}</td>
-                  <td>{employee.contactNumber}</td>
-                  <td>{employee.refContactNumber}</td>
-                  <td>{employee.epfEtfNumber}</td>
-                  <td>{employee.sex}</td> {/* Display Sex */}
-                  <td>{employee.updatedDate}</td>
-                  <td>{employee.updatedTime}</td>
-                  <td>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      onClick={() => handleEdit(employee)}
-                      className="edit-btn"
-                    >
-                      Edit
-                    </Button>{" "}
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      size="small"
-                      onClick={() => handleDelete(employee.id)}
-                      className="delete-btn"
-                    >
-                      Delete
-                    </Button>
-                  </td>
+          <div class="table-responsive">
+            <table className="table table-striped mt-3">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Surname</th>
+                  <th>NIC Number</th>
+                  <th>Email</th>
+                  <th>Contact Number</th>
+                  <th>Reference Contact</th>
+                  <th>EPF/ETF Number</th>
+                  <th>Sex</th> {/* Added column for Sex */}
+                  <th>Updated Date</th>
+                  <th>Updated Time</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {employees.map((employee) => (
+                  <tr key={employee.id}>
+                    <td>{employee.id}</td>
+                    <td>{employee.name}</td>
+                    <td>{employee.surname}</td>
+                    <td>{employee.nicNumber}</td>
+                    <td>{employee.email}</td>
+                    <td>{employee.contactNumber}</td>
+                    <td>{employee.refContactNumber}</td>
+                    <td>{employee.epfEtfNumber}</td>
+                    <td>{employee.sex}</td> {/* Display Sex */}
+                    <td>{employee.updatedDate}</td>
+                    <td>{employee.updatedTime}</td>
+                    <td>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => handleEdit(employee)}
+                        className="edit-btn"
+                      >
+                        Edit
+                      </Button>{" "}
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        onClick={() => handleDelete(employee.id)}
+                        className="delete-btn"
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
             <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
@@ -228,12 +233,18 @@ const RegEmp = () => {
                           <label>NIC Number</label>
                           <Field name="nicNumber" className="form-control" />
                           {errors.nicNumber && touched.nicNumber ? (
-                            <div className="text-danger">{errors.nicNumber}</div>
+                            <div className="text-danger">
+                              {errors.nicNumber}
+                            </div>
                           ) : null}
                         </div>
                         <div className="mb-3">
                           <label>Email</label>
-                          <Field name="email" type="email" className="form-control" />
+                          <Field
+                            name="email"
+                            type="email"
+                            className="form-control"
+                          />
                           {errors.email && touched.email ? (
                             <div className="text-danger">{errors.email}</div>
                           ) : null}
@@ -292,23 +303,36 @@ const RegEmp = () => {
                         </div>
                         <div className="mb-3">
                           <label>Contact Number</label>
-                          <Field name="contactNumber" className="form-control" />
+                          <Field
+                            name="contactNumber"
+                            className="form-control"
+                          />
                           {errors.contactNumber && touched.contactNumber ? (
-                            <div className="text-danger">{errors.contactNumber}</div>
+                            <div className="text-danger">
+                              {errors.contactNumber}
+                            </div>
                           ) : null}
                         </div>
                         <div className="mb-3">
                           <label>Reference Contact Number</label>
-                          <Field name="refContactNumber" className="form-control" />
-                          {errors.refContactNumber && touched.refContactNumber ? (
-                            <div className="text-danger">{errors.refContactNumber}</div>
+                          <Field
+                            name="refContactNumber"
+                            className="form-control"
+                          />
+                          {errors.refContactNumber &&
+                          touched.refContactNumber ? (
+                            <div className="text-danger">
+                              {errors.refContactNumber}
+                            </div>
                           ) : null}
                         </div>
                         <div className="mb-3">
                           <label>EPF/ETF Number</label>
                           <Field name="epfEtfNumber" className="form-control" />
                           {errors.epfEtfNumber && touched.epfEtfNumber ? (
-                            <div className="text-danger">{errors.epfEtfNumber}</div>
+                            <div className="text-danger">
+                              {errors.epfEtfNumber}
+                            </div>
                           ) : null}
                         </div>
                         <div className="mb-3">

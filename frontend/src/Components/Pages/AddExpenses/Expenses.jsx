@@ -94,7 +94,6 @@ const Expenses = () => {
         });
 
         setExpenses(formattedExpenses);
-        console.log(formattedExpenses);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
@@ -355,31 +354,34 @@ const Expenses = () => {
             <option value="Cheque">Cheque</option>
           </select>
         </div>
-        <table {...getTableProps()} className="table table-striped mt-3">
-          <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th {...column.getHeaderProps()}>
-                    {column.render("Header")}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+
+        <div class="table-responsive">
+          <table {...getTableProps()} className="table table-striped mt-3">
+            <thead>
+              {headerGroups.map((headerGroup) => (
+                <tr {...headerGroup.getHeaderGroupProps()}>
+                  {headerGroup.headers.map((column) => (
+                    <th {...column.getHeaderProps()}>
+                      {column.render("Header")}
+                    </th>
                   ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+              {rows.map((row) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()}>
+                    {row.cells.map((cell) => (
+                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
           <div className="modal-dialog">
