@@ -54,27 +54,12 @@ export const getAllExpensess = async (req, res) => {
       ...doc.data(),
     }));
 
-    // Convert `dateAndTime` to Date objects and sort expenses by date and time in descending order
     const sortedExpenses = expenses
       .map((expense) => ({
         ...expense,
         dateAndTime: new Date(expense.dateAndTime),
       }))
-      .sort((a, b) => b.dateAndTime - a.dateAndTime) // Sort by descending date
-      .map((expense) => ({
-        ...expense,
-        dateAndTime: expense.dateAndTime.toISOString(), // Optional: For consistent formatting
-        addedDate: expense.dateAndTime.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }),
-        addedTime: expense.dateAndTime.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      }));
-
+      .sort((a, b) => b.dateAndTime - a.dateAndTime);
     res.status(200).send(sortedExpenses);
   } catch (error) {
     res.status(500).send({ error: error.message });
