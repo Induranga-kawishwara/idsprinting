@@ -165,31 +165,33 @@ const Category = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <table {...getTableProps()} className="table table-striped mt-3">
-          <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th {...column.getHeaderProps()}>
-                    {column.render("Header")}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+        <div class="table-responsive">
+          <table {...getTableProps()} className="table table-striped mt-3">
+            <thead>
+              {headerGroups.map((headerGroup) => (
+                <tr {...headerGroup.getHeaderGroupProps()}>
+                  {headerGroup.headers.map((column) => (
+                    <th {...column.getHeaderProps()}>
+                      {column.render("Header")}
+                    </th>
                   ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+              {rows.map((row) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()}>
+                    {row.cells.map((cell) => (
+                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
         {/* Form Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -228,8 +230,7 @@ const Category = () => {
                           name="rawMaterialName"
                           className="form-control"
                         />
-                        {errors.rawMaterialName &&
-                        touched.rawMaterialName ? (
+                        {errors.rawMaterialName && touched.rawMaterialName ? (
                           <div className="text-danger">
                             {errors.rawMaterialName}
                           </div>
@@ -244,14 +245,9 @@ const Category = () => {
                       </div>
                       <div className="mb-3">
                         <label>Thickness (Gsm Or mm)</label>
-                        <Field
-                          name="thickness"
-                          className="form-control"
-                        />
+                        <Field name="thickness" className="form-control" />
                         {errors.thickness && touched.thickness ? (
-                          <div className="text-danger">
-                            {errors.thickness}
-                          </div>
+                          <div className="text-danger">{errors.thickness}</div>
                         ) : null}
                       </div>
                       <div className="mb-3">
@@ -275,26 +271,18 @@ const Category = () => {
                             hidden
                           />
                           {suppliers.map((supplier) => (
-                            <option
-                              key={supplier.id}
-                              value={supplier.name}
-                            >
+                            <option key={supplier.id} value={supplier.name}>
                               {supplier.name}
                             </option>
                           ))}
                         </Field>
                         {errors.supplier && touched.supplier ? (
-                          <div className="text-danger">
-                            {errors.supplier}
-                          </div>
+                          <div className="text-danger">{errors.supplier}</div>
                         ) : null}
                       </div>
                       <div className="mb-3">
                         <label>Buying Price</label>
-                        <Field
-                          name="buyingPrice"
-                          className="form-control"
-                        />
+                        <Field name="buyingPrice" className="form-control" />
                         {errors.buyingPrice && touched.buyingPrice ? (
                           <div className="text-danger">
                             {errors.buyingPrice}
@@ -309,10 +297,7 @@ const Category = () => {
                         >
                           Close
                         </Button>
-                        <Button
-                          type="submit"
-                          className="btn btn-primary"
-                        >
+                        <Button type="submit" className="btn btn-primary">
                           Save changes
                         </Button>
                       </div>

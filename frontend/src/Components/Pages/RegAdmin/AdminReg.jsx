@@ -97,58 +97,59 @@ const AdminReg = () => {
         >
           New Admin
         </Button>
-
-        <table className="table table-striped mt-3">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Surname</th>
-              <th>Email</th>
-              <th>Phone Number</th>
-              <th>Address</th>
-              <th>Sex</th> {/* Added column for Sex */}
-              <th>Updated Date</th>
-              <th>Updated Time</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {admins.map((admin) => (
-              <tr key={admin.id}>
-                <td>{admin.id}</td>
-                <td>{admin.name}</td>
-                <td>{admin.surname}</td>
-                <td>{admin.email}</td>
-                <td>{admin.phoneNumber}</td>
-                <td>{admin.address}</td>
-                <td>{admin.sex}</td> {/* Display Sex */}
-                <td>{admin.updatedDate}</td>
-                <td>{admin.updatedTime}</td>
-                <td>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={() => handleEdit(admin)}
-                    className="edit-btn"
-                  >
-                    Edit
-                  </Button>{" "}
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    size="small"
-                    onClick={() => handleDelete(admin.id)}
-                    className="delete-btn"
-                  >
-                    Delete
-                  </Button>
-                </td>
+        <div class="table-responsive">
+          <table className="table table-striped mt-3">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Address</th>
+                <th>Sex</th> {/* Added column for Sex */}
+                <th>Updated Date</th>
+                <th>Updated Time</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {admins.map((admin) => (
+                <tr key={admin.id}>
+                  <td>{admin.id}</td>
+                  <td>{admin.name}</td>
+                  <td>{admin.surname}</td>
+                  <td>{admin.email}</td>
+                  <td>{admin.phoneNumber}</td>
+                  <td>{admin.address}</td>
+                  <td>{admin.sex}</td> {/* Display Sex */}
+                  <td>{admin.updatedDate}</td>
+                  <td>{admin.updatedTime}</td>
+                  <td>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={() => handleEdit(admin)}
+                      className="edit-btn"
+                    >
+                      Edit
+                    </Button>{" "}
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      size="small"
+                      onClick={() => handleDelete(admin.id)}
+                      className="delete-btn"
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
           <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
@@ -197,7 +198,11 @@ const AdminReg = () => {
                       </div>
                       <div className="mb-3">
                         <label>Email</label>
-                        <Field name="email" type="email" className="form-control" />
+                        <Field
+                          name="email"
+                          type="email"
+                          className="form-control"
+                        />
                         {errors.email && touched.email ? (
                           <div className="text-danger">{errors.email}</div>
                         ) : null}
@@ -206,7 +211,9 @@ const AdminReg = () => {
                         <label>Phone Number</label>
                         <Field name="phoneNumber" className="form-control" />
                         {errors.phoneNumber && touched.phoneNumber ? (
-                          <div className="text-danger">{errors.phoneNumber}</div>
+                          <div className="text-danger">
+                            {errors.phoneNumber}
+                          </div>
                         ) : null}
                       </div>
                       <div className="mb-3">
