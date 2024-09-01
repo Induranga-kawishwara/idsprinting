@@ -360,36 +360,43 @@ const Expenses = () => {
           </select>
         </div>
 
-        <div class="table-responsive">
-          <table {...getTableProps()} className="table table-striped mt-3">
-            <thead>
-              {headerGroups.map((headerGroup) => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <th {...column.getHeaderProps()}>
-                      {column.render("Header")}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-              <div className="center">
-                {loading && <p>Loading...</p>}
-                {error && <p>Error loading data: {error.message}</p>}
-              </div>
-            </thead>
-            <tbody {...getTableBodyProps()}>
-              {rows.map((row) => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map((cell) => (
-                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+        <div className="table-responsive">
+          {loading || error ? (
+            <div className="message-container">
+              {loading && <p className="loading-message">Loading...</p>}
+              {error && (
+                <p className="error-message">
+                  Error loading data: {error.message}
+                </p>
+              )}
+            </div>
+          ) : (
+            <table {...getTableProps()} className="table table-striped mt-3">
+              <thead>
+                {headerGroups.map((headerGroup) => (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      <th {...column.getHeaderProps()}>
+                        {column.render("Header")}
+                      </th>
                     ))}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </thead>
+              <tbody {...getTableBodyProps()}>
+                {rows.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => (
+                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
