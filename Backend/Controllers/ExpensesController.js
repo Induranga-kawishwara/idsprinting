@@ -8,9 +8,13 @@ export const createExpenses = async (req, res) => {
   const {
     expensesname,
     expensesType,
+    supplier,
+    other,
     description,
     amount,
     paymentMethod,
+    bankTranferNum,
+    chequeNum,
     invoiceNumber,
     dateAndTime,
     image,
@@ -20,9 +24,13 @@ export const createExpenses = async (req, res) => {
     const expenses = new Expenses(
       expensesname,
       expensesType,
+      supplier,
+      other,
       description,
       amount,
       paymentMethod,
+      bankTranferNum,
+      chequeNum,
       invoiceNumber,
       dateAndTime,
       image
@@ -41,11 +49,18 @@ export const createExpenses = async (req, res) => {
 export const getAllExpensess = async (req, res) => {
   try {
     const snapshot = await ExpensessCollection.get();
-    const Expensess = snapshot.docs.map((doc) => ({
+    const expenses = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    res.status(200).send(Expensess);
+
+    const sortedExpenses = expenses
+      .map((expense) => ({
+        ...expense,
+        dateAndTime: new Date(expense.dateAndTime),
+      }))
+      .sort((a, b) => b.dateAndTime - a.dateAndTime);
+    res.status(200).send(sortedExpenses);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }

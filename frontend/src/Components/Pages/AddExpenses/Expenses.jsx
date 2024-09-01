@@ -55,25 +55,84 @@ const Expenses = () => {
   const [endDate, setEndDate] = useState(null);
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const expensesData = await axios.get(
+          "https://idsprinting.vercel.app/expenses/"
+          // "http://localhost:8080/expenses/"
+        );
+
+        const formattedExpenses = expensesData.data.map((expense, index) => {
+          const utcDate = new Date(expense.dateAndTime);
+          const sltDate = new Date(
+            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+          );
+
+          return {
+            id: expense.id,
+            name: expense.expensesname,
+            type: expense.expensesType,
+            supplier: expense.supplier,
+            other: expense.other,
+            description: expense.description,
+            amount: expense.amount,
+            paymentMethod: expense.paymentMethod,
+            addedDate: sltDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }),
+            addedTime: sltDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            invoiceNumber: expense.invoiceNumber,
+            photo: expense.image,
+          };
+        });
+
+        setExpenses(formattedExpenses);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleEdit = (expense) => {
     setEditingExpense(expense);
     setIsModalOpen(true);
   };
 
   const handleDelete = useCallback(
-    (id) => {
-      setExpenses((prevExpenses) =>
-        prevExpenses.filter((expense) => expense.id !== id)
+    async (name, id) => {
+      const confirmDelete = window.confirm(
+        `Do you want to delete the expense: ${name}?`
       );
+
+      if (confirmDelete) {
+        try {
+          const response = await axios.delete(
+            `https://idsprinting.vercel.app/expenses/expenses/${id}`
+          );
+
+          setExpenses((prevExpenses) =>
+            prevExpenses.filter((expense) => expense.id !== id)
+          );
+          alert(response.data.message);
+        } catch (error) {
+          console.error("Error deleting expense:", error);
+          alert("Failed to delete the expense. Please try again.");
+        }
+      }
     },
     [setExpenses]
   );
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
-    const formattedTime = currentDate.toTimeString().split(" ")[0]; // HH:MM:SS
-
     if (editingExpense) {
       setExpenses(
         expenses.map((expense) =>
@@ -88,46 +147,53 @@ const Expenses = () => {
         )
       );
     } else {
-      setExpenses([
-        ...expenses,
-        {
-          ...values,
-          id: expenses.length + 1,
-          addedDate: formattedDate,
-          addedTime: formattedTime,
-        },
-      ]);
+      try {
+        const data = {
+          expensesname: values.name,
+          expensesType: values.type,
+          supplier: values.supplier,
+          other: values.other,
+          description: values.description,
+          amount: values.amount,
+          paymentMethod: values.paymentMethod,
+          bankTranferNum: values.bankTransferNumber,
+          chequeNum: values.chequeNumber,
+          invoiceNumber: values.invoiceNumber,
+          dateAndTime: currentDate,
+          image: values.photo,
+        };
+
+        const response = await axios.post(
+          "https://idsprinting.vercel.app/expenses/expenses",
+          data
+        );
+
+        setExpenses([
+          {
+            ...values,
+            id: response.data.id,
+            addedDate: currentDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }),
+            addedTime: currentDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+          ...expenses,
+        ]);
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting expense:", error);
+        alert("Failed to add the expense. Please try again.");
+      }
     }
     setIsModalOpen(false);
     setEditingExpense(null);
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const expensesData = await axios.get(
-          "https://idsprinting.vercel.app/expenses/"
-        );
-
-        const formattedExpenses = expensesData.data.map((expense, index) => ({
-          id: index + 1,
-          name: expense.expensesname,
-          type: expense.expensesType,
-          description: expense.description,
-          amount: expense.amount,
-          addedDate: expense.dateAndTime.split("T")[0],
-          addedTime: expense.dateAndTime.split("T")[1].slice(0, 5),
-          invoiceNumber: expense.invoiceNumber,
-          photo: expense.image,
-          paymentMethod: expense.paymentMethod,
-        }));
-        setExpenses(formattedExpenses);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const filteredExpenses = expenses.filter((expense) => {
     const searchString = searchQuery.toLowerCase().trim();
@@ -149,11 +215,23 @@ const Expenses = () => {
 
   const columns = useMemo(
     () => [
-      { Header: "ID", accessor: "id" },
+      {
+        Header: "No",
+        accessor: "id",
+        Cell: ({ row }) => row.index + 1,
+      },
       { Header: "Name", accessor: "name" },
       { Header: "Type of Expenses", accessor: "type" },
-      { Header: "Supplier", accessor: "supplier" },
-      { Header: "Other", accessor: "other" },
+      {
+        Header: "Supplier",
+        accessor: "supplier",
+        Cell: ({ value }) => value || "-",
+      },
+      {
+        Header: "Other",
+        accessor: "other",
+        Cell: ({ value }) => value || "-",
+      },
       { Header: "Description", accessor: "description" },
       { Header: "Amount Rs", accessor: "amount" },
       { Header: "Payment Method", accessor: "paymentMethod" },
@@ -183,7 +261,7 @@ const Expenses = () => {
               variant="contained"
               color="secondary"
               size="small"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDelete(row.original.name, row.original.id)}
               className="delete-btn"
             >
               Delete
