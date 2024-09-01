@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "./Expenses.scss"; // Create this file for your styles
 import axios from "axios";
 import { ImageUploder } from "../../Reusable/ImageUploder/ImageUploder.js";
+import SyncLoader from "react-spinners/SyncLoader";
 
 const suppliers = [
   { id: 1, name: "Supplier A" },
@@ -363,7 +364,7 @@ const Expenses = () => {
         <div className="table-responsive">
           {loading || error ? (
             <div className="message-container">
-              {loading && <p className="loading-message">Loading...</p>}
+              {loading && <SyncLoader />}
               {error && (
                 <p className="error-message">
                   Error loading data: {error.message}
