@@ -379,17 +379,19 @@ const Expenses = () => {
         </div>
 
         <div className="table-responsive">
-          {loading || error || _.isEmpty(data) ? (
+          {loading ? (
             <div className="message-container">
-              {loading && <SyncLoader />}
-              {error && (
-                <p className="error-message">
-                  Error loading data: {error.message}
-                </p>
-              )}
-              {_.isEmpty(data) && (
-                <p className="no-data-message">Don't Have Data to Show</p>
-              )}
+              <SyncLoader />
+            </div>
+          ) : error ? (
+            <div className="message-container">
+              <p className="error-message">
+                Error loading data: {error.message}
+              </p>
+            </div>
+          ) : _.isEmpty(data) ? (
+            <div className="message-container">
+              <p className="no-data-message">Don't Have Data to Show</p>
             </div>
           ) : (
             <table {...getTableProps()} className="table table-striped mt-3">
