@@ -9,8 +9,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import "./Expenses.scss"; // Create this file for your styles
 import axios from "axios";
 import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
-import SyncLoader from "react-spinners/SyncLoader";
 import _ from "lodash";
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 
 const suppliers = [
   { id: 1, name: "Supplier A" },
@@ -379,20 +379,8 @@ const Expenses = () => {
         </div>
 
         <div className="table-responsive">
-          {loading ? (
-            <div className="message-container">
-              <SyncLoader />
-            </div>
-          ) : error ? (
-            <div className="message-container">
-              <p className="error-message">
-                Error loading data: {error.message}
-              </p>
-            </div>
-          ) : _.isEmpty(data) ? (
-            <div className="message-container">
-              <p className="no-data-message">Don't Have Data to Show</p>
-            </div>
+          {loading || error || _.isEmpty(data) ? (
+            <TableChecker loading={loading} error={error} data={data} />
           ) : (
             <table {...getTableProps()} className="table table-striped mt-3">
               <thead>
