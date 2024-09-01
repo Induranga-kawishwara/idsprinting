@@ -94,7 +94,6 @@ const Expenses = () => {
         });
 
         setExpenses(formattedExpenses);
-        console.log(formattedExpenses);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
