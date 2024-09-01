@@ -8,9 +8,13 @@ export const createExpenses = async (req, res) => {
   const {
     expensesname,
     expensesType,
+    supplier,
+    other,
     description,
     amount,
     paymentMethod,
+    bankTranferNum,
+    chequeNum,
     invoiceNumber,
     dateAndTime,
     image,
@@ -20,9 +24,13 @@ export const createExpenses = async (req, res) => {
     const expenses = new Expenses(
       expensesname,
       expensesType,
+      supplier,
+      other,
       description,
       amount,
       paymentMethod,
+      bankTranferNum,
+      chequeNum,
       invoiceNumber,
       dateAndTime,
       image

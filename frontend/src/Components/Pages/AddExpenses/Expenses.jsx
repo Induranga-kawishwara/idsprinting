@@ -95,25 +95,45 @@ const Expenses = () => {
         )
       );
     } else {
-      console.log(values);
-
       try {
-        //   const response = await axios.post(
-        //     `https://idsprinting.vercel.app/expenses/`
-        //   );
+        const data = {
+          expensesname: values.name,
+          expensesType: values.type,
+          supplier: values.supplier,
+          other: values.other,
+          description: values.description,
+          amount: values.amount,
+          paymentMethod: values.paymentMethod,
+          bankTranferNum: values.bankTransferNumber,
+          chequeNum: values.chequeNumber,
+          invoiceNumber: values.invoiceNumber,
+          dateAndTime: currentDate,
+          image: values.photo,
+        };
+
+        const response = await axios.post(
+          "https://idsprinting.vercel.app/expenses/expenses",
+          data
+        );
 
         setExpenses([
           ...expenses,
           {
             ...values,
-            id: expenses.length + 1,
-            // id: response.data.id,
-            addedDate: currentDate.split("T")[0],
-            addedTime: currentDate.split("T")[1].slice(0, 5),
+            id: response.data.id,
+            addedDate: currentDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }),
+            addedTime: currentDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
           },
         ]);
 
-        // alert(response.data.message);
+        alert(response.data.message);
       } catch (error) {
         console.error("Error deleting expense:", error);
         alert("Failed to add the expense. Please try again.");
@@ -129,18 +149,35 @@ const Expenses = () => {
           "https://idsprinting.vercel.app/expenses/"
         );
 
-        const formattedExpenses = expensesData.data.map((expense, index) => ({
-          id: expense.id,
-          name: expense.expensesname,
-          type: expense.expensesType,
-          description: expense.description,
-          amount: expense.amount,
-          addedDate: expense.dateAndTime.split("T")[0],
-          addedTime: expense.dateAndTime.split("T")[1].slice(0, 5),
-          invoiceNumber: expense.invoiceNumber,
-          photo: expense.image,
-          paymentMethod: expense.paymentMethod,
-        }));
+        const formattedExpenses = expensesData.data.map((expense, index) => {
+          const utcDate = new Date(expense.dateAndTime);
+          const sltDate = new Date(
+            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+          );
+
+          return {
+            id: expense.id,
+            name: expense.expensesname,
+            type: expense.expensesType,
+            supplier: expense.supplier,
+            other: expense.other,
+            description: expense.description,
+            amount: expense.amount,
+            paymentMethod: expense.paymentMethod,
+            addedDate: sltDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }),
+            addedTime: sltDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            invoiceNumber: expense.invoiceNumber,
+            photo: expense.image,
+          };
+        });
+
         setExpenses(formattedExpenses);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -177,8 +214,16 @@ const Expenses = () => {
       },
       { Header: "Name", accessor: "name" },
       { Header: "Type of Expenses", accessor: "type" },
-      { Header: "Supplier", accessor: "supplier" },
-      { Header: "Other", accessor: "other" },
+      {
+        Header: "Supplier",
+        accessor: "supplier",
+        Cell: ({ value }) => value || "-",
+      },
+      {
+        Header: "Other",
+        accessor: "other",
+        Cell: ({ value }) => value || "-",
+      },
       { Header: "Description", accessor: "description" },
       { Header: "Amount Rs", accessor: "amount" },
       { Header: "Payment Method", accessor: "paymentMethod" },
