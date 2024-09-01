@@ -55,6 +55,8 @@ const Expenses = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,8 +96,11 @@ const Expenses = () => {
         });
 
         setExpenses(formattedExpenses);
+        setLoading(false); // Data fetched, set loading to false
       } catch (error) {
         console.error("Failed to fetch data:", error);
+        setError(error); // Optional: Set error state
+        setLoading(false); // Data fetching failed, set loading to false
       }
     };
 
@@ -367,6 +372,10 @@ const Expenses = () => {
                   ))}
                 </tr>
               ))}
+              <div className="center">
+                {loading && <p>Loading...</p>}
+                {error && <p>Error loading data: {error.message}</p>}
+              </div>
             </thead>
             <tbody {...getTableBodyProps()}>
               {rows.map((row) => {

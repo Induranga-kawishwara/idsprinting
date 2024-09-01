@@ -32,6 +32,13 @@
       background-color: #c82333;
     }
   }
+  .center {
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-align: center;
+    margin: 20px 0; // Optional: Adjust margin as needed
+  }
 
   // Modal styling
   .custom-modal-dialog {
