@@ -12,6 +12,7 @@ export const createExpenses = async (req, res) => {
     amount,
     paymentMethod,
     invoiceNumber,
+    dateAndTime,
     image,
   } = req.body;
 
@@ -23,6 +24,7 @@ export const createExpenses = async (req, res) => {
       amount,
       paymentMethod,
       invoiceNumber,
+      dateAndTime,
       image
     );
 

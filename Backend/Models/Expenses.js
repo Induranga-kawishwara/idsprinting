@@ -6,6 +6,7 @@ class Expenses {
     amount,
     paymentMethod,
     invoiceNumber,
+    dateAndTime,
     image
   ) {
     this.expensesname = expensesname;
@@ -14,6 +15,7 @@ class Expenses {
     this.amount = amount;
     this.paymentMethod = paymentMethod;
     this.invoiceNumber = invoiceNumber;
+    this.dateAndTime = dateAndTime;
     this.image = image;
   }
 }
