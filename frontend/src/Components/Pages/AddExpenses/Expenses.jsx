@@ -98,11 +98,11 @@ const Expenses = () => {
         });
 
         setExpenses(formattedExpenses);
-        setLoading(false); // Data fetched, set loading to false
+        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        setError(error); // Optional: Set error state
-        setLoading(false); // Data fetching failed, set loading to false
+        setError(error);
+        setLoading(false);
       }
     };
 
@@ -211,7 +211,7 @@ const Expenses = () => {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            image: downloadURL,
+            photo: downloadURL,
           },
           ...expenses,
         ]);
