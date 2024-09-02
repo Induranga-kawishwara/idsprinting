@@ -325,7 +325,10 @@ const Expenses = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsModalOpen(true);
+            setEditingExpense(null);
+          }}
           className="new-expense-btn"
         >
           New Expense
@@ -426,7 +429,6 @@ const Expenses = () => {
                   className="btn-close"
                   onClick={() => {
                     setIsModalOpen(false);
-                    setEditingExpense(null);
                   }}
                 ></Button>
               </div>
