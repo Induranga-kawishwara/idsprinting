@@ -144,9 +144,11 @@ const Customer = () => {
                   addedDate: customer.addedDate,
                   addedTime: customer.addedTime,
                 }
-              : customers
+              : customer
           )
         );
+        console.log(customers);
+
         alert(response.data.message);
       } catch (error) {
         console.error("Error updating expense:", error);
