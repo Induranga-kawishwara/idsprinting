@@ -419,7 +419,10 @@ const Expenses = () => {
                 </h5>
                 <Button
                   className="btn-close"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingExpense(null);
+                  }}
                 ></Button>
               </div>
               <div className="modal-body">

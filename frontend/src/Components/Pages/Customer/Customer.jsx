@@ -280,11 +280,15 @@ const Customer = () => {
       <div className="container mt-4">
         <Button
           variant="contained"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsModalOpen(true);
+            setEditingCustomer(null);
+          }}
           className="newitem-btn"
         >
           New Client
         </Button>
+
         <div className="mt-3 mb-3">
           <input
             type="text"
