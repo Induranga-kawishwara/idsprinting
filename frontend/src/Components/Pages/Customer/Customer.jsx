@@ -33,8 +33,8 @@ const Customer = () => {
     const fetchData = async () => {
       try {
         const customerData = await axios.get(
-          // "https://idsprinting.vercel.app/customers/"
-          "http://localhost:8080/customers/"
+          "https://idsprinting.vercel.app/customers/"
+          // "http://localhost:8080/customers/"
         );
 
         const formattedcustomers = customerData.data.map((customer, index) => {
