@@ -385,9 +385,12 @@ const Expenses = () => {
             <table {...getTableProps()} className="table table-striped mt-3">
               <thead>
                 {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
+                  <tr
+                    {...headerGroup.getHeaderGroupProps()}
+                    key={headerGroup.id}
+                  >
                     {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
+                      <th {...column.getHeaderProps()} key={column.id}>
                         {column.render("Header")}
                       </th>
                     ))}
@@ -398,9 +401,11 @@ const Expenses = () => {
                 {rows.map((row) => {
                   prepareRow(row);
                   return (
-                    <tr {...row.getRowProps()}>
+                    <tr {...row.getRowProps()} key={row.id}>
                       {row.cells.map((cell) => (
-                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                        <td {...cell.getCellProps()} key={cell.column.id}>
+                          {cell.render("Cell")}
+                        </td>
                       ))}
                     </tr>
                   );
@@ -419,7 +424,10 @@ const Expenses = () => {
                 </h5>
                 <Button
                   className="btn-close"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditingExpense(null);
+                  }}
                 ></Button>
               </div>
               <div className="modal-body">

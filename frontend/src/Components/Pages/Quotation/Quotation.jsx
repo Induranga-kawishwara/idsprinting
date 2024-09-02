@@ -251,10 +251,9 @@ const Quotation = () => {
   const generatePDF = () => {
     const doc = new jsPDF();
 
-    // Get current date and time
     const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString(); // Format: MM/DD/YYYY
-    const formattedTime = currentDate.toLocaleTimeString(); // Format: HH:MM:SS AM/PM
+    const formattedDate = currentDate.toLocaleDateString();
+    const formattedTime = currentDate.toLocaleTimeString();
 
     doc.setFontSize(18);
     doc.text("Quotation Receipt", 14, 22);
