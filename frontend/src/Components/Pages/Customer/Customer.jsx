@@ -26,7 +26,7 @@ const Customer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -34,10 +34,9 @@ const Customer = () => {
       try {
         const customerData = await axios.get(
           "https://idsprinting.vercel.app/customers/"
-          // "http://localhost:8080/customers/"
         );
 
-        const formattedcustomers = customerData.data.map((customer, index) => {
+        const formattedCustomers = customerData.data.map((customer) => {
           const utcDate = new Date(customer.addedDateAndTime);
           const sltDate = new Date(
             utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
@@ -49,8 +48,7 @@ const Customer = () => {
             surname: customer.surName,
             email: customer.email,
             phone: customer.contactNumber,
-            // totalSpent: customer.,
-            totalSpent: "100",
+            totalSpent: "100", // Example data; replace with real data if needed
             houseNo: customer.houseNo,
             street: customer.street,
             city: customer.city,
@@ -68,7 +66,7 @@ const Customer = () => {
           };
         });
 
-        setCustomers(formattedcustomers);
+        setCustomers(formattedCustomers);
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -87,7 +85,7 @@ const Customer = () => {
 
   const handleDelete = useCallback(
     async (name, id) => {
-      const confirmDelete = window.confirm(`Do you want to delete : ${name}?`);
+      const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
 
       if (confirmDelete) {
         try {
@@ -101,7 +99,7 @@ const Customer = () => {
           alert(response.data.message);
         } catch (error) {
           console.error("Error deleting details:", error);
-          alert("Failed to delete the details . Please try again.");
+          alert("Failed to delete the details. Please try again.");
         }
       }
     },
@@ -121,44 +119,46 @@ const Customer = () => {
       city: values.city,
       postalcode: values.postalCode,
       customerType: values.customerType,
+      addedDateAndTime: currentDate.toISOString(), // Automatically include the current date and time
     };
 
     if (editingCustomer) {
       try {
-        const dateObject = new Date(
-          `${editingCustomer.addedDate} ${editingCustomer.addedTime}`
-        );
-
-        const isoDateString = dateObject.toISOString();
-
         const response = await axios.put(
           `https://idsprinting.vercel.app/customers/customer/${editingCustomer.id}`,
-          { ...data, addedDateAndTime: isoDateString }
+          data
         );
+
         setCustomers(
           customers.map((customer) =>
             customer.id === editingCustomer.id
               ? {
                   ...values,
                   id: editingCustomer.id,
-                  addedDate: customer.addedDate,
-                  addedTime: customer.addedTime,
+                  addedDate: currentDate.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  }),
+                  addedTime: currentDate.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
                 }
               : customer
           )
         );
-        console.log(customers);
 
         alert(response.data.message);
       } catch (error) {
-        console.error("Error updating expense:", error);
-        alert("Failed to update the expense. Please try again.");
+        console.error("Error updating customer:", error);
+        alert("Failed to update the customer. Please try again.");
       }
     } else {
       try {
         const response = await axios.post(
           "https://idsprinting.vercel.app/customers/customer",
-          { ...data, addedDateAndTime: currentDate }
+          data
         );
 
         setCustomers([
@@ -180,10 +180,11 @@ const Customer = () => {
 
         alert(response.data.message);
       } catch (error) {
-        console.error("Error deleting expense:", error);
-        alert("Failed to add the expense. Please try again.");
+        console.error("Error adding customer:", error);
+        alert("Failed to add the customer. Please try again.");
       }
     }
+
     setIsModalOpen(false);
     setEditingCustomer(null);
   };
@@ -300,7 +301,7 @@ const Customer = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div class="table-responsive">
+        <div className="table-responsive">
           {loading || error || _.isEmpty(data) ? (
             <TableChecker loading={loading} error={error} data={data} />
           ) : (
@@ -421,6 +422,7 @@ const Customer = () => {
                           name="customerType"
                           className="form-control"
                         >
+                          <option value="" label="Select" disabled />
                           <option value="Regular">Regular</option>
                           <option value="Daily">Daily</option>
                         </Field>
