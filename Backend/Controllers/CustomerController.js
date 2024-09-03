@@ -80,7 +80,14 @@ export const getAllCustomers = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    res.status(200).send(customers);
+    const sortedCustomers = customers
+      .map((customer) => ({
+        ...customer,
+        addedDateAndTime: new Date(customer.addedDateAndTime),
+      }))
+      .sort((a, b) => b.addedDateAndTime - a.addedDateAndTime);
+
+    res.status(200).send(sortedCustomers);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
