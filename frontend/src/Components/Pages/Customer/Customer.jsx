@@ -1,48 +1,84 @@
-import React, { useEffect, useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useTable } from "react-table";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  fetchCustomers,
-  addCustomer,
-  updateCustomer,
-  deleteCustomer,
-} from "../../../Redux/customerSlice.js";
-import socket from "../../../socket.js";
-import TableChecker from "../../Reusable/TableChecker/TableChecker";
-import CustomerFormModal from "./CustomerFormModal";
 import "./Customer.scss";
 import axios from "axios";
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
+import CustomerFormModal from './CustomerFormModal'; // Adjust the import path
+
+
+const CustomerSchema = Yup.object().shape({
+  surname: Yup.string().required("Surname is required"),
+  name: Yup.string().required("Name is required"),
+  email: Yup.string().email("Invalid email"),
+  phone: Yup.string().required("Phone number is required"),
+  houseNo: Yup.string(),
+  street: Yup.string(),
+  city: Yup.string(),
+  postalCode: Yup.string(),
+  customerType: Yup.string().required("Customer type is required"),
+});
 
 const Customer = () => {
-  const dispatch = useDispatch();
-  const { customers, loading, error } = useSelector((state) => state.customers);
+  const [customers, setCustomers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchCustomers());
+    const fetchData = async () => {
+      try {
+        const customerData = await axios.get(
+          "https://idsprinting.vercel.app/customers/"
+        );
 
-    socket.on("customerAdded", (customer) => {
-      dispatch(addCustomer(customer));
-    });
+        const formattedCustomers = customerData.data.map((customer) => {
+          const utcDate = new Date(customer.addedDateAndTime);
+          const sltDate = new Date(
+            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+          );
 
-    socket.on("customerUpdated", (customer) => {
-      dispatch(updateCustomer(customer));
-    });
+          return {
+            id: customer.id,
+            name: customer.name,
+            surname: customer.surName,
+            email: customer.email,
+            phone: customer.contactNumber,
+            totalSpent: "100", // Example data; replace with real data if needed
+            houseNo: customer.houseNo,
+            street: customer.street,
+            city: customer.city,
+            postalCode: customer.postalcode,
+            customerType: customer.customerType,
+            addedDate: sltDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }),
+            addedTime: sltDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          };
+        });
 
-    socket.on("customerDeleted", (id) => {
-      dispatch(deleteCustomer(id));
-    });
-
-    return () => {
-      socket.off("customerAdded");
-      socket.off("customerUpdated");
-      socket.off("customerDeleted");
+        setCustomers(formattedCustomers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
     };
-  }, [dispatch]);
+
+    fetchData();
+  }, []);
 
   const handleEdit = (customer) => {
     setEditingCustomer(customer);
@@ -52,42 +88,70 @@ const Customer = () => {
   const handleDelete = useCallback(
     async (name, id) => {
       const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
+
       if (confirmDelete) {
         try {
-          await axios.delete(
+          const response = await axios.delete(
             `https://idsprinting.vercel.app/customers/customer/${id}`
           );
-          dispatch(deleteCustomer(id));
+
+          setCustomers((prevCustomers) =>
+            prevCustomers.filter((customer) => customer.id !== id)
+          );
+          alert(response.data.message);
         } catch (error) {
-          console.error("Error deleting customer:", error);
-          alert("Failed to delete the customer. Please try again.");
+          console.error("Error deleting details:", error);
+          alert("Failed to delete the details. Please try again.");
         }
       }
     },
-    [dispatch]
+    [setCustomers]
   );
 
   const handleSubmit = async (values) => {
     const currentDate = new Date();
+
     const data = {
-      ...values,
-      addedDateAndTime: currentDate.toISOString(),
+      name: values.name,
+      surName: values.surname,
+      email: values.email,
+      contactNumber: values.phone,
+      houseNo: values.houseNo,
+      street: values.street,
+      city: values.city,
+      postalcode: values.postalCode,
+      customerType: values.customerType,
+      addedDateAndTime: currentDate.toISOString(), // Automatically include the current date and time
     };
 
     if (editingCustomer) {
       try {
-        await axios.put(
+        const response = await axios.put(
           `https://idsprinting.vercel.app/customers/customer/${editingCustomer.id}`,
           data
         );
-        dispatch(
-          updateCustomer({
-            ...values,
-            id: editingCustomer.id,
-            addedDate: currentDate.toLocaleDateString(),
-            addedTime: currentDate.toLocaleTimeString(),
-          })
+
+        setCustomers(
+          customers.map((customer) =>
+            customer.id === editingCustomer.id
+              ? {
+                  ...values,
+                  id: editingCustomer.id,
+                  addedDate: currentDate.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  }),
+                  addedTime: currentDate.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                }
+              : customer
+          )
         );
+
+        alert(response.data.message);
       } catch (error) {
         console.error("Error updating customer:", error);
         alert("Failed to update the customer. Please try again.");
@@ -98,14 +162,25 @@ const Customer = () => {
           "https://idsprinting.vercel.app/customers/customer",
           data
         );
-        dispatch(
-          addCustomer({
+
+        setCustomers([
+          {
             ...values,
             id: response.data.id,
-            addedDate: currentDate.toLocaleDateString(),
-            addedTime: currentDate.toLocaleTimeString(),
-          })
-        );
+            addedDate: currentDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }),
+            addedTime: currentDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+          ...customers,
+        ]);
+
+        alert(response.data.message);
       } catch (error) {
         console.error("Error adding customer:", error);
         alert("Failed to add the customer. Please try again.");
@@ -261,23 +336,12 @@ const Customer = () => {
         </div>
 
         <CustomerFormModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleSubmit}
-          initialValues={
-            editingCustomer || {
-              name: "",
-              surname: "",
-              email: "",
-              phone: "",
-              houseNo: "",
-              street: "",
-              city: "",
-              postalCode: "",
-              customerType: "",
-            }
-          }
-        />
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        initialValues={editingCustomer || { name: '', surname: '', email: '', phone: '', houseNo: '', street: '', city: '', postalCode: '', customerType: '' }}
+      />
+
       </div>
     </div>
   );
