@@ -8,6 +8,8 @@ import "./Customer.scss";
 import axios from "axios";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
+import CustomerFormModal from './CustomerFormModal'; // Adjust the import path
+
 
 const CustomerSchema = Yup.object().shape({
   surname: Yup.string().required("Surname is required"),
@@ -333,128 +335,13 @@ const Customer = () => {
           )}
         </div>
 
-        {/* Form Modal */}
-        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingCustomer ? "Edit Customer" : "New Customer"}
-                </h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <Formik
-                  initialValues={{
-                    name: editingCustomer?.name || "",
-                    surname: editingCustomer?.surname || "",
-                    email: editingCustomer?.email || "",
-                    phone: editingCustomer?.phone || "",
-                    houseNo: editingCustomer?.houseNo || "",
-                    street: editingCustomer?.street || "",
-                    city: editingCustomer?.city || "",
-                    postalCode: editingCustomer?.postalCode || "",
-                    customerType: editingCustomer?.customerType || "Regular",
-                  }}
-                  validationSchema={CustomerSchema}
-                  onSubmit={handleSubmit}
-                >
-                  {({ errors, touched }) => (
-                    <Form>
-                      <br />
-                      <div className="mb-3">
-                        <label>Name</label>
-                        <Field name="name" className="form-control" />
-                        {errors.name && touched.name ? (
-                          <div className="text-danger">{errors.name}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Surname</label>
-                        <Field name="surname" className="form-control" />
-                        {errors.surname && touched.surname ? (
-                          <div className="text-danger">{errors.surname}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Email</label>
-                        <Field
-                          name="email"
-                          type="email"
-                          className="form-control"
-                        />
-                        {errors.email && touched.email ? (
-                          <div className="text-danger">{errors.email}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Phone</label>
-                        <Field name="phone" className="form-control" />
-                        {errors.phone && touched.phone ? (
-                          <div className="text-danger">{errors.phone}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>House No</label>
-                        <Field name="houseNo" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>Street</label>
-                        <Field name="street" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>City</label>
-                        <Field name="city" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>Postal Code</label>
-                        <Field name="postalCode" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>Customer Type</label>
-                        <Field
-                          as="select"
-                          name="customerType"
-                          className="form-control"
-                        >
-                          <option value="" label="Select" disabled />
-                          <option value="Regular">Regular</option>
-                          <option value="Daily">Daily</option>
-                        </Field>
-                        {errors.customerType && touched.customerType ? (
-                          <div className="text-danger">
-                            {errors.customerType}
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="d-flex justify-content-end">
-                        <Button
-                          variant="contained"
-                          type="submit"
-                          className="update-btn"
-                        >
-                          {editingCustomer ? "Update" : "Add"}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          onClick={() => setIsModalOpen(false)}
-                          className="cancel-btn ms-2"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
-            </div>
-          </div>
-        </Modal>
+        <CustomerFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        initialValues={editingCustomer || { name: '', surname: '', email: '', phone: '', houseNo: '', street: '', city: '', postalCode: '', customerType: '' }}
+      />
+
       </div>
     </div>
   );
