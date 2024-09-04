@@ -2,8 +2,8 @@ import { Server as socketIoServer } from "socket.io";
 
 let io;
 
-export const initializeSocket = (server) => {
-  io = new socketIoServer(server);
+export const initializeSocket = (server, socketOptions = {}) => {
+  io = new socketIoServer(server, socketOptions);
 
   io.on("connection", (socket) => {
     console.log("New WebSocket connection");
