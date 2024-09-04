@@ -1,4 +1,3 @@
-// index.js
 import express from "express";
 import cors from "cors";
 import http from "http";
@@ -16,11 +15,25 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
 
-// Initialize Socket.io
-initializeSocket(server);
+// Enable CORS with specific configuration
+app.use(
+  cors({
+    origin: "https://ids-printing.web.app", // Allow requests from this origin
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+    credentials: true, // Allow credentials such as cookies and authorization headers
+  })
+);
 
 app.use(express.json());
-app.use(cors());
+
+// Initialize Socket.io with CORS configuration
+initializeSocket(server, {
+  cors: {
+    origin: "https://ids-printing.web.app", // Allow Socket.io connections from this origin
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 app.get("/", (req, res) => {
   res.send("Welcome to the server!");
