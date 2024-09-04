@@ -11,7 +11,7 @@ const initialCreditCustomers = [
     name: "The J",
     surname: "Valoy",
     email: "valoy@domain.com",
-    phone: "123-456-7890",
+    phone: "1234567890",
     totalSpent: "Rs. 5000",
     creditBalance: 1000,
     houseNo: "",
@@ -26,9 +26,7 @@ const initialCreditCustomers = [
 ];
 
 const CreditCustomers = () => {
-  const [creditCustomers, setCreditCustomers] = useState(
-    initialCreditCustomers
-  );
+  const [creditCustomers, setCreditCustomers] = useState(initialCreditCustomers);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -90,10 +88,10 @@ const CreditCustomers = () => {
     doc.text(`Customer: ${customer.name} ${customer.surname}`, 14, 50);
     doc.text(`Email: ${customer.email}`, 14, 56);
     doc.text(`Phone: ${customer.phone}`, 14, 62);
-    doc.text(`Paid Amount: Rs. ${paidAmount.toFixed(2)}`, 14, 80);
-    doc.text(`Remaining Balance: Rs. ${remainingBalance.toFixed(2)}`, 14, 86);
+    doc.text(`Paid Amount: Rs. ${paidAmount?.toFixed(2) ?? '0.00'}`, 14, 80);
+    doc.text(`Remaining Balance: Rs. ${remainingBalance?.toFixed(2) ?? '0.00'}`, 14, 86);
 
-    doc.save(`receipt_${customer.name}_${customer.surname}.pdf`);
+    return doc;
   };
 
   // Function to prompt the user for receipt options after payment
@@ -117,96 +115,42 @@ const CreditCustomers = () => {
   // Function to download the receipt
   const downloadReceipt = () => {
     if (!selectedCustomer) return;
-    const doc = new jsPDF();
-    const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString();
-    const formattedTime = currentDate.toLocaleTimeString();
-
-    doc.setFontSize(18);
-    doc.text("Payment Receipt", 14, 22);
-    doc.setFontSize(12);
-    doc.text(`Date: ${formattedDate}`, 14, 30);
-    doc.text(`Time: ${formattedTime}`, 14, 36);
-    doc.text(
-      `Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`,
-      14,
-      50
-    );
-    doc.text(`Email: ${selectedCustomer.email}`, 14, 56);
-    doc.text(`Phone: ${selectedCustomer.phone}`, 14, 62);
-    doc.text(
-      `Credit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}`,
-      14,
-      80
-    );
-
-    doc.save(
-      `receipt_${selectedCustomer.name}_${selectedCustomer.surname}.pdf`
-    );
+    const doc = generatePDFReceipt(selectedCustomer, selectedCustomer.paidAmount ?? 0, selectedCustomer.creditBalance ?? 0);
+    doc.save(`receipt_${selectedCustomer.name}_${selectedCustomer.surname}.pdf`);
   };
 
   // Function to print the receipt
   const printReceipt = () => {
-    const printContents = document.getElementById("receipt-contents").innerHTML;
-    const originalContents = document.body.innerHTML;
+    if (!selectedCustomer) return;
+    const doc = generatePDFReceipt(selectedCustomer, selectedCustomer.paidAmount ?? 0, selectedCustomer.creditBalance ?? 0);
+    const pdfBlob = doc.output('blob');
+    const pdfURL = URL.createObjectURL(pdfBlob);
 
-    document.body.innerHTML = printContents;
-    window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload(); // Reload the page to restore the original state
+    const printWindow = window.open(pdfURL, '_blank');
+    printWindow.onload = () => {
+      printWindow.print();
+    };
   };
 
   // Function to share the receipt via WhatsApp and email
   const shareReceipt = () => {
     if (!selectedCustomer) return;
 
-    const doc = new jsPDF();
-    const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString();
-    const formattedTime = currentDate.toLocaleTimeString();
-
-    doc.setFontSize(18);
-    doc.text("Payment Receipt", 14, 22);
-    doc.setFontSize(12);
-    doc.text(`Date: ${formattedDate}`, 14, 30);
-    doc.text(`Time: ${formattedTime}`, 14, 36);
-    doc.text(
-      `Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`,
-      14,
-      50
-    );
-    doc.text(`Email: ${selectedCustomer.email}`, 14, 56);
-    doc.text(`Phone: ${selectedCustomer.phone}`, 14, 62);
-    doc.text(
-      `Credit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(2)}`,
-      14,
-      80
-    );
-
-    const pdfBlob = doc.output("blob");
-    const pdfURL = URL.createObjectURL(pdfBlob);
-
-    const whatsappMessage = `Receipt for ${selectedCustomer.name} ${
-      selectedCustomer.surname
-    }\nCredit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(
-      2
-    )}\nDownload PDF: ${pdfURL}`;
-    const whatsappURL = `https://wa.me/?text=${encodeURIComponent(
-      whatsappMessage
-    )}`;
-
+    const formattedDate = new Date().toLocaleDateString();
+    const formattedTime = new Date().toLocaleTimeString();
+  
+    // Construct the text message for sharing
+    const textMessage = `IDS Printing House\nPayment Receipt\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${selectedCustomer.name} ${selectedCustomer.surname}\nContact: ${selectedCustomer.phone}\n\nCredit Balance: Rs. ${(selectedCustomer.creditBalance ?? 0).toFixed(2)}`;
+  
+    // Construct the WhatsApp and Email URLs with the text message
+    const whatsappURL = `https://wa.me/+94${selectedCustomer.phone}?text=${encodeURIComponent(textMessage)}`;
     const emailSubject = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}`;
-    const emailBody = `Receipt for ${selectedCustomer.name} ${
-      selectedCustomer.surname
-    }\nCredit Balance: Rs. ${selectedCustomer.creditBalance.toFixed(
-      2
-    )}\nDownload PDF: ${pdfURL}`;
-    const mailtoURL = `mailto:?subject=${encodeURIComponent(
-      emailSubject
-    )}&body=${encodeURIComponent(emailBody)}`;
-
-    window.open(whatsappURL, "_blank"); // Open WhatsApp
-    window.open(mailtoURL, "_blank"); // Open Email
+    const emailBody = textMessage;
+    const mailtoURL = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+  
+    // Open the share options
+    window.open(whatsappURL, '_blank'); // Open WhatsApp
+    window.open(mailtoURL, '_blank'); // Open Email
   };
 
   // Function to handle closing the receipt modal
@@ -244,7 +188,7 @@ const CreditCustomers = () => {
                   <td>{customer.surname}</td>
                   <td>{customer.email}</td>
                   <td>{customer.phone}</td>
-                  <td>{customer.creditBalance}</td>
+                  <td>{customer.creditBalance ?? 0}</td>
                   <td>
                     <Button
                       variant="contained"
@@ -365,7 +309,7 @@ const CreditCustomers = () => {
                   </p>
                   <p>
                     <strong>Credit Balance:</strong> Rs.{" "}
-                    {selectedCustomer.creditBalance.toFixed(2)}
+                    {(selectedCustomer.creditBalance ?? 0).toFixed(2)}
                   </p>
                   <div className="d-flex justify-content-end">
                     <Button
