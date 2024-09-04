@@ -1,5 +1,5 @@
 :root {
-  --primaryitemcolor: #001aff; /* Font color on hover */
+  --primaryitemcolor: #ff0000; /* Font color on hover */
 }
 
 .navbar {
@@ -7,6 +7,7 @@
   background: linear-gradient(172deg, #000000, #909090);
   background-size: 400% 400%;
   animation: AnimationName 0s ease infinite;
+  font-size: 12px
 }
 
 .navbar_brand {
