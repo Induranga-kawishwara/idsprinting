@@ -1,6 +1,14 @@
-// src/socket.js
 import { io } from "socket.io-client";
 
-const socket = io("https://idsprinting.vercel.app"); // Replace with your server URL
+const socket = io("wss://idsprinting.vercel.app", {
+  transports: ["websocket"],
+  autoConnect: false,
+});
+
+socket.on("connect_error", (err) => {
+  console.error("Connection Error: ", err.message);
+});
+
+socket.connect();
 
 export default socket;
