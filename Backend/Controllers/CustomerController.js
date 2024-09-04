@@ -1,5 +1,7 @@
+// controller.js
 import db from "../db.js";
 import Customer from "../Models/Customer.js";
+import { getSocket } from "../socket.js"; // Import the function to get the Socket.io instance
 
 const customersCollection = db.collection("customers");
 
@@ -19,7 +21,7 @@ export const createCustomer = async (req, res) => {
   } = req.body;
 
   try {
-    // Check if a product with the same productID or name already exists
+    // Check if a customer with the same name, email, or contactNumber already exists
     const existingCustomerNameSnapshot = await customersCollection
       .where("name", "==", name)
       .get();
@@ -27,7 +29,7 @@ export const createCustomer = async (req, res) => {
     if (!existingCustomerNameSnapshot.empty) {
       return res
         .status(400)
-        .send({ message: "Customer's name is already exists." });
+        .send({ message: "Customer's name already exists." });
     }
 
     const existingCustomerEmailSnapshot = await customersCollection
@@ -40,14 +42,14 @@ export const createCustomer = async (req, res) => {
         .send({ message: "Customer with this email already exists." });
     }
 
-    const existingCustomerphoneSnapshot = await customersCollection
+    const existingCustomerPhoneSnapshot = await customersCollection
       .where("contactNumber", "==", contactNumber)
       .get();
 
-    if (!existingCustomerphoneSnapshot.empty) {
+    if (!existingCustomerPhoneSnapshot.empty) {
       return res
         .status(400)
-        .send({ message: "Customer with this Contact Number already exists." });
+        .send({ message: "Customer with this contact number already exists." });
     }
 
     const customer = new Customer(
@@ -64,6 +66,11 @@ export const createCustomer = async (req, res) => {
     );
 
     const docRef = await customersCollection.add({ ...customer });
+    const newCustomer = { id: docRef.id, ...customer };
+
+    // Emit event to all connected clients
+    getSocket().emit("customerCreated", newCustomer);
+
     res
       .status(201)
       .send({ message: "Customer created successfully", id: docRef.id });
@@ -115,6 +122,11 @@ export const updateCustomer = async (req, res) => {
 
   try {
     await customersCollection.doc(id).update(updatedData);
+    const updatedCustomer = { id, ...updatedData };
+
+    // Emit event to all connected clients
+    getSocket().emit("customerUpdated", updatedCustomer);
+
     res.status(200).send({ message: "Customer updated successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });
@@ -127,6 +139,10 @@ export const deleteCustomer = async (req, res) => {
 
   try {
     await customersCollection.doc(id).delete();
+
+    // Emit event to all connected clients
+    getSocket().emit("customerDeleted", id);
+
     res.status(200).send({ message: "Customer deleted successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });
