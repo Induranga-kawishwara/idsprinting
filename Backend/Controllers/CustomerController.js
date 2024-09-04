@@ -69,7 +69,7 @@ export const createCustomer = async (req, res) => {
     const newCustomer = { id: docRef.id, ...customer };
 
     // Emit event to all connected clients
-    getSocket().emit("customerCreated", newCustomer);
+    getSocket().emit("customerAdded", newCustomer);
 
     res
       .status(201)
