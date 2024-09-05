@@ -20,7 +20,14 @@ export const createCustomer = async (req, res) => {
   } = req.body;
 
   try {
-    // Check if a product with the same productID or name already exists
+    // Validate fields to ensure they are not empty
+    if (!name || !email || !contactNumber) {
+      return res
+        .status(400)
+        .send({ message: "Name, email, and contact number are required." });
+    }
+
+    // Check if a customer with the same name already exists
     const existingCustomerNameSnapshot = await customersCollection
       .where("name", "==", name)
       .get();
@@ -28,9 +35,10 @@ export const createCustomer = async (req, res) => {
     if (!existingCustomerNameSnapshot.empty) {
       return res
         .status(400)
-        .send({ message: "Customer's name is already exists." });
+        .send({ message: "Customer's name already exists." });
     }
 
+    // Check if a customer with the same email already exists
     const existingCustomerEmailSnapshot = await customersCollection
       .where("email", "==", email)
       .get();
@@ -41,6 +49,7 @@ export const createCustomer = async (req, res) => {
         .send({ message: "Customer with this email already exists." });
     }
 
+    // Check if a customer with the same contact number already exists
     const existingCustomerphoneSnapshot = await customersCollection
       .where("contactNumber", "==", contactNumber)
       .get();
@@ -48,10 +57,11 @@ export const createCustomer = async (req, res) => {
     if (!existingCustomerphoneSnapshot.empty) {
       return res
         .status(400)
-        .send({ message: "Customer with this Contact Number already exists." });
+        .send({ message: "Customer with this contact number already exists." });
     }
 
-    const customer = new Customer(
+    // Create a new customer object
+    const customer = {
       name,
       surName,
       email,
@@ -61,18 +71,24 @@ export const createCustomer = async (req, res) => {
       city,
       postalcode,
       customerType,
-      addedDateAndTime
-    );
+      addedDateAndTime,
+    };
 
-    const docRef = await customersCollection.add({ ...customer });
+    // Add customer to Firestore
+    const docRef = await customersCollection.add(customer);
 
+    // Create a response object
     const newCustomer = { id: docRef.id, ...customer };
 
+    // Send response
     res
       .status(201)
       .send({ message: "Customer created successfully", id: docRef.id });
+
+    // Broadcast the change (assuming broadcastCustomerChanges is defined elsewhere)
     broadcastCustomerChanges("customerAdded", newCustomer);
   } catch (error) {
+    console.error("Error creating customer:", error); // Log error for debugging
     res.status(500).send({ error: error.message });
   }
 };

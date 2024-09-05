@@ -10,7 +10,7 @@ import CustomerFormModal from "./CustomerFormModal"; // Adjust the import path
 import { io } from "socket.io-client";
 
 // Initialize the socket connection
-const socket = io("https://candied-chartreuse-concavenator.glitch.me", {
+const socket = io("http://localhost:8080", {
   transports: ["websocket"], // Force WebSocket transport
 });
 
@@ -26,7 +26,7 @@ const Customer = () => {
     const fetchData = async () => {
       try {
         const customerData = await axios.get(
-          "https://candied-chartreuse-concavenator.glitch.me/customers/"
+          "http://localhost:8080/customers/"
         );
 
         const formattedCustomers = customerData.data.map((customer) => {
@@ -90,6 +90,7 @@ const Customer = () => {
           hour: "2-digit",
           minute: "2-digit",
         }),
+        totalSpent: "500", // Example data; replace with real data if needed
       };
       setCustomers((prevCustomers) => [newCustomeradded, ...prevCustomers]);
     });
@@ -113,6 +114,7 @@ const Customer = () => {
           hour: "2-digit",
           minute: "2-digit",
         }),
+        totalSpent: "600", // Example data; replace with real data if needed
       };
       setCustomers((prevCustomers) =>
         prevCustomers.map((customer) =>
@@ -139,32 +141,29 @@ const Customer = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = useCallback(
-    async (name, id) => {
-      const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
+  const handleDelete = useCallback(async (name, id) => {
+    const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
 
-      if (confirmDelete) {
-        try {
-          const response = await axios.delete(
-            `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${id}`
-          );
+    if (confirmDelete) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:8080/customers/customer/${id}`
+        );
 
-          setCustomers((prevCustomers) =>
-            prevCustomers.filter((customer) => customer.id !== id)
-          );
+        // setCustomers((prevCustomers) =>
+        //   prevCustomers.filter((customer) => customer.id !== id)
+        // );
 
-          // Emit event for customer deletion
-          socket.emit("customerDeleted", { id });
+        // Emit event for customer deletion
+        socket.emit("customerDeleted", { id });
 
-          alert(response.data.message);
-        } catch (error) {
-          console.error("Error deleting details:", error);
-          alert("Failed to delete the details. Please try again.");
-        }
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting details:", error);
+        alert("Failed to delete the details. Please try again.");
       }
-    },
-    [setCustomers]
-  );
+    }
+  }, []);
 
   const handleSubmit = async (values) => {
     const currentDate = new Date();
@@ -185,7 +184,7 @@ const Customer = () => {
     if (editingCustomer) {
       try {
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${editingCustomer.id}`,
+          `http://localhost:8080/customers/customer/${editingCustomer.id}`,
           data
         );
 
@@ -201,13 +200,14 @@ const Customer = () => {
             hour: "2-digit",
             minute: "2-digit",
           }),
+          totalSpent: "200", // Example data; replace with real data if needed
         };
 
-        setCustomers((prevCustomers) =>
-          prevCustomers.map((customer) =>
-            customer.id === editingCustomer.id ? updatedCustomer : customer
-          )
-        );
+        // setCustomers((prevCustomers) =>
+        //   prevCustomers.map((customer) =>
+        //     customer.id === editingCustomer.id ? updatedCustomer : customer
+        //   )
+        // );
 
         // Emit event for customer update
         socket.emit("customerUpdated", updatedCustomer);
@@ -220,7 +220,7 @@ const Customer = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
+          "http://localhost:8080/customers/customer",
           data
         );
 
@@ -236,17 +236,26 @@ const Customer = () => {
             hour: "2-digit",
             minute: "2-digit",
           }),
+          totalSpent: "100", // Example data; replace with real data if needed
         };
 
-        setCustomers((prevCustomers) => [newCustomer, ...prevCustomers]);
+        // setCustomers((prevCustomers) => [newCustomer, ...prevCustomers]);
 
         // Emit event for new customer
         socket.emit("customerAdded", newCustomer);
 
         alert(response.data.message);
       } catch (error) {
-        console.error("Error adding customer:", error);
-        alert("Failed to add the customer. Please try again.");
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the customer. Please try again.");
+        }
       }
     }
 
