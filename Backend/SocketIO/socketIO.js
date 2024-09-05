@@ -9,6 +9,7 @@ const io = new Server(server, {
     // Update to the correct front-end origin without the trailing slash
     origin: "https://ids-printing.web.app",
     methods: ["GET", "POST", "DELETE", "PUT"],
+    credentials: true,
   },
 });
 
