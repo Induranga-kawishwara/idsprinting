@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO with CORS and WebSocket transport settings
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow requests from your frontend
+    origin: "*", // Allow requests from any origin
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Enable cookies/authorization headers
   },

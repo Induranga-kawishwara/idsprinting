@@ -14,14 +14,15 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 
 // Set up CORS to allow requests from your frontend
-app.use(
-  cors({
-    origin: "*", // Make sure this is the correct origin
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allow credentials (cookies, authorization headers)
-  })
-);
+// app.use(
+//   cors({
+//     origin: "*", // Allow requests from any origin
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true, // Allow credentials (cookies, authorization headers)
+//   })
+// );
 
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
