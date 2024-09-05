@@ -1,5 +1,6 @@
 import db from "../db.js";
 import Customer from "../Models/Customer.js";
+import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 
 const customersCollection = db.collection("customers");
 
@@ -64,9 +65,13 @@ export const createCustomer = async (req, res) => {
     );
 
     const docRef = await customersCollection.add({ ...customer });
+
+    const newCustomer = { id: docRef.id, ...customer };
+
     res
       .status(201)
       .send({ message: "Customer created successfully", id: docRef.id });
+    broadcastCustomerChanges("customerAdded", newCustomer);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -110,12 +115,25 @@ export const getCustomerById = async (req, res) => {
 
 // Update a customer
 export const updateCustomer = async (req, res) => {
-  const { id } = req.params;
-  const updatedData = req.body;
+  const { id } = req.params; // Get the customer ID from the URL params
+  const updatedData = req.body; // The updated customer data
 
   try {
+    // Check if the customer exists
+    const doc = await customersCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    // Update the customer in the database
     await customersCollection.doc(id).update(updatedData);
-    res.status(200).send({ message: "Customer updated successfully" });
+
+    // Respond to the API call with success
+    res.status(200).json({ message: "Customer updated successfully" });
+
+    // Broadcast the updated customer to all POS systems
+    const updatedCustomer = { id, ...updatedData };
+    broadcastCustomerChanges("customerUpdated", updatedCustomer);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -126,8 +144,16 @@ export const deleteCustomer = async (req, res) => {
   const { id } = req.params;
 
   try {
+    const doc = await customersCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
     await customersCollection.doc(id).delete();
-    res.status(200).send({ message: "Customer deleted successfully" });
+    res.status(200).json({ message: "Customer deleted successfully" });
+
+    // Broadcast the deleted customer ID to all POS systems
+    broadcastCustomerChanges("customerDeleted", { id });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
