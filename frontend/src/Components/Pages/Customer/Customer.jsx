@@ -10,7 +10,7 @@ import CustomerFormModal from "./CustomerFormModal"; // Adjust the import path
 import { io } from "socket.io-client";
 
 // Initialize the socket connection
-const socket = io("https://idsprinting.vercel.app/");
+const socket = io("https://idsprinting.vercel.app");
 
 const Customer = () => {
   const [customers, setCustomers] = useState([]);

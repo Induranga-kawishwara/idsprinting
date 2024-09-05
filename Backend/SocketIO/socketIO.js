@@ -6,8 +6,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // origin: "http://localhost:3000", // Update to match your front-end origin
-    origin: "https://ids-printing.web.app/", // Update to match your front-end origin
+    // Update to the correct front-end origin without the trailing slash
+    origin: "https://ids-printing.web.app",
     methods: ["GET", "POST", "DELETE", "PUT"],
   },
 });
