@@ -1,26 +1,17 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useTable } from "react-table";
-import { Formik, Form, Field } from "formik";
-import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
 import "./Customer.scss";
 import axios from "axios";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
-import CustomerFormModal from './CustomerFormModal'; // Adjust the import path
+import CustomerFormModal from "./CustomerFormModal"; // Adjust the import path
+import { io } from "socket.io-client";
 
-
-const CustomerSchema = Yup.object().shape({
-  surname: Yup.string().required("Surname is required"),
-  name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email"),
-  phone: Yup.string().required("Phone number is required"),
-  houseNo: Yup.string(),
-  street: Yup.string(),
-  city: Yup.string(),
-  postalCode: Yup.string(),
-  customerType: Yup.string().required("Customer type is required"),
+// Initialize the socket connection
+const socket = io("https://candied-chartreuse-concavenator.glitch.me", {
+  transports: ["websocket"], // Force WebSocket transport
 });
 
 const Customer = () => {
@@ -35,7 +26,7 @@ const Customer = () => {
     const fetchData = async () => {
       try {
         const customerData = await axios.get(
-          "https://idsprinting.vercel.app/customers/"
+          "https://candied-chartreuse-concavenator.glitch.me/customers/"
         );
 
         const formattedCustomers = customerData.data.map((customer) => {
@@ -78,6 +69,69 @@ const Customer = () => {
     };
 
     fetchData();
+
+    // Listen for real-time customer updates
+    socket.on("customerAdded", (newCustomer) => {
+      const utcDate = new Date(newCustomer.addedDateAndTime);
+      const sltDate = new Date(
+        utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+      );
+
+      const newCustomeradded = {
+        ...newCustomer,
+        surname: newCustomer.surName,
+        postalCode: newCustomer.postalcode,
+        addedDate: sltDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }),
+        addedTime: sltDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      setCustomers((prevCustomers) => [newCustomeradded, ...prevCustomers]);
+    });
+
+    socket.on("customerUpdated", (updatedCustomer) => {
+      const utcDate = new Date(updatedCustomer.addedDateAndTime);
+      const sltDate = new Date(
+        utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+      );
+
+      const newupdatedCustomer = {
+        ...updatedCustomer,
+        surname: updatedCustomer.surName,
+        postalCode: updatedCustomer.postalcode,
+        addedDate: sltDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }),
+        addedTime: sltDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      setCustomers((prevCustomers) =>
+        prevCustomers.map((customer) =>
+          customer.id === updatedCustomer.id ? newupdatedCustomer : customer
+        )
+      );
+    });
+
+    socket.on("customerDeleted", ({ id }) => {
+      setCustomers((prevCustomers) =>
+        prevCustomers.filter((customer) => customer.id !== id)
+      );
+    });
+
+    return () => {
+      socket.off("customerAdded");
+      socket.off("customerUpdated");
+      socket.off("customerDeleted");
+    };
   }, []);
 
   const handleEdit = (customer) => {
@@ -92,12 +146,16 @@ const Customer = () => {
       if (confirmDelete) {
         try {
           const response = await axios.delete(
-            `https://idsprinting.vercel.app/customers/customer/${id}`
+            `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${id}`
           );
 
           setCustomers((prevCustomers) =>
             prevCustomers.filter((customer) => customer.id !== id)
           );
+
+          // Emit event for customer deletion
+          socket.emit("customerDeleted", { id });
+
           alert(response.data.message);
         } catch (error) {
           console.error("Error deleting details:", error);
@@ -127,29 +185,32 @@ const Customer = () => {
     if (editingCustomer) {
       try {
         const response = await axios.put(
-          `https://idsprinting.vercel.app/customers/customer/${editingCustomer.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${editingCustomer.id}`,
           data
         );
 
-        setCustomers(
-          customers.map((customer) =>
-            customer.id === editingCustomer.id
-              ? {
-                  ...values,
-                  id: editingCustomer.id,
-                  addedDate: currentDate.toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                  }),
-                  addedTime: currentDate.toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                }
-              : customer
+        const updatedCustomer = {
+          ...values,
+          id: editingCustomer.id,
+          addedDate: currentDate.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }),
+          addedTime: currentDate.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+
+        setCustomers((prevCustomers) =>
+          prevCustomers.map((customer) =>
+            customer.id === editingCustomer.id ? updatedCustomer : customer
           )
         );
+
+        // Emit event for customer update
+        socket.emit("customerUpdated", updatedCustomer);
 
         alert(response.data.message);
       } catch (error) {
@@ -159,26 +220,28 @@ const Customer = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://idsprinting.vercel.app/customers/customer",
+          "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
           data
         );
 
-        setCustomers([
-          {
-            ...values,
-            id: response.data.id,
-            addedDate: currentDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }),
-            addedTime: currentDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          },
-          ...customers,
-        ]);
+        const newCustomer = {
+          ...values,
+          id: response.data.id,
+          addedDate: currentDate.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }),
+          addedTime: currentDate.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+
+        setCustomers((prevCustomers) => [newCustomer, ...prevCustomers]);
+
+        // Emit event for new customer
+        socket.emit("customerAdded", newCustomer);
 
         alert(response.data.message);
       } catch (error) {
@@ -193,9 +256,13 @@ const Customer = () => {
 
   const filteredCustomers = customers.filter(
     (customer) =>
-      customer.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.phone.includes(searchQuery)
+      (customer.surname?.toLowerCase() || "-").includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (customer.name?.toLowerCase() || "-").includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (customer.phone || "-").includes(searchQuery)
   );
 
   const columns = useMemo(
@@ -336,12 +403,23 @@ const Customer = () => {
         </div>
 
         <CustomerFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmit}
-        initialValues={editingCustomer || { name: '', surname: '', email: '', phone: '', houseNo: '', street: '', city: '', postalCode: '', customerType: '' }}
-      />
-
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialValues={
+            editingCustomer || {
+              name: "",
+              surname: "",
+              email: "",
+              phone: "",
+              houseNo: "",
+              street: "",
+              city: "",
+              postalCode: "",
+              customerType: "",
+            }
+          }
+        />
       </div>
     </div>
   );
