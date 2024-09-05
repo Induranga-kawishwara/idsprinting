@@ -10,7 +10,7 @@ import CustomerFormModal from "./CustomerFormModal"; // Adjust the import path
 import { io } from "socket.io-client";
 
 // Initialize the socket connection
-const socket = io("https://idsprinting.vercel.app", {
+const socket = io("https://candied-chartreuse-concavenator.glitch.me", {
   transports: ["websocket"], // Force WebSocket transport
 });
 
@@ -26,7 +26,7 @@ const Customer = () => {
     const fetchData = async () => {
       try {
         const customerData = await axios.get(
-          "https://idsprinting.vercel.app/customers/"
+          "https://candied-chartreuse-concavenator.glitch.me/customers/"
         );
 
         const formattedCustomers = customerData.data.map((customer) => {
@@ -146,7 +146,7 @@ const Customer = () => {
       if (confirmDelete) {
         try {
           const response = await axios.delete(
-            `https://idsprinting.vercel.app/customers/customer/${id}`
+            `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${id}`
           );
 
           setCustomers((prevCustomers) =>
@@ -185,7 +185,7 @@ const Customer = () => {
     if (editingCustomer) {
       try {
         const response = await axios.put(
-          `https://idsprinting.vercel.app/customers/customer/${editingCustomer.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${editingCustomer.id}`,
           data
         );
 
@@ -220,7 +220,7 @@ const Customer = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://idsprinting.vercel.app/customers/customer",
+          "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
           data
         );
 
