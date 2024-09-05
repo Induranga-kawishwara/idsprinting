@@ -10,7 +10,7 @@ import CustomerFormModal from "./CustomerFormModal"; // Adjust the import path
 import { io } from "socket.io-client";
 
 // Initialize the socket connection
-const socket = io("http://localhost:8080", {
+const socket = io("https://candied-chartreuse-concavenator.glitch.me", {
   transports: ["websocket"], // Force WebSocket transport
 });
 
@@ -26,7 +26,7 @@ const Customer = () => {
     const fetchData = async () => {
       try {
         const customerData = await axios.get(
-          "http://localhost:8080/customers/"
+          "https://candied-chartreuse-concavenator.glitch.me/customers/"
         );
 
         const formattedCustomers = customerData.data.map((customer) => {
@@ -147,7 +147,7 @@ const Customer = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `http://localhost:8080/customers/customer/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${id}`
         );
 
         // setCustomers((prevCustomers) =>
@@ -184,7 +184,7 @@ const Customer = () => {
     if (editingCustomer) {
       try {
         const response = await axios.put(
-          `http://localhost:8080/customers/customer/${editingCustomer.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${editingCustomer.id}`,
           data
         );
 
@@ -220,7 +220,7 @@ const Customer = () => {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:8080/customers/customer",
+          "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
           data
         );
 
