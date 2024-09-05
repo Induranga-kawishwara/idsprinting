@@ -1,13 +1,24 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
+import cors from "cors"; // Ensure cors is imported here
 
 const app = express();
 const server = http.createServer(app);
+
+// Apply CORS middleware to express
+app.use(
+  cors({
+    origin: "https://ids-printing.web.app", // Allow the frontend origin
+    methods: ["GET", "POST", "DELETE", "PUT"],
+    credentials: true, // Enable credentials if needed
+  })
+);
+
+// Setup Socket.IO with CORS
 const io = new Server(server, {
   cors: {
-    // Update to the correct front-end origin without the trailing slash
-    origin: "https://ids-printing.web.app",
+    origin: "https://ids-printing.web.app", // Same frontend origin for Socket.IO
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
   },
@@ -41,7 +52,6 @@ io.on("connection", (socket) => {
 
 // Broadcast customer data changes to all connected POS systems
 export const broadcastCustomerChanges = (event, data) => {
-  // Emit to all connected clients
   io.emit(event, data);
 };
 
