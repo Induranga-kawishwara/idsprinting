@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 // Set up CORS to allow requests from your frontend
 app.use(
   cors({
-    origin: "https://ids-printing.web.app", // Make sure this is the correct origin
+    origin: "*", // Make sure this is the correct origin
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow credentials (cookies, authorization headers)
   })
