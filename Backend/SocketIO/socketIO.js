@@ -1,27 +1,20 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
-import cors from "cors"; // Ensure cors is imported here
 
+// Initialize Express and HTTP server
 const app = express();
 const server = http.createServer(app);
 
-// Apply CORS middleware to express
-app.use(
-  cors({
-    origin: "https://ids-printing.web.app", // Allow the frontend origin
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    credentials: true, // Enable credentials if needed
-  })
-);
-
-// Setup Socket.IO with CORS
+// Initialize Socket.IO with CORS and WebSocket transport settings
 const io = new Server(server, {
   cors: {
-    origin: "https://ids-printing.web.app", // Same frontend origin for Socket.IO
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    credentials: true,
+    origin: "https://ids-printing.web.app", // Allow requests from your frontend
+    methods: ["GET", "POST"],
+    credentials: true, // Enable cookies/authorization headers
   },
+  transports: ["websocket"], // Force WebSocket as the transport method
+  allowUpgrades: true, // Allow upgrade from polling to WebSocket
 });
 
 // Store users and their socket IDs
@@ -52,6 +45,7 @@ io.on("connection", (socket) => {
 
 // Broadcast customer data changes to all connected POS systems
 export const broadcastCustomerChanges = (event, data) => {
+  // Emit to all connected clients
   io.emit(event, data);
 };
 
