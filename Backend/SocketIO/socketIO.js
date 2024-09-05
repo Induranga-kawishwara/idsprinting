@@ -10,10 +10,10 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "https://ids-printing.web.app", // Allow requests from your frontend
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Enable cookies/authorization headers
   },
-  transports: ["websocket"], // Force WebSocket as the transport method
+  transports: ["websocket", "polling"], // Allow both WebSocket and Polling
   allowUpgrades: true, // Allow upgrade from polling to WebSocket
 });
 
