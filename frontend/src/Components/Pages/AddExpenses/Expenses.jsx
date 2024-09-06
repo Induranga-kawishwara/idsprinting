@@ -64,7 +64,6 @@ const Expenses = () => {
   const itemsPerPage = 10; // Define how many items per page you want
   const totalPages = Math.ceil(expenses.length / itemsPerPage); // Calculate total pages
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -241,7 +240,7 @@ const Expenses = () => {
       !paymentMethodFilter || expense.paymentMethod === paymentMethodFilter;
     const matchesTypeOfExpenses =
       !typeOfExpensesFilter || expense.type === typeOfExpensesFilter; // New condition for type filter
-  
+
     return (
       isWithinDateRange &&
       matchesPaymentMethod &&
@@ -251,7 +250,6 @@ const Expenses = () => {
         expense.amount.toString().includes(searchString))
     );
   });
-  
 
   const columns = useMemo(
     () => [
@@ -279,7 +277,7 @@ const Expenses = () => {
         Header: "Added By",
         accessor: "addedBy",
       },
-      
+
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
       { Header: "Invoice Number", accessor: "invoiceNumber" },
@@ -333,10 +331,10 @@ const Expenses = () => {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
 
-    const paginatedExpenses = expenses.slice(
-      currentPage * itemsPerPage,
-      (currentPage + 1) * itemsPerPage
-    );
+  const paginatedExpenses = expenses.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
 
   return (
     <div className="bodyofpage">
@@ -360,75 +358,72 @@ const Expenses = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        
-            
         </div>
-            <div className="d-flex align-items-center mb-3">
+        <div className="d-flex align-items-center mb-3">
+          <DatePicker
+            selected={startDate}
+            onChange={(date) => setStartDate(date)}
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            placeholderText="Start Date"
+            className="searchfunctionsdate me-2"
+          />
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate}
+            placeholderText="End Date"
+            className="searchfunctionsdate me-2"
+          />
+          <select
+            className="formdropdown"
+            value={paymentMethodFilter}
+            onChange={(e) => setPaymentMethodFilter(e.target.value)}
+          >
+            <option value="" disabled>
+              Payment Method
+            </option>
+            <option value="Card">Card</option>
+            <option value="Cash">Cash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cheque">Cheque</option>
+          </select>
 
-            <DatePicker
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-              selectsStart
-              startDate={startDate}
-              endDate={endDate}
-              placeholderText="Start Date"
-              className="searchfunctionsdate me-2"
-            />
-            <DatePicker 
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              selectsEnd
-              startDate={startDate}
-              endDate={endDate}
-              minDate={startDate}
-              placeholderText="End Date"
-              className="searchfunctionsdate me-2"
-            />
-              <select
-                className="formdropdown"
-                value={paymentMethodFilter}
-                onChange={(e) => setPaymentMethodFilter(e.target.value)}
-              >
-                <option value=""disabled>Payment Method</option>
-                <option value="Card">Card</option>
-                <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Cheque">Cheque</option>
-              </select>
-            
-              <select
-                className="formdropdown"
-                value={typeOfExpensesFilter} 
-                onChange={(e) => setTypeOfExpensesFilter(e.target.value)}  
-              >
-                <option value=""disabled>Expenses Type</option>
-                <option value="Suppliers">Suppliers</option>
-                <option value="Others">Others</option>
-                <option value="Electricity Bill">Electricity Bill</option>
-                <option value="Gas Bill">Gas Bill</option>
-                <option value="Phone Bill">Phone Bill</option>
-                {/* Add any other types of expenses */}
-              </select>
-            
+          <select
+            className="formdropdown"
+            value={typeOfExpensesFilter}
+            onChange={(e) => setTypeOfExpensesFilter(e.target.value)}
+          >
+            <option value="" disabled>
+              Expenses Type
+            </option>
+            <option value="Suppliers">Suppliers</option>
+            <option value="Others">Others</option>
+            <option value="Electricity Bill">Electricity Bill</option>
+            <option value="Gas Bill">Gas Bill</option>
+            <option value="Phone Bill">Phone Bill</option>
+            {/* Add any other types of expenses */}
+          </select>
 
-              <button
-                variant="contained"
-                color="secondary"
-                className="prevbutton"
-                onClick={() => {
-                  setSearchQuery("");
-                  setStartDate(null);
-                  setEndDate(null);
-                  setPaymentMethodFilter("");
-                  setTypeOfExpensesFilter("");  
-                }}
-              >
-                Clear 
-              </button>
-            </div>
-
-
-
+          <button
+            variant="contained"
+            color="secondary"
+            className="prevbutton"
+            onClick={() => {
+              setSearchQuery("");
+              setStartDate(null);
+              setEndDate(null);
+              setPaymentMethodFilter("");
+              setTypeOfExpensesFilter("");
+            }}
+          >
+            Clear
+          </button>
+        </div>
 
         <div className="table-responsive">
           {loading || error || _.isEmpty(data) ? (
@@ -449,7 +444,7 @@ const Expenses = () => {
                   </tr>
                 ))}
               </thead>
-              <tbody {...getTableBodyProps()}className="custom-table">
+              <tbody {...getTableBodyProps()} className="custom-table">
                 {rows.map((row) => {
                   prepareRow(row);
                   return (
@@ -468,28 +463,28 @@ const Expenses = () => {
         </div>
 
         {/* Pagination Controls */}
-      <div className="pagination">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-          disabled={currentPage === 0}
-        >
-          Previous
-        </button>
-        <span>
-          Page {currentPage + 1} of {totalPages}
-        </span>
-        <button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
-          }
-          disabled={currentPage === totalPages - 1}
-        >
-          Next
-        </button>
-      </div>
- {/* Form Modal */}
+        <div className="pagination">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+            }
+            disabled={currentPage === totalPages - 1}
+          >
+            Next
+          </button>
+        </div>
+        {/* Form Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
             <div className="modal-content custom-modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
@@ -710,7 +705,16 @@ const Expenses = () => {
                       )}
                       <div className="mb-3">
                         <label htmlFor="invoiceNumber">Invoice Number</label>
-                        <Field name="invoiceNumber" className="form-control" />
+                        <Field
+                          name="invoiceNumber"
+                          className={`form-control ${
+                            errors.invoiceNumber && touched.invoiceNumber
+                              ? "is-invalid"
+                              : touched.invoiceNumber
+                              ? "is-valid"
+                              : ""
+                          }`}
+                        />
                       </div>
                       <div className="mb-3">
                         <label htmlFor="photo">Upload Photo</label>
@@ -734,7 +738,6 @@ const Expenses = () => {
                         >
                           Cancel
                         </button>
-                        
                       </div>
                     </Form>
                   )}
