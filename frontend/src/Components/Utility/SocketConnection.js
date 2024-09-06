@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 // Initialize the socket connection
-const socket = io("http://localhost:8080", {
+const socket = io("https://candied-chartreuse-concavenator.glitch.me", {
   transports: ["websocket"], // Force WebSocket transport
 });
 

@@ -34,7 +34,7 @@ const Supplier = () => {
     const fetchData = async () => {
       try {
         const supplierData = await axios.get(
-          "http://localhost:8080/suppliers/"
+          "https://candied-chartreuse-concavenator.glitch.me/suppliers/"
         );
 
         const formattedSuppliers = supplierData.data.map((supplier) => {
@@ -110,7 +110,7 @@ const Supplier = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `http://localhost:8080/suppliers/supplier/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/suppliers/supplier/${id}`
         );
 
         // Emit event for supplier deletion
@@ -135,7 +135,7 @@ const Supplier = () => {
     if (editingSupplier) {
       try {
         const response = await axios.put(
-          `http://localhost:8080/suppliers/supplier/${editingSupplier.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/suppliers/supplier/${editingSupplier.id}`,
           data
         );
 
@@ -157,7 +157,7 @@ const Supplier = () => {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:8080/suppliers/supplier",
+          "https://candied-chartreuse-concavenator.glitch.me/suppliers/supplier",
           data
         );
 
