@@ -352,9 +352,9 @@ const Customer = () => {
     tableInstance;
 
   const clearFilters = () => {
-      setSearchQuery(""); // Reset the search query
-    };
-    
+    setSearchQuery(""); // Reset the search query
+  };
+
   return (
     <div className="bodyofpage">
       <div className="container">
@@ -384,7 +384,6 @@ const Customer = () => {
           >
             Clear
           </button>
-
         </div>
         <div className="table-responsive">
           {loading || error || _.isEmpty(data) ? (
@@ -402,7 +401,7 @@ const Customer = () => {
                   </tr>
                 ))}
               </thead>
-              <tbody {...getTableBodyProps()}className="custom-table">
+              <tbody {...getTableBodyProps()} className="custom-table">
                 {rows.map((row) => {
                   prepareRow(row);
                   return (
@@ -418,9 +417,6 @@ const Customer = () => {
           )}
         </div>
 
-
-
-        
         <CustomerFormModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
