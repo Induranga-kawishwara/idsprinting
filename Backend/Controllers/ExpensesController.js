@@ -109,9 +109,10 @@ export const updateExpenses = async (req, res) => {
 // Delete a Expenses
 export const deleteExpenses = async (req, res) => {
   const { id } = req.params;
+  console.log(id);
 
   try {
-    const doc = await customersCollection.doc(id).get();
+    const doc = await ExpensessCollection.doc(id).get();
     if (!doc.exists) {
       return res.status(404).json({ message: "Expenses not found" });
     }

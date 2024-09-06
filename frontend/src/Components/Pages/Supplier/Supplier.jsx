@@ -4,10 +4,11 @@ import * as Yup from "yup";
 import { Button, Modal } from "@mui/material";
 import { useTable } from "react-table";
 import "../All.scss";
-import socket from "../../../SocketConnection/SocketConnection.js";
+import socket from "../../Utility/SocketConnection.js";
 import axios from "axios";
 import _ from "lodash";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
 const SupplierSchema = Yup.object().shape({
   name: Yup.string().required("Supplier Name is required"),
@@ -37,23 +38,13 @@ const Supplier = () => {
         );
 
         const formattedSuppliers = supplierData.data.map((supplier) => {
-          const utcDate = new Date(supplier.additionalData);
-          const sltDate = new Date(
-            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-          );
+          const { date, time } = ConvertToSLT(supplier.additionalData);
 
           return {
             ...supplier,
             id: supplier.id,
-            addedDate: sltDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }),
-            addedTime: sltDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
+            addedDate: date,
+            addedTime: time,
           };
         });
 
@@ -70,44 +61,24 @@ const Supplier = () => {
 
     // Listen for real-time supplier updates
     socket.on("supplierAdded", (newsupplier) => {
-      const utcDate = new Date(newsupplier.additionalData);
-      const sltDate = new Date(
-        utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-      );
+      const { date, time } = ConvertToSLT(newsupplier.additionalData);
 
       const newsupplieradded = {
         ...newsupplier,
-        addedDate: sltDate.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }),
-        addedTime: sltDate.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        addedDate: date,
+        addedTime: time,
         totalSpent: "500", // Example data; replace with real data if needed
       };
       setup((prevsuppliers) => [newsupplieradded, ...prevsuppliers]);
     });
 
     socket.on("supplierUpdated", (updatedsupplier) => {
-      const utcDate = new Date(updatedsupplier.additionalData);
-      const sltDate = new Date(
-        utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-      );
+      const { date, time } = ConvertToSLT(updatedsupplier.additionalData);
 
       const newupdatedsupplier = {
         ...updatedsupplier,
-        addedDate: sltDate.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }),
-        addedTime: sltDate.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        addedDate: date,
+        addedTime: time,
         totalSpent: "600", // Example data; replace with real data if needed
       };
       setup((prevsuppliers) =>
@@ -156,6 +127,7 @@ const Supplier = () => {
   }, []);
   const handleSubmit = async (values) => {
     const currentDate = new Date();
+    const { date, time } = ConvertToSLT(currentDate);
 
     const data = {
       ...values,
@@ -172,15 +144,8 @@ const Supplier = () => {
         const updatedsupplier = {
           ...values,
           id: editingSupplier.id,
-          addedDate: currentDate.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          }),
-          addedTime: currentDate.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          addedDate: date,
+          addedTime: time,
         };
 
         // Emit event for supplier update
@@ -201,15 +166,8 @@ const Supplier = () => {
         const newsupplier = {
           ...values,
           id: response.data.id,
-          addedDate: currentDate.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          }),
-          addedTime: currentDate.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          addedDate: date,
+          addedTime: time,
         };
 
         // Emit event for new supplier

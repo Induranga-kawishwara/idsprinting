@@ -11,13 +11,7 @@ import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
 import _ from "lodash";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import "../All.scss";
-
-const suppliers = [
-  { id: 1, name: "Supplier A" },
-  { id: 2, name: "Supplier B" },
-  { id: 3, name: "Supplier C" },
-  // Add more suppliers as needed
-];
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
 const ExpenseSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -61,47 +55,42 @@ const Expenses = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0); // Current page state
+  const [supplier, setSupplier] = useState([]);
   const itemsPerPage = 10; // Define how many items per page you want
   const totalPages = Math.ceil(expenses.length / itemsPerPage); // Calculate total pages
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const expensesData = await axios.get(
-          "https://idsprinting.vercel.app/expenses/"
-          // "http://localhost:8080/expenses/"
-        );
+        // Fetch both expenses and suppliers concurrently
+        const [expensesData, suppliersData] = await Promise.all([
+          axios.get("http://localhost:8080/expenses/"),
+          axios.get("http://localhost:8080/suppliers/"),
+        ]);
 
-        const formattedExpenses = expensesData.data.map((expense, index) => {
-          const utcDate = new Date(expense.dateAndTime);
-          const sltDate = new Date(
-            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-          );
+        // Format suppliers data (only extracting id and name)
+        const needDetailsSuppliers = suppliersData.data.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.name,
+        }));
 
+        // Format expenses data with date and time conversion
+        const formattedExpenses = expensesData.data.map((expense) => {
+          const { date, time } = ConvertToSLT(expense.dateAndTime);
           return {
+            ...expense,
             id: expense.id,
             name: expense.expensesname,
             type: expense.expensesType,
-            supplier: expense.supplier,
-            other: expense.other,
-            description: expense.description,
-            amount: expense.amount,
-            paymentMethod: expense.paymentMethod,
-            addedDate: sltDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }),
-            addedTime: sltDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            invoiceNumber: expense.invoiceNumber,
+            addedDate: date,
+            addedTime: time,
             photo: expense.image,
           };
         });
 
+        // Update state
         setExpenses(formattedExpenses);
+        setSupplier(needDetailsSuppliers);
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -110,6 +99,7 @@ const Expenses = () => {
       }
     };
 
+    // Call fetchData once
     fetchData();
   }, []);
 
@@ -127,7 +117,7 @@ const Expenses = () => {
       if (confirmDelete) {
         try {
           const response = await axios.delete(
-            `https://idsprinting.vercel.app/expenses/expenses/${id}`
+            `http://localhost:8080/expenses/expenses/${id}`
           );
 
           setExpenses((prevExpenses) =>
@@ -153,16 +143,11 @@ const Expenses = () => {
     );
 
     const data = {
+      ...values,
       expensesname: values.name,
       expensesType: values.type,
-      supplier: values.supplier,
-      other: values.other,
-      description: values.description,
-      amount: values.amount,
-      paymentMethod: values.paymentMethod,
       bankTranferNum: values.bankTransferNumber,
       chequeNum: values.chequeNumber,
-      invoiceNumber: values.invoiceNumber,
       image: downloadURL,
     };
 
@@ -175,7 +160,7 @@ const Expenses = () => {
         const isoDateString = dateObject.toISOString();
 
         const response = await axios.put(
-          `https://idsprinting.vercel.app/expenses/expenses/${editingExpense.id}`,
+          `http://localhost:8080/expenses/expenses/${editingExpense.id}`,
           { ...data, dateAndTime: isoDateString }
         );
         setExpenses(
@@ -197,8 +182,10 @@ const Expenses = () => {
       }
     } else {
       try {
+        const { date, time } = ConvertToSLT(currentDate);
+
         const response = await axios.post(
-          "https://idsprinting.vercel.app/expenses/expenses",
+          "http://localhost:8080/expenses/expenses",
           { ...data, dateAndTime: currentDate }
         );
 
@@ -206,15 +193,8 @@ const Expenses = () => {
           {
             ...values,
             id: response.data.id,
-            addedDate: currentDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }),
-            addedTime: currentDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
+            addedDate: date,
+            addedTime: time,
             photo: downloadURL,
           },
           ...expenses,
@@ -575,7 +555,7 @@ const Expenses = () => {
                             }`}
                           >
                             <option value="">Select Supplier</option>
-                            {suppliers.map((supplier) => (
+                            {supplier.map((supplier) => (
                               <option key={supplier.id} value={supplier.name}>
                                 {supplier.name}
                               </option>
