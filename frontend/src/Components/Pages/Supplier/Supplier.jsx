@@ -1,9 +1,13 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Button, Modal } from "@mui/material";
 import { useTable } from "react-table";
 import "../All.scss";
+import socket from "../../../SocketConnection/SocketConnection.js";
+import axios from "axios";
+import _ from "lodash";
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 
 const SupplierSchema = Yup.object().shape({
   name: Yup.string().required("Supplier Name is required"),
@@ -17,67 +21,213 @@ const SupplierSchema = Yup.object().shape({
   additionalData: Yup.string().notRequired(), // New field validation
 });
 
-const initialSuppliers = [
-  {
-    id: 1,
-    name: "Supplier A",
-    contactNumber: "1234567890",
-    email: "supplierA@example.com",
-    address1: "123 Main St",
-    address2: "Suite 101",
-    city: "Somewhere",
-    postalCode: "12345",
-    businessId: "BUS123",
-    additionalData: "", // New field
-    addedDate: "2024-08-13",
-    addedTime: "14:30",
-  },
-];
-
 const Supplier = () => {
-  const [suppliers, setSuppliers] = useState(initialSuppliers);
+  const [suppliers, setup] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const supplierData = await axios.get(
+          "http://localhost:8080/suppliers/"
+        );
+
+        const formattedSuppliers = supplierData.data.map((supplier) => {
+          const utcDate = new Date(supplier.additionalData);
+          const sltDate = new Date(
+            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+          );
+
+          return {
+            ...supplier,
+            id: supplier.id,
+            addedDate: sltDate.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            }),
+            addedTime: sltDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          };
+        });
+
+        setup(formattedSuppliers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Listen for real-time supplier updates
+    socket.on("supplierAdded", (newsupplier) => {
+      const utcDate = new Date(newsupplier.additionalData);
+      const sltDate = new Date(
+        utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+      );
+
+      const newsupplieradded = {
+        ...newsupplier,
+        addedDate: sltDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }),
+        addedTime: sltDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        totalSpent: "500", // Example data; replace with real data if needed
+      };
+      setup((prevsuppliers) => [newsupplieradded, ...prevsuppliers]);
+    });
+
+    socket.on("supplierUpdated", (updatedsupplier) => {
+      const utcDate = new Date(updatedsupplier.additionalData);
+      const sltDate = new Date(
+        utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
+      );
+
+      const newupdatedsupplier = {
+        ...updatedsupplier,
+        addedDate: sltDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }),
+        addedTime: sltDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        totalSpent: "600", // Example data; replace with real data if needed
+      };
+      setup((prevsuppliers) =>
+        prevsuppliers.map((supplier) =>
+          supplier.id === updatedsupplier.id ? newupdatedsupplier : supplier
+        )
+      );
+    });
+
+    socket.on("supplierDeleted", ({ id }) => {
+      setup((prevsuppliers) =>
+        prevsuppliers.filter((supplier) => supplier.id !== id)
+      );
+    });
+
+    return () => {
+      socket.off("supplierAdded");
+      socket.off("supplierUpdated");
+      socket.off("supplierDeleted");
+    };
+  }, []);
 
   const handleEdit = (supplier) => {
     setEditingSupplier(supplier);
     setIsModalOpen(true);
   };
 
-  const handleDelete = useCallback((id) => {
-    setSuppliers((prevSuppliers) =>
-      prevSuppliers.filter((supplier) => supplier.id !== id)
-    );
+  const handleDelete = useCallback(async (name, id) => {
+    const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
+
+    if (confirmDelete) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:8080/suppliers/supplier/${id}`
+        );
+
+        // Emit event for supplier deletion
+        socket.emit("supplierDeleted", { id });
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting details:", error);
+        alert("Failed to delete the details. Please try again.");
+      }
+    }
   }, []);
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0];
-    const formattedTime = currentDate.toTimeString().split(" ")[0];
+
+    const data = {
+      ...values,
+      additionalData: currentDate.toISOString(), // Automatically include the current date and time
+    };
 
     if (editingSupplier) {
-      setSuppliers(
-        suppliers.map((supplier) =>
-          supplier.id === editingSupplier.id
-            ? {
-                ...values,
-                id: editingSupplier.id,
-                addedDate: supplier.addedDate,
-                addedTime: supplier.addedTime,
-              }
-            : supplier
-        )
-      );
-    } else {
-      setSuppliers([
-        ...suppliers,
-        {
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/suppliers/supplier/${editingSupplier.id}`,
+          data
+        );
+
+        const updatedsupplier = {
           ...values,
-          id: suppliers.length + 1,
-          addedDate: formattedDate,
-          addedTime: formattedTime,
-        },
-      ]);
+          id: editingSupplier.id,
+          addedDate: currentDate.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }),
+          addedTime: currentDate.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+
+        // Emit event for supplier update
+        socket.emit("supplierUpdated", updatedsupplier);
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error updating Supplier:", error);
+        alert("Failed to update the Supplier. Please try again.");
+      }
+    } else {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/suppliers/supplier",
+          data
+        );
+
+        const newsupplier = {
+          ...values,
+          id: response.data.id,
+          addedDate: currentDate.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }),
+          addedTime: currentDate.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+
+        // Emit event for new supplier
+        socket.emit("supplierAdded", newsupplier);
+
+        alert(response.data.message);
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the customer. Please try again.");
+        }
+      }
     }
     setIsModalOpen(false);
     setEditingSupplier(null);
@@ -91,19 +241,46 @@ const Supplier = () => {
       supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       supplier.contactNumber.includes(searchQuery)
   );
-  
 
   const columns = useMemo(
     () => [
-      { Header: "ID", accessor: "id" },
+      {
+        Header: "No",
+        accessor: "id",
+        Cell: ({ row }) => row.index + 1,
+      },
       { Header: "Supplier Name", accessor: "name" },
       { Header: "Contact Number", accessor: "contactNumber" },
-      { Header: "Email Address", accessor: "email" },
-      { Header: "Address 1", accessor: "address1" },
-      { Header: "Address 2", accessor: "address2" },
-      { Header: "City", accessor: "city" },
-      { Header: "Postal Code", accessor: "postalCode" },
-      { Header: "Business ID", accessor: "businessId" },
+      {
+        Header: "Email Address",
+        accessor: "email",
+        Cell: ({ value }) => (value ? value : "-"), // Show "-" if empty
+      },
+      {
+        Header: "Address 1",
+        accessor: "address1",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "Address 2",
+        accessor: "address2",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "City",
+        accessor: "city",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "Postal Code",
+        accessor: "postalCode",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "Business ID",
+        accessor: "businessId",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
       {
@@ -123,7 +300,7 @@ const Supplier = () => {
               variant="contained"
               color="secondary"
               size="small"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDelete(row.original.name, row.original.id)}
               className="deletebtn"
             >
               Delete
@@ -148,7 +325,10 @@ const Supplier = () => {
         <button
           variant="contained"
           color="primary"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsModalOpen(true);
+            setEditingSupplier(null);
+          }}
           className="addnewbtntop"
         >
           New Supplier
@@ -161,7 +341,7 @@ const Supplier = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-                    <button
+          <button
             variant="outlined"
             color="secondary"
             onClick={handleClear}
@@ -171,36 +351,40 @@ const Supplier = () => {
           </button>
         </div>
         <div className="table-responsive">
-          <table className="table mt-3 custom-table" {...getTableProps()}>
-            <thead>
-              {headerGroups.map((headerGroup) => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <th {...column.getHeaderProps()}>
-                      {column.render("Header")}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody {...getTableBodyProps()}className="custom-table">
-              {rows.map((row) => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map((cell) => (
-                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+          {loading || error || _.isEmpty(data) ? (
+            <TableChecker loading={loading} error={error} data={data} />
+          ) : (
+            <table className="table mt-3 custom-table" {...getTableProps()}>
+              <thead>
+                {headerGroups.map((headerGroup) => (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      <th {...column.getHeaderProps()}>
+                        {column.render("Header")}
+                      </th>
                     ))}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </thead>
+              <tbody {...getTableBodyProps()} className="custom-table">
+                {rows.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => (
+                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Form Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
             <div className="modal-content custom-modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
