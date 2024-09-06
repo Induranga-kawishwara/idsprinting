@@ -13,7 +13,7 @@ export const createSupplier = async (req, res) => {
     address1,
     address2,
     city,
-    postalcode,
+    postalCode,
     businessId,
     additionalData,
   } = req.body;
@@ -31,14 +31,12 @@ export const createSupplier = async (req, res) => {
     const lowerCaseEmail = email ? email.toLowerCase() : " ";
 
     // Query for all documents where name matches the provided lowercase name
-    const existingSupplierNameSnapshot = await customersCollection
+    const existingSupplierNameSnapshot = await suppliersCollection
       .where("name", "==", lowerCaseName)
       .get();
 
-    if (existingSupplierNameSnapshot) {
-      return res
-        .status(400)
-        .send({ message: "Customer with this full name already exists." });
+    if (!existingSupplierNameSnapshot.empty) {
+      return res.status(400).send({ message: "Supplier name already exists." });
     }
 
     const supplier = new Supplier(
@@ -48,7 +46,7 @@ export const createSupplier = async (req, res) => {
       address1,
       address2,
       city,
-      postalcode,
+      postalCode,
       businessId,
       additionalData
     );

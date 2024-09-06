@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useTable } from "react-table";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Button, Modal } from "@mui/material";
 import axios from "axios";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
@@ -352,9 +351,9 @@ const Customer = () => {
     tableInstance;
 
   const clearFilters = () => {
-      setSearchQuery(""); // Reset the search query
-    };
-    
+    setSearchQuery(""); // Reset the search query
+  };
+
   return (
     <div className="bodyofpage">
       <div className="container">
@@ -384,7 +383,6 @@ const Customer = () => {
           >
             Clear
           </button>
-
         </div>
         <div className="table-responsive">
           {loading || error || _.isEmpty(data) ? (
@@ -402,7 +400,7 @@ const Customer = () => {
                   </tr>
                 ))}
               </thead>
-              <tbody {...getTableBodyProps()}className="custom-table">
+              <tbody {...getTableBodyProps()} className="custom-table">
                 {rows.map((row) => {
                   prepareRow(row);
                   return (
@@ -418,9 +416,6 @@ const Customer = () => {
           )}
         </div>
 
-
-
-        
         <CustomerFormModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
