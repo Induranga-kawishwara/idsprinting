@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, TextField } from '@mui/material';
 import jsPDF from 'jspdf'; // Import jsPDF for PDF generation
-import './SalesHistory.scss';
+// import './SalesHistory.scss';
 
 const SalesHistory = () => {
   const [salesHistory, setSalesHistory] = useState([

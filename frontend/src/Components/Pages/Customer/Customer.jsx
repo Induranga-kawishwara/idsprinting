@@ -2,7 +2,6 @@ import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useTable } from "react-table";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-import "./Customer.scss";
 import axios from "axios";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
@@ -317,15 +316,15 @@ const Customer = () => {
         Header: "Actions",
         Cell: ({ row }) => (
           <div>
-            <Button
+            <button
               variant="contained"
               size="small"
               onClick={() => handleEdit(row.original)}
-              className="edit-btn"
+              className="editbtn"
             >
               Edit
-            </Button>{" "}
-            <Button
+            </button>{" "}
+            <button
               variant="contained"
               size="small"
               onClick={() =>
@@ -334,10 +333,10 @@ const Customer = () => {
                   row.original.id
                 )
               }
-              className="delete-btn"
+              className="deletebtn"
             >
               Delete
-            </Button>
+            </button>
           </div>
         ),
       },
@@ -352,34 +351,46 @@ const Customer = () => {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
 
+  const clearFilters = () => {
+      setSearchQuery(""); // Reset the search query
+    };
+    
   return (
-    <div className="customer">
-      <div className="container mt-4">
-        <Button
+    <div className="bodyofpage">
+      <div className="container">
+        <button
           variant="contained"
           onClick={() => {
             setIsModalOpen(true);
             setEditingCustomer(null);
           }}
-          className="newitem-btn"
+          className="addnewbtntop"
         >
-          New Client
-        </Button>
+          New Customer
+        </button>
 
-        <div className="mt-3 mb-3">
+        <div className="d-flex align-items-center mb-3">
           <input
             type="text"
-            className="form-control"
+            className="searchfunctions"
             placeholder="Search by name, surname, or phone"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <button
+            variant="contained"
+            onClick={clearFilters}
+            className="prevbutton"
+          >
+            Clear
+          </button>
+
         </div>
         <div className="table-responsive">
           {loading || error || _.isEmpty(data) ? (
             <TableChecker loading={loading} error={error} data={data} />
           ) : (
-            <table {...getTableProps()} className="table table-striped mt-3">
+            <table {...getTableProps()} className="table mt-3 custom-table">
               <thead>
                 {headerGroups.map((headerGroup) => (
                   <tr {...headerGroup.getHeaderGroupProps()}>
@@ -391,7 +402,7 @@ const Customer = () => {
                   </tr>
                 ))}
               </thead>
-              <tbody {...getTableBodyProps()}>
+              <tbody {...getTableBodyProps()}className="custom-table">
                 {rows.map((row) => {
                   prepareRow(row);
                   return (
@@ -407,6 +418,9 @@ const Customer = () => {
           )}
         </div>
 
+
+
+        
         <CustomerFormModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}

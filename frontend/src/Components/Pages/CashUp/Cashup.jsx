@@ -3,7 +3,12 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-import "./Cashup.scss"; // Create this file for your styles
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "../All.scss";
+
+// Constants for pagination
+const ITEMS_PER_PAGE = 100;
 
 const initialCashups = [
   {
@@ -14,6 +19,7 @@ const initialCashups = [
     amount: "5000.00",
     addedDate: "2024-08-13",
     addedTime: "15:00",
+    addedBy: "John Doe", // Add this field
   },
   // Add more cashups if needed
 ];
@@ -27,12 +33,20 @@ const CashupSchema = Yup.object().shape({
     otherwise: (schema) => schema.notRequired(),
   }),
   amount: Yup.number().required("Amount is required"),
+  addedBy: Yup.string().required("Added By is required"),
 });
 
 const Cashup = () => {
   const [cashups, setCashups] = useState(initialCashups);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCashup, setEditingCashup] = useState(null);
+  const [dateRange, setDateRange] = useState({
+    start: null,
+    end: null,
+  });
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
 
   // State for search and filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,16 +54,37 @@ const Cashup = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // Function to clear all filters and search inputs
+  const clearFilters = () => {
+    setSearchTerm("");
+    setFilterType("");
+    setDateRange({ start: null, end: null });
+    setStartDate("");
+    setEndDate("");
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(cashups.length / ITEMS_PER_PAGE);
+  const paginatedCashups = cashups.slice(
+    currentPage * ITEMS_PER_PAGE,
+    (currentPage + 1) * ITEMS_PER_PAGE
+  );
+
   // Filtered cashups based on search and filter criteria
-  const filteredCashups = cashups.filter((cashup) => {
+  const filteredCashups = paginatedCashups.filter((cashup) => {
     const date = new Date(cashup.addedDate);
     const isWithinDateRange =
       (!startDate || date >= new Date(startDate)) &&
       (!endDate || date <= new Date(endDate));
 
+    // Search by both reasonName and amount
+    const searchValue = searchTerm.toLowerCase();
+    const isSearchMatched =
+      cashup.reasonName.toLowerCase().includes(searchValue) ||
+      cashup.amount.toString().includes(searchValue); // Convert amount to string for comparison
+
     return (
-      (searchTerm === "" ||
-        cashup.reasonName.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      isSearchMatched &&
       (filterType === "" || cashup.profitOrOther === filterType) &&
       isWithinDateRange
     );
@@ -98,56 +133,74 @@ const Cashup = () => {
   };
 
   return (
-    <div className="cashup">
-      <div className="container mt-4">
-        <Button
+    <div className="bodyofpage">
+      <div className="container">
+        <button
           variant="contained"
           color="primary"
           onClick={() => setIsModalOpen(true)}
-          className="new-cashup-btn"
+          className="addnewbtntop"
         >
           New Cashup
-        </Button>
+        </button>
 
-        {/* Search and filter UI */}
-        <div className="mt-3">
+        
+        <div className="d-flex align-items-center mb-3">
           <input
             type="text"
-            placeholder="Search by Reason Name"
+            placeholder="Search by Reason Name or Amount"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-control mb-3"
-          />
+            className="searchfunctions me-2"
+          /><button
+            variant="contained"
+            color="secondary"
+            onClick={clearFilters}
+            className="prevbutton"
+          >
+            Clear
+          </button>
+          </div>
+
+          <div className="d-flex align-items-center mb-3">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="form-control mb-3"
+            className="formdropdown"
           >
             <option value="">All Types</option>
             <option value="Profit">Profit</option>
             <option value="Other">Other</option>
           </select>
-          <div className="mb-3">
-            <label>Start Date</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="form-control"
-            />
-          </div>
-          <div className="mb-3">
-            <label>End Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="form-control"
-            />
-          </div>
-        </div>
-        <div class="table-responsive">
-          <table className="table table-striped mt-3">
+         {/* Start Date Picker */}
+         <DatePicker
+        selected={dateRange.start}
+        onChange={(date) => setDateRange((prev) => ({ ...prev, start: date }))}
+        selectsStart
+        startDate={dateRange.start}
+        endDate={dateRange.end}
+        className="searchfunctionsdate me-2"
+        placeholderText="S.Date"
+        maxDate={dateRange.end || new Date()} // Prevent selecting a start date after the end date
+      />
+
+      {/* End Date Picker */}
+      <DatePicker
+        selected={dateRange.end}
+        onChange={(date) => setDateRange((prev) => ({ ...prev, end: date }))}
+        selectsEnd
+        startDate={dateRange.start}
+        endDate={dateRange.end}
+        className="searchfunctionsdate me-2"
+        placeholderText="E.Date"
+        minDate={dateRange.start} // Prevent selecting an end date before the start date
+      />
+</div>
+          
+        
+
+        <div className="table-responsive">
+          <table className="table mt-3 custom-table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -157,10 +210,11 @@ const Cashup = () => {
                 <th>Amount Rs</th>
                 <th>Added Date</th>
                 <th>Added Time</th>
+                <th>Added By</th> {/* New column for who added */}
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="custom-table">
               {filteredCashups.map((cashup) => (
                 <tr key={cashup.id}>
                   <td>{cashup.id}</td>
@@ -170,30 +224,52 @@ const Cashup = () => {
                   <td>{cashup.amount}</td>
                   <td>{cashup.addedDate}</td>
                   <td>{cashup.addedTime}</td>
+                  <td>{cashup.addedBy}</td> {/* Display who added */}
                   <td>
-                    <Button
+                    <button
                       variant="contained"
                       color="primary"
                       size="small"
                       onClick={() => handleEdit(cashup)}
-                      className="edit-btn"
+                      className="editbtn"
                     >
                       Edit
-                    </Button>{" "}
-                    <Button
+                    </button>{" "}
+                    <button
                       variant="contained"
                       color="secondary"
                       size="small"
                       onClick={() => handleDelete(cashup.id)}
-                      className="delete-btn"
+                      className="deletebtn"
                     >
                       Delete
-                    </Button>
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="pagination">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+            }
+            disabled={currentPage === totalPages - 1}
+          >
+            Next
+          </button>
         </div>
 
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -217,6 +293,7 @@ const Cashup = () => {
                     profitOrOther: editingCashup?.profitOrOther || "",
                     reasonDetails: editingCashup?.reasonDetails || "",
                     amount: editingCashup?.amount || "",
+                    addedBy: editingCashup?.addedBy || "", // New field for who added
                   }}
                   validationSchema={CashupSchema}
                   onSubmit={handleSubmit}
@@ -268,16 +345,25 @@ const Cashup = () => {
                           <div className="text-danger">{errors.amount}</div>
                         ) : null}
                       </div>
+                      <div className="mb-3">
+                        <label>Added By</label>
+                        <Field name="addedBy" className="form-control" />
+                        {errors.addedBy && touched.addedBy ? (
+                          <div className="text-danger">{errors.addedBy}</div>
+                        ) : null}
+                      </div>
                       <div className="modal-footer">
-                        <Button
+                        
+                        <button type="submit" variant="primary"className="savechangesbutton">
+                          {editingCashup ? "Update" : "Add"}
+                        </button>
+                        <button
                           variant="secondary"
                           onClick={() => setIsModalOpen(false)}
+                          className="closebutton"
                         >
                           Cancel
-                        </Button>
-                        <Button type="submit" variant="primary">
-                          {editingCashup ? "Update" : "Add"}
-                        </Button>
+                        </button>
                       </div>
                     </Form>
                   )}

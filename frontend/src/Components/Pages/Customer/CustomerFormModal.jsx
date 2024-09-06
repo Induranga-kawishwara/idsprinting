@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button } from '@mui/material';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import './Customer.scss'; // Adjust the import path as necessary
+// import './Customer.scss'; // Adjust the import path as necessary
 
 const CustomerSchema = Yup.object().shape({
   surname: Yup.string().required('Surname is required'),
@@ -20,10 +20,10 @@ const CustomerSchema = Yup.object().shape({
 const CustomerFormModal = ({ isOpen, onClose, onSubmit, initialValues }) => {
   return (
     <Modal open={isOpen} onClose={onClose}>
-      <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-        <div className="modal-content custom-modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">
+        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+            <div className="modal-content custom-modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
               {initialValues.id ? 'Edit Customer' : 'New Customer'}
             </h5>
             <Button
@@ -97,16 +97,16 @@ const CustomerFormModal = ({ isOpen, onClose, onSubmit, initialValues }) => {
                     ) : null}
                   </div>
                   <div className="d-flex justify-content-end">
-                    <Button variant="contained" type="submit" className="update-btn">
+                    <button variant="contained" type="submit" className="savechangesbutton">
                       {initialValues.id ? 'Update' : 'Add'}
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       variant="contained"
                       onClick={onClose}
-                      className="cancel-btn ms-2"
+                      className="closebutton"
                     >
                       Cancel
-                    </Button>
+                    </button>
                   </div>
                 </Form>
               )}

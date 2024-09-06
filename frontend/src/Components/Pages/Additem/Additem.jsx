@@ -4,7 +4,9 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-import "./AddItem.scss";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "../All.scss";
 
 const initialItems = [
   {
@@ -20,6 +22,8 @@ const initialItems = [
     retailPrice: "15.00",
     addedDate: "2024-08-13",
     addedTime: "14:30",
+    addedBy: "John Doe",
+    size: "Medium",
   },
   // Add more items if needed
 ];
@@ -27,34 +31,37 @@ const initialItems = [
 const ItemSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item Code is required"),
   itemName: Yup.string().required("Item Name is required"),
-  category: Yup.string(), // Optional field
+  category: Yup.string(),
   color: Yup.string().required("Color is required"),
-  qty: Yup.string(), // Optional field
+  qty: Yup.string(),
   buyingPrice: Yup.number().required("Buying Price is required"),
-  company: Yup.string(), // Optional field
-  wholesale: Yup.string(), // Optional field
+  company: Yup.string(),
+  wholesale: Yup.string(),
   retailPrice: Yup.number().required("Retail Price is required"),
-  // Exclude addedDate and addedTime from validation
 });
 
-// const suppliers = [
-//   { id: 1, name: "Supplier A" },
-//   { id: 2, name: "Supplier B" },
-//   { id: 3, name: "Supplier C" },
-//   // Add more suppliers as needed
-// ];
-const category = [
+const categoryOptions = [
   { id: 1, name: "category A" },
   { id: 2, name: "category B" },
   { id: 3, name: "category C" },
-  // Add more category as needed
 ];
+
+const sizeCategory = [
+  { value: "Small", label: "Small" },
+  { value: "Medium", label: "Medium" },
+  { value: "Large", label: "Large" },
+];
+
+const ITEMS_PER_PAGE = 100;
 
 const Item = () => {
   const [items, setItems] = useState(initialItems);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const [sizeFilter, setSizeFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
 
   const handleEdit = (item) => {
     setEditingItem(item);
@@ -82,6 +89,7 @@ const Item = () => {
                 id: editingItem.id,
                 addedDate: item.addedDate,
                 addedTime: item.addedTime,
+                addedBy: item.addedBy,
               }
             : item
         )
@@ -94,6 +102,7 @@ const Item = () => {
           id: items.length + 1,
           addedDate: formattedDate,
           addedTime: formattedTime,
+          addedBy: "John Doe", // Replace with actual user info
         },
       ]);
     }
@@ -101,11 +110,35 @@ const Item = () => {
     setEditingItem(null);
   };
 
-  const filteredItems = items.filter(
-    (item) =>
+  const clearFilters = () => {
+    setSearchQuery("");
+    setDateRange({ start: null, end: null });
+    setSizeFilter("");
+  };
+
+  const filteredItems = items.filter((item) => {
+    const isNameMatch =
       item.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.itemCode.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      item.itemCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.retailPrice.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const isSizeMatch = sizeFilter ? item.size === sizeFilter : true;
+
+    const isDateMatch =
+      (!dateRange.start || new Date(item.addedDate) >= new Date(dateRange.start)) &&
+      (!dateRange.end || new Date(item.addedDate) <= new Date(dateRange.end));
+
+    return isNameMatch && isSizeMatch && isDateMatch;
+  });
+
+  // Paginate filteredItems
+  const paginatedItems = useMemo(() => {
+    const startIndex = currentPage * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredItems.slice(startIndex, endIndex);
+  }, [filteredItems, currentPage]);
+
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
 
   const columns = useMemo(
     () => [
@@ -114,38 +147,35 @@ const Item = () => {
       { Header: "Item Name", accessor: "itemName" },
       { Header: "Stock Category", accessor: "category" },
       { Header: "Size Category", accessor: "size" },
-      { Header: "Thickness GSM", accessor: "gsmthickness " },
       { Header: "Color", accessor: "color" },
-      { Header: "Qty", accessor: "qty" },
       { Header: "Buying Price", accessor: "buyingPrice" },
-      // { Header: "Supplier", accessor: "supplier" }, // Supplier column
-      { Header: "Company", accessor: "company" },
       { Header: "Wholesale", accessor: "wholesale" },
       { Header: "Retail Price", accessor: "retailPrice" },
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
+      { Header: "Added By", accessor: "addedBy" },
       {
         Header: "Actions",
         Cell: ({ row }) => (
           <div>
-            <Button
+            <button
               variant="contained"
               color="primary"
               size="small"
               onClick={() => handleEdit(row.original)}
-              className="edit-btn"
+              className="editbtn"
             >
               Edit
-            </Button>{" "}
-            <Button
+            </button>{" "}
+            <button
               variant="contained"
               color="secondary"
               size="small"
               onClick={() => handleDelete(row.original.id)}
-              className="delete-btn"
+              className="deletebtn"
             >
               Delete
-            </Button>
+            </button>
           </div>
         ),
       },
@@ -153,35 +183,67 @@ const Item = () => {
     [handleDelete]
   );
 
-  const data = useMemo(() => filteredItems, [filteredItems]);
-
-  const tableInstance = useTable({ columns, data });
+  const tableInstance = useTable({ columns, data: paginatedItems });
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
 
   return (
-    <div className="item">
-      <div className="container mt-4">
-        <Button
+    <div className="bodyofpage">
+      <div className="container">
+        <button
           variant="contained"
           color="primary"
           onClick={() => setIsModalOpen(true)}
-          className="newitem-btn"
+          className="addnewbtntop"
         >
           New Item
-        </Button>
-        <div className="mt-3 mb-3">
+        </button>
+        <div className="d-flex align-items-center mb-3">
           <input
             type="text"
-            className="form-control"
-            placeholder="Search by item code or name"
+            className="searchfunctions me-2"
+            placeholder="Search by name, code, or price"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <DatePicker
+            selected={dateRange.start}
+            onChange={(date) => setDateRange((prev) => ({ ...prev, start: date }))}
+            selectsStart
+            startDate={dateRange.start}
+            endDate={dateRange.end}
+            className="searchfunctionsdate me-2"
+            placeholderText="S.Date"
+          />
+          <DatePicker
+            selected={dateRange.end}
+            onChange={(date) => setDateRange((prev) => ({ ...prev, end: date }))}
+            selectsEnd
+            startDate={dateRange.start}
+            endDate={dateRange.end}
+            className="searchfunctionsdate me-2"
+            placeholderText="E.Date"
+            minDate={dateRange.start}
+          />
+          <select
+            className="formdropdown me-2 "
+            value={sizeFilter}
+            onChange={(e) => setSizeFilter(e.target.value)}
+          >
+            <option value="">Size Category</option>
+            {sizeCategory.map((size) => (
+              <option key={size.value} value={size.value}>
+                {size.label}
+              </option>
+            ))}
+          </select>
+          <button className="prevbutton" onClick={clearFilters}>
+            Clear
+          </button>
         </div>
-        <div class="table-responsive">
-          <table {...getTableProps()} className="table table-striped mt-3">
+        <div className="table-responsive">
+          <table {...getTableProps()} className="table mt-3 custom-table">
             <thead>
               {headerGroups.map((headerGroup) => (
                 <tr {...headerGroup.getHeaderGroupProps()}>
@@ -193,7 +255,7 @@ const Item = () => {
                 </tr>
               ))}
             </thead>
-            <tbody {...getTableBodyProps()}>
+            <tbody {...getTableBodyProps()}className="custom-table">
               {rows.map((row) => {
                 prepareRow(row);
                 return (
@@ -206,6 +268,27 @@ const Item = () => {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="pagination">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+            }
+            disabled={currentPage === totalPages - 1}
+          >
+            Next
+          </button>
         </div>
 
         {/* Form Modal */}
@@ -235,14 +318,14 @@ const Item = () => {
                     company: editingItem?.company || "",
                     wholesale: editingItem?.wholesale || "",
                     retailPrice: editingItem?.retailPrice || "",
-                    supplier: editingItem?.supplier || "", // Add this line
+                    supplier: editingItem?.supplier || "",
                   }}
                   validationSchema={ItemSchema}
                   onSubmit={handleSubmit}
                 >
                   {({ errors, touched }) => (
                     <Form>
-                      <br />
+                      {/* Form Fields */}
                       <div className="mb-3">
                         <label>Item Code</label>
                         <Field name="itemCode" className="form-control" />
@@ -257,10 +340,7 @@ const Item = () => {
                           <div className="text-danger">{errors.itemName}</div>
                         ) : null}
                       </div>
-                      {/* <div className="mb-3">
-                        <label>Stock Category</label>
-                        <Field name="category" className="form-control" />
-                      </div> */}
+
                       <div className="mb-3">
                         <label>Stock Category</label>
                         <Field
@@ -275,7 +355,7 @@ const Item = () => {
                             disabled
                             hidden
                           />
-                          {category.map((category) => (
+                          {categoryOptions.map((category) => (
                             <option
                               className="form-control"
                               key={category.id}
@@ -314,34 +394,6 @@ const Item = () => {
                           </div>
                         ) : null}
                       </div>
-                      {/* <div className="mb-3">
-  <label>Supplier</label>
-  <Field
-    as="select"
-    name="supplier"
-    className="form-control"
-  >
-    <option
-      className="form-control"
-      value=""
-      label="Select a supplier"
-      disabled
-      hidden
-    />
-    {suppliers.map((supplier) => (
-      <option
-        className="form-control"
-        key={supplier.id}
-        value={supplier.name}
-      >
-        {supplier.name}
-      </option>
-    ))}
-  </Field>
-  {errors.supplier && touched.supplier ? (
-    <div className="text-danger">{errors.supplier}</div>
-  ) : null}
-</div> */}
 
                       <div className="mb-3">
                         <label>Company</label>
@@ -364,23 +416,24 @@ const Item = () => {
                           </div>
                         ) : null}
                       </div>
+
                       <div className="d-flex justify-content-end">
-                        <Button
+                        <button
                           variant="contained"
                           color="primary"
                           type="submit"
-                          className="update-btn" // Apply update button class
+                          className="savechangesbutton"
                         >
                           {editingItem ? "Update" : "Add"}
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           variant="contained"
                           color="secondary"
                           onClick={() => setIsModalOpen(false)}
-                          className="cancel-btn ms-2" // Apply cancel button class
+                          className="closebutton"
                         >
                           Cancel
-                        </Button>
+                        </button>
                       </div>
                     </Form>
                   )}

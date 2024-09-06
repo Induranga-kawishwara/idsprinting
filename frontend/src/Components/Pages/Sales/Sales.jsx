@@ -3,7 +3,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-import "./Sales.scss";
+// import "./Sales.scss";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
 import CustomerFormModal from '../Customer/CustomerFormModal'; // Adjust the import path

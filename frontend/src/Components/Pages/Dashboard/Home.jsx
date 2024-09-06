@@ -1,6 +1,6 @@
 // src/Pages/Dashboard/Home.jsx
 import React from "react";
-import "./Home.scss";
+// import "./Home.scss";
 // Assuming Dashboard component is defined in this file itself or another component
 
 const Home = () => {

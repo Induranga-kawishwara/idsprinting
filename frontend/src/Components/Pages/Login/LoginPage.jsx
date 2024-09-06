@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./LoginPage.scss";
+// import "./LoginPage.scss";
 import logo from "../../../Assest/logo.png";
 
 const Login = () => {
