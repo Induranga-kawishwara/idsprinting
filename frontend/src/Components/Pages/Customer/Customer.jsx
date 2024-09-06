@@ -5,7 +5,8 @@ import axios from "axios";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
 import CustomerFormModal from "./CustomerFormModal"; // Adjust the import path
-import socket from "../../../SocketConnection/SocketConnection.js";
+import socket from "../../Utility/SocketConnection.js";
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
 const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -23,32 +24,15 @@ const Customer = () => {
         );
 
         const formattedCustomers = customerData.data.map((customer) => {
-          const utcDate = new Date(customer.addedDateAndTime);
-          const sltDate = new Date(
-            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-          );
-
+          const { date, time } = ConvertToSLT(customer.addedDateAndTime);
           return {
+            ...customer,
             id: customer.id,
-            name: customer.name,
             surname: customer.surName,
-            email: customer.email,
             phone: customer.contactNumber,
             totalSpent: "100", // Example data; replace with real data if needed
-            houseNo: customer.houseNo,
-            street: customer.street,
-            city: customer.city,
-            postalCode: customer.postalcode,
-            customerType: customer.customerType,
-            addedDate: sltDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }),
-            addedTime: sltDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
+            addedDate: date,
+            addedTime: time,
           };
         });
 
@@ -65,49 +49,28 @@ const Customer = () => {
 
     // Listen for real-time customer updates
     socket.on("customerAdded", (newCustomer) => {
-      const utcDate = new Date(newCustomer.addedDateAndTime);
-      const sltDate = new Date(
-        utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-      );
-
+      const { date, time } = ConvertToSLT(newCustomer.addedDateAndTime);
       const newCustomeradded = {
         ...newCustomer,
         surname: newCustomer.surName,
         phone: newCustomer.contactNumber,
         postalCode: newCustomer.postalcode,
-        addedDate: sltDate.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }),
-        addedTime: sltDate.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        addedDate: date,
+        addedTime: time,
         totalSpent: "500", // Example data; replace with real data if needed
       };
       setCustomers((prevCustomers) => [newCustomeradded, ...prevCustomers]);
     });
 
     socket.on("customerUpdated", (updatedCustomer) => {
-      const utcDate = new Date(updatedCustomer.addedDateAndTime);
-      const sltDate = new Date(
-        utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-      );
+      const { date, time } = ConvertToSLT(updatedCustomer.addedDateAndTime);
 
       const newupdatedCustomer = {
         ...updatedCustomer,
         surname: updatedCustomer.surName,
         postalCode: updatedCustomer.postalcode,
-        addedDate: sltDate.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }),
-        addedTime: sltDate.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        addedDate: date,
+        addedTime: time,
         totalSpent: "600", // Example data; replace with real data if needed
       };
       setCustomers((prevCustomers) =>
@@ -163,15 +126,9 @@ const Customer = () => {
     const currentDate = new Date();
 
     const data = {
-      name: values.name,
+      ...values,
       surName: values.surname,
-      email: values.email,
       contactNumber: values.phone,
-      houseNo: values.houseNo,
-      street: values.street,
-      city: values.city,
-      postalcode: values.postalCode,
-      customerType: values.customerType,
       addedDateAndTime: currentDate.toISOString(), // Automatically include the current date and time
     };
 
@@ -181,19 +138,13 @@ const Customer = () => {
           `http://localhost:8080/customers/customer/${editingCustomer.id}`,
           data
         );
+        const { date, time } = ConvertToSLT(currentDate);
 
         const updatedCustomer = {
           ...values,
           id: editingCustomer.id,
-          addedDate: currentDate.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          }),
-          addedTime: currentDate.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          addedDate: date,
+          addedTime: time,
           totalSpent: "200", // Example data; replace with real data if needed
         };
 
@@ -217,19 +168,13 @@ const Customer = () => {
           "http://localhost:8080/customers/customer",
           data
         );
+        const { date, time } = ConvertToSLT(currentDate);
 
         const newCustomer = {
           ...values,
           id: response.data.id,
-          addedDate: currentDate.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          }),
-          addedTime: currentDate.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          addedDate: date,
+          addedTime: time,
           totalSpent: "100", // Example data; replace with real data if needed
         };
 

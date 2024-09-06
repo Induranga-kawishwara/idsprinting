@@ -11,13 +11,8 @@ import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
 import _ from "lodash";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import "../All.scss";
-
-const suppliers = [
-  { id: 1, name: "Supplier A" },
-  { id: 2, name: "Supplier B" },
-  { id: 3, name: "Supplier C" },
-  // Add more suppliers as needed
-];
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import socket from "../../Utility/SocketConnection.js";
 
 const ExpenseSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -61,48 +56,42 @@ const Expenses = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0); // Current page state
+  const [supplier, setSupplier] = useState([]);
   const itemsPerPage = 10; // Define how many items per page you want
   const totalPages = Math.ceil(expenses.length / itemsPerPage); // Calculate total pages
-
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const expensesData = await axios.get(
-          "https://idsprinting.vercel.app/expenses/"
-          // "http://localhost:8080/expenses/"
-        );
+        // Fetch both expenses and suppliers concurrently
+        const [expensesData, suppliersData] = await Promise.all([
+          axios.get("http://localhost:8080/expenses/"),
+          axios.get("http://localhost:8080/suppliers/"),
+        ]);
 
-        const formattedExpenses = expensesData.data.map((expense, index) => {
-          const utcDate = new Date(expense.dateAndTime);
-          const sltDate = new Date(
-            utcDate.toLocaleString("en-US", { timeZone: "Asia/Colombo" })
-          );
+        // Format suppliers data (only extracting id and name)
+        const needDetailsSuppliers = suppliersData.data.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.name,
+        }));
 
+        // Format expenses data with date and time conversion
+        const formattedExpenses = expensesData.data.map((expense) => {
+          const { date, time } = ConvertToSLT(expense.dateAndTime);
           return {
+            ...expense,
             id: expense.id,
             name: expense.expensesname,
             type: expense.expensesType,
-            supplier: expense.supplier,
-            other: expense.other,
-            description: expense.description,
-            amount: expense.amount,
-            paymentMethod: expense.paymentMethod,
-            addedDate: sltDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }),
-            addedTime: sltDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            invoiceNumber: expense.invoiceNumber,
+            addedDate: date,
+            addedTime: time,
             photo: expense.image,
           };
         });
 
+        // Update state
         setExpenses(formattedExpenses);
+        setSupplier(needDetailsSuppliers);
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -111,7 +100,82 @@ const Expenses = () => {
       }
     };
 
+    // Call fetchData once
     fetchData();
+
+    // Listen for real-time expenses updates
+    socket.on("expensesAdded", (newexpenses) => {
+      const { date, time } = ConvertToSLT(newexpenses.dateAndTime);
+
+      const newExpenses = {
+        ...newexpenses,
+        name: newexpenses.expensesname,
+        type: newexpenses.expensesType,
+        addedDate: date,
+        addedTime: time,
+        photo: newexpenses.image,
+      };
+      setExpenses((prevExpenses) => [newExpenses, ...prevExpenses]);
+    });
+
+    socket.on("expensesUpdated", (updatedExpenses) => {
+      const { date, time } = ConvertToSLT(updatedExpenses.dateAndTime);
+
+      const newUpdatedExpenses = {
+        ...updatedExpenses,
+        name: updatedExpenses.expensesname,
+        type: updatedExpenses.expensesType,
+        addedDate: date,
+        addedTime: time,
+        photo: updatedExpenses.image,
+      };
+      setExpenses((prevExpenses) =>
+        prevExpenses.map((expenses) =>
+          expenses.id === updatedExpenses.id ? newUpdatedExpenses : expenses
+        )
+      );
+    });
+
+    socket.on("expensesDeleted", ({ id }) => {
+      setExpenses((prevExpenses) =>
+        prevExpenses.filter((expense) => expense.id !== id)
+      );
+    });
+
+    socket.on("supplierAdded", (newsupplier) => {
+      setSupplier((prevsuppliers) => [
+        { id: newsupplier.id, name: newsupplier.name },
+        ...prevsuppliers,
+      ]);
+    });
+
+    socket.on("supplierUpdated", (updatedsupplier) => {
+      setSupplier((prevsuppliers) =>
+        prevsuppliers.map((supplier) =>
+          supplier.id === updatedsupplier.id
+            ? { id: updatedsupplier.id, name: updatedsupplier.name }
+            : supplier
+        )
+      );
+    });
+
+    socket.on("supplierDeleted", ({ id }) => {
+      setSupplier((prevsuppliers) =>
+        prevsuppliers.filter((supplier) => supplier.id !== id)
+      );
+    });
+
+    return () => {
+      socket.off("expensesAdded");
+      socket.off("expensesUpdated");
+      socket.off("expensesDeleted");
+
+      //////
+
+      socket.off("supplierAdded");
+      socket.off("supplierUpdated");
+      socket.off("supplierDeleted");
+    };
   }, []);
 
   const handleEdit = (expense) => {
@@ -128,12 +192,11 @@ const Expenses = () => {
       if (confirmDelete) {
         try {
           const response = await axios.delete(
-            `https://idsprinting.vercel.app/expenses/expenses/${id}`
+            `http://localhost:8080/expenses/expenses/${id}`
           );
 
-          setExpenses((prevExpenses) =>
-            prevExpenses.filter((expense) => expense.id !== id)
-          );
+          socket.emit("expensesDeleted", { id });
+
           alert(response.data.message);
         } catch (error) {
           console.error("Error deleting expense:", error);
@@ -154,16 +217,11 @@ const Expenses = () => {
     );
 
     const data = {
+      ...values,
       expensesname: values.name,
       expensesType: values.type,
-      supplier: values.supplier,
-      other: values.other,
-      description: values.description,
-      amount: values.amount,
-      paymentMethod: values.paymentMethod,
       bankTranferNum: values.bankTransferNumber,
       chequeNum: values.chequeNumber,
-      invoiceNumber: values.invoiceNumber,
       image: downloadURL,
     };
 
@@ -176,21 +234,18 @@ const Expenses = () => {
         const isoDateString = dateObject.toISOString();
 
         const response = await axios.put(
-          `https://idsprinting.vercel.app/expenses/expenses/${editingExpense.id}`,
+          `http://localhost:8080/expenses/expenses/${editingExpense.id}`,
           { ...data, dateAndTime: isoDateString }
         );
-        setExpenses(
-          expenses.map((expense) =>
-            expense.id === editingExpense.id
-              ? {
-                  ...values,
-                  id: editingExpense.id,
-                  addedDate: expense.addedDate,
-                  addedTime: expense.addedTime,
-                }
-              : expense
-          )
-        );
+        const updatedExpenses = {
+          ...values,
+          id: editingExpense.id,
+          addedDate: editingExpense.addedDate,
+          addedTime: editingExpense.addedTime,
+        };
+
+        socket.emit("expensesUpdated", updatedExpenses);
+
         alert(response.data.message);
       } catch (error) {
         console.error("Error updating expense:", error);
@@ -198,33 +253,34 @@ const Expenses = () => {
       }
     } else {
       try {
+        const { date, time } = ConvertToSLT(currentDate);
+
         const response = await axios.post(
-          "https://idsprinting.vercel.app/expenses/expenses",
+          "http://localhost:8080/expenses/expenses",
           { ...data, dateAndTime: currentDate }
         );
 
-        setExpenses([
-          {
-            ...values,
-            id: response.data.id,
-            addedDate: currentDate.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            }),
-            addedTime: currentDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            photo: downloadURL,
-          },
-          ...expenses,
-        ]);
+        const newExpenses = {
+          ...values,
+          id: response.data.id,
+          addedDate: date,
+          addedTime: time,
+          photo: downloadURL,
+        };
+        socket.emit("expensesAdded", newExpenses);
 
         alert(response.data.message);
       } catch (error) {
-        console.error("Error deleting expense:", error);
-        alert("Failed to add the expense. Please try again.");
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the expense. Please try again.");
+        }
       }
     }
     setIsModalOpen(false);
@@ -241,7 +297,7 @@ const Expenses = () => {
       !paymentMethodFilter || expense.paymentMethod === paymentMethodFilter;
     const matchesTypeOfExpenses =
       !typeOfExpensesFilter || expense.type === typeOfExpensesFilter; // New condition for type filter
-  
+
     return (
       isWithinDateRange &&
       matchesPaymentMethod &&
@@ -251,7 +307,6 @@ const Expenses = () => {
         expense.amount.toString().includes(searchString))
     );
   });
-  
 
   const columns = useMemo(
     () => [
@@ -279,7 +334,7 @@ const Expenses = () => {
         Header: "Added By",
         accessor: "addedBy",
       },
-      
+
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
       { Header: "Invoice Number", accessor: "invoiceNumber" },
@@ -333,11 +388,6 @@ const Expenses = () => {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
 
-    const paginatedExpenses = expenses.slice(
-      currentPage * itemsPerPage,
-      (currentPage + 1) * itemsPerPage
-    );
-
   return (
     <div className="bodyofpage">
       <div className="container">
@@ -360,75 +410,72 @@ const Expenses = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        
-            
         </div>
-            <div className="d-flex align-items-center mb-3">
+        <div className="d-flex align-items-center mb-3">
+          <DatePicker
+            selected={startDate}
+            onChange={(date) => setStartDate(date)}
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            placeholderText="Start Date"
+            className="searchfunctionsdate me-2"
+          />
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate}
+            placeholderText="End Date"
+            className="searchfunctionsdate me-2"
+          />
+          <select
+            className="formdropdown"
+            value={paymentMethodFilter}
+            onChange={(e) => setPaymentMethodFilter(e.target.value)}
+          >
+            <option value="" disabled>
+              Payment Method
+            </option>
+            <option value="Card">Card</option>
+            <option value="Cash">Cash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cheque">Cheque</option>
+          </select>
 
-            <DatePicker
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-              selectsStart
-              startDate={startDate}
-              endDate={endDate}
-              placeholderText="Start Date"
-              className="searchfunctionsdate me-2"
-            />
-            <DatePicker 
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              selectsEnd
-              startDate={startDate}
-              endDate={endDate}
-              minDate={startDate}
-              placeholderText="End Date"
-              className="searchfunctionsdate me-2"
-            />
-              <select
-                className="formdropdown"
-                value={paymentMethodFilter}
-                onChange={(e) => setPaymentMethodFilter(e.target.value)}
-              >
-                <option value=""disabled>Payment Method</option>
-                <option value="Card">Card</option>
-                <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Cheque">Cheque</option>
-              </select>
-            
-              <select
-                className="formdropdown"
-                value={typeOfExpensesFilter} 
-                onChange={(e) => setTypeOfExpensesFilter(e.target.value)}  
-              >
-                <option value=""disabled>Expenses Type</option>
-                <option value="Suppliers">Suppliers</option>
-                <option value="Others">Others</option>
-                <option value="Electricity Bill">Electricity Bill</option>
-                <option value="Gas Bill">Gas Bill</option>
-                <option value="Phone Bill">Phone Bill</option>
-                {/* Add any other types of expenses */}
-              </select>
-            
+          <select
+            className="formdropdown"
+            value={typeOfExpensesFilter}
+            onChange={(e) => setTypeOfExpensesFilter(e.target.value)}
+          >
+            <option value="" disabled>
+              Expenses Type
+            </option>
+            <option value="Suppliers">Suppliers</option>
+            <option value="Others">Others</option>
+            <option value="Electricity Bill">Electricity Bill</option>
+            <option value="Gas Bill">Gas Bill</option>
+            <option value="Phone Bill">Phone Bill</option>
+            {/* Add any other types of expenses */}
+          </select>
 
-              <button
-                variant="contained"
-                color="secondary"
-                className="prevbutton"
-                onClick={() => {
-                  setSearchQuery("");
-                  setStartDate(null);
-                  setEndDate(null);
-                  setPaymentMethodFilter("");
-                  setTypeOfExpensesFilter("");  
-                }}
-              >
-                Clear 
-              </button>
-            </div>
-
-
-
+          <button
+            variant="contained"
+            color="secondary"
+            className="prevbutton"
+            onClick={() => {
+              setSearchQuery("");
+              setStartDate(null);
+              setEndDate(null);
+              setPaymentMethodFilter("");
+              setTypeOfExpensesFilter("");
+            }}
+          >
+            Clear
+          </button>
+        </div>
 
         <div className="table-responsive">
           {loading || error || _.isEmpty(data) ? (
@@ -449,7 +496,7 @@ const Expenses = () => {
                   </tr>
                 ))}
               </thead>
-              <tbody {...getTableBodyProps()}className="custom-table">
+              <tbody {...getTableBodyProps()} className="custom-table">
                 {rows.map((row) => {
                   prepareRow(row);
                   return (
@@ -468,28 +515,28 @@ const Expenses = () => {
         </div>
 
         {/* Pagination Controls */}
-      <div className="pagination">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-          disabled={currentPage === 0}
-        >
-          Previous
-        </button>
-        <span>
-          Page {currentPage + 1} of {totalPages}
-        </span>
-        <button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
-          }
-          disabled={currentPage === totalPages - 1}
-        >
-          Next
-        </button>
-      </div>
- {/* Form Modal */}
+        <div className="pagination">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+            }
+            disabled={currentPage === totalPages - 1}
+          >
+            Next
+          </button>
+        </div>
+        {/* Form Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
             <div className="modal-content custom-modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
@@ -580,7 +627,7 @@ const Expenses = () => {
                             }`}
                           >
                             <option value="">Select Supplier</option>
-                            {suppliers.map((supplier) => (
+                            {supplier.map((supplier) => (
                               <option key={supplier.id} value={supplier.name}>
                                 {supplier.name}
                               </option>
@@ -710,7 +757,16 @@ const Expenses = () => {
                       )}
                       <div className="mb-3">
                         <label htmlFor="invoiceNumber">Invoice Number</label>
-                        <Field name="invoiceNumber" className="form-control" />
+                        <Field
+                          name="invoiceNumber"
+                          className={`form-control ${
+                            errors.invoiceNumber && touched.invoiceNumber
+                              ? "is-invalid"
+                              : touched.invoiceNumber
+                              ? "is-valid"
+                              : ""
+                          }`}
+                        />
                       </div>
                       <div className="mb-3">
                         <label htmlFor="photo">Upload Photo</label>
@@ -734,7 +790,6 @@ const Expenses = () => {
                         >
                           Cancel
                         </button>
-                        
                       </div>
                     </Form>
                   )}

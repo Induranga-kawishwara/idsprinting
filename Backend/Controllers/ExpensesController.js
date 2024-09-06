@@ -38,11 +38,13 @@ export const createExpenses = async (req, res) => {
     );
 
     const docRef = await ExpensessCollection.add({ ...expenses });
+    const newExpenses = { id: docRef.id, ...expenses };
+
     res
       .status(201)
       .send({ message: "Expenses created successfully", id: docRef.id });
 
-    broadcastCustomerChanges("expensesAdded", expenses);
+    broadcastCustomerChanges("expensesAdded", newExpenses);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -109,9 +111,10 @@ export const updateExpenses = async (req, res) => {
 // Delete a Expenses
 export const deleteExpenses = async (req, res) => {
   const { id } = req.params;
+  console.log(id);
 
   try {
-    const doc = await customersCollection.doc(id).get();
+    const doc = await ExpensessCollection.doc(id).get();
     if (!doc.exists) {
       return res.status(404).json({ message: "Expenses not found" });
     }

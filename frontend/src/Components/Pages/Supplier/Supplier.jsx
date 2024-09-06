@@ -4,6 +4,11 @@ import * as Yup from "yup";
 import { Button, Modal } from "@mui/material";
 import { useTable } from "react-table";
 import "../All.scss";
+import socket from "../../Utility/SocketConnection.js";
+import axios from "axios";
+import _ from "lodash";
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
 const SupplierSchema = Yup.object().shape({
   name: Yup.string().required("Supplier Name is required"),
@@ -40,6 +45,78 @@ const Supplier = () => {
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const supplierData = await axios.get(
+          "http://localhost:8080/suppliers/"
+        );
+
+        const formattedSuppliers = supplierData.data.map((supplier) => {
+          const { date, time } = ConvertToSLT(supplier.dateAndTime);
+
+          return {
+            ...supplier,
+            id: supplier.id,
+            addedDate: date,
+            addedTime: time,
+          };
+        });
+
+        setup(formattedSuppliers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Listen for real-time supplier updates
+    socket.on("supplierAdded", (newsupplier) => {
+      const { date, time } = ConvertToSLT(newsupplier.dateAndTime);
+
+      const newsupplieradded = {
+        ...newsupplier,
+        addedDate: date,
+        addedTime: time,
+      };
+      setup((prevsuppliers) => [newsupplieradded, ...prevsuppliers]);
+    });
+
+    socket.on("supplierUpdated", (updatedsupplier) => {
+      const { date, time } = ConvertToSLT(updatedsupplier.dateAndTime);
+
+      const newupdatedsupplier = {
+        ...updatedsupplier,
+        addedDate: date,
+        addedTime: time,
+      };
+      setup((prevsuppliers) =>
+        prevsuppliers.map((supplier) =>
+          supplier.id === updatedsupplier.id ? newupdatedsupplier : supplier
+        )
+      );
+    });
+
+    socket.on("supplierDeleted", ({ id }) => {
+      setup((prevsuppliers) =>
+        prevsuppliers.filter((supplier) => supplier.id !== id)
+      );
+    });
+
+    return () => {
+      socket.off("supplierAdded");
+      socket.off("supplierUpdated");
+      socket.off("supplierDeleted");
+    };
+  }, []);
+
   const handleEdit = (supplier) => {
     setEditingSupplier(supplier);
     setIsModalOpen(true);
@@ -68,6 +145,36 @@ const Supplier = () => {
             : supplier
         )
       );
+
+    const { date, time } = ConvertToSLT(currentDate);
+
+    const data = {
+      ...values,
+      dateAndTime: currentDate.toISOString(), // Automatically include the current date and time
+    };
+
+    if (editingSupplier) {
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/suppliers/supplier/${editingSupplier.id}`,
+          data
+        );
+
+        const updatedsupplier = {
+          ...values,
+          id: editingSupplier.id,
+          addedDate: date,
+          addedTime: time,
+        };
+
+        // Emit event for supplier update
+        socket.emit("supplierUpdated", updatedsupplier);
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error updating Supplier:", error);
+        alert("Failed to update the Supplier. Please try again.");
+      }
     } else {
       setSuppliers([
         ...suppliers,
@@ -78,6 +185,27 @@ const Supplier = () => {
           addedTime: formattedTime,
         },
       ]);
+          id: response.data.id,
+          addedDate: date,
+          addedTime: time,
+        };
+
+        // Emit event for new supplier
+        socket.emit("supplierAdded", newsupplier);
+
+        alert(response.data.message);
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the customer. Please try again.");
+        }
+      }
     }
     setIsModalOpen(false);
     setEditingSupplier(null);
@@ -98,12 +226,49 @@ const Supplier = () => {
       { Header: "ID", accessor: "id" },
       { Header: "Supplier Name", accessor: "name" },
       { Header: "Contact Number", accessor: "contactNumber" },
-      { Header: "Email Address", accessor: "email" },
+            { Header: "Email Address", accessor: "email" },
       { Header: "Address 1", accessor: "address1" },
       { Header: "Address 2", accessor: "address2" },
       { Header: "City", accessor: "city" },
       { Header: "Postal Code", accessor: "postalCode" },
       { Header: "Business ID", accessor: "businessId" },
+
+      {
+        Header: "Email Address",
+        accessor: "email",
+        Cell: ({ value }) => (value ? value : "-"), // Show "-" if empty
+      },
+      {
+        Header: "Address 1",
+        accessor: "address1",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "Address 2",
+        accessor: "address2",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "City",
+        accessor: "city",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "Postal Code",
+        accessor: "postalCode",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "Business ID",
+        accessor: "businessId",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "Additional Data",
+        accessor: "additionalData",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
       {

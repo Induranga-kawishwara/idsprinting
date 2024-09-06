@@ -16,6 +16,7 @@ export const createSupplier = async (req, res) => {
     postalCode,
     businessId,
     additionalData,
+    dateAndTime,
   } = req.body;
 
   try {
@@ -48,7 +49,8 @@ export const createSupplier = async (req, res) => {
       city,
       postalCode,
       businessId,
-      additionalData
+      additionalData,
+      dateAndTime
     );
 
     const docRef = await suppliersCollection.add({ ...supplier });
