@@ -1,5 +1,6 @@
 import db from "../db.js";
 import Supplier from "../Models/Suppliers.js";
+import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 
 const suppliersCollection = db.collection("suppliers");
 
@@ -18,40 +19,31 @@ export const createSupplier = async (req, res) => {
   } = req.body;
 
   try {
-    // Check if a product with the same productID or name already exists
-    const existingSupplierNameSnapshot = await suppliersCollection
-      .where("name", "==", name)
-      .get();
-
-    if (!existingSupplierNameSnapshot.empty) {
-      return res
-        .status(400)
-        .send({ message: "Supplier's name is already exists." });
+    // Validate fields to ensure they are not empty
+    if (!name || !contactNumber) {
+      return res.status(400).send({
+        message: "Name  and contact number are required.",
+      });
     }
 
-    const existingSupplierEmailSnapshot = await suppliersCollection
-      .where("email", "==", email)
+    // Convert name and email to lowercase for consistency
+    const lowerCaseName = name.toLowerCase();
+    const lowerCaseEmail = email ? email.toLowerCase() : " ";
+
+    // Query for all documents where name matches the provided lowercase name
+    const existingSupplierNameSnapshot = await customersCollection
+      .where("name", "==", lowerCaseName)
       .get();
 
-    if (!existingSupplierEmailSnapshot.empty) {
+    if (existingSupplierNameSnapshot) {
       return res
         .status(400)
-        .send({ message: "Supplier with this email already exists." });
-    }
-
-    const existingSupplierphoneSnapshot = await suppliersCollection
-      .where("contactNumber", "==", contactNumber)
-      .get();
-
-    if (!existingSupplierphoneSnapshot.empty) {
-      return res
-        .status(400)
-        .send({ message: "Supplier with this Contact Number already exists." });
+        .send({ message: "Customer with this full name already exists." });
     }
 
     const supplier = new Supplier(
-      name,
-      email,
+      lowerCaseName,
+      lowerCaseEmail,
       contactNumber,
       address1,
       address2,
@@ -62,9 +54,14 @@ export const createSupplier = async (req, res) => {
     );
 
     const docRef = await suppliersCollection.add({ ...supplier });
+
+    // Create a response object
+    const newSupplier = { id: docRef.id, ...supplier };
+
     res
       .status(201)
       .send({ message: "Supplier created successfully", id: docRef.id });
+    broadcastCustomerChanges("supplierAdded", newSupplier);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -105,8 +102,18 @@ export const updateSupplier = async (req, res) => {
   const updatedData = req.body;
 
   try {
+    const doc = await suppliersCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    // Update the customer in the database
     await suppliersCollection.doc(id).update(updatedData);
     res.status(200).send({ message: "Supplier updated successfully" });
+
+    // Broadcast the updated customer to all POS systems
+    const updatedSupplier = { id, ...updatedData };
+    broadcastCustomerChanges("supplierUpdated", updatedSupplier);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -117,8 +124,16 @@ export const deleteSupplier = async (req, res) => {
   const { id } = req.params;
 
   try {
+    const doc = await suppliersCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
     await suppliersCollection.doc(id).delete();
     res.status(200).send({ message: "Supplier deleted successfully" });
+
+    // Broadcast the deleted customer ID to all POS systems
+    broadcastCustomerChanges("supplierDeleted", { id });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }

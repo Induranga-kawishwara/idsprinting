@@ -21,26 +21,45 @@ export const createCustomer = async (req, res) => {
 
   try {
     // Validate fields to ensure they are not empty
-    if (!name || !email || !contactNumber) {
-      return res
-        .status(400)
-        .send({ message: "Name, email, and contact number are required." });
+    if (!name || !surName || !email || !contactNumber) {
+      return res.status(400).send({
+        message: "Name, surname, email, and contact number are required.",
+      });
     }
 
-    // Check if a customer with the same name already exists
+    // Convert name, surName, and email to lowercase for consistency
+    const lowerCaseName = name.toLowerCase();
+    const lowerCaseSurName = surName.toLowerCase();
+    const lowerCaseEmail = email.toLowerCase();
+
+    // Combine name and surName into a single fullName for the check
+    const fullName = `${lowerCaseName} ${lowerCaseSurName}`;
+
+    // Query for all documents where name matches the provided lowercase name
     const existingCustomerNameSnapshot = await customersCollection
-      .where("name", "==", name)
+      .where("name", "==", lowerCaseName)
       .get();
 
-    if (!existingCustomerNameSnapshot.empty) {
+    // Iterate over the results and check if any full name matches
+    let nameExists = false;
+    existingCustomerNameSnapshot.forEach((doc) => {
+      const data = doc.data();
+      const existingFullName = `${data.name} ${data.surName}`;
+
+      if (existingFullName === fullName) {
+        nameExists = true;
+      }
+    });
+
+    if (nameExists) {
       return res
         .status(400)
-        .send({ message: "Customer's name already exists." });
+        .send({ message: "Customer with this full name already exists." });
     }
 
     // Check if a customer with the same email already exists
     const existingCustomerEmailSnapshot = await customersCollection
-      .where("email", "==", email)
+      .where("email", "==", lowerCaseEmail)
       .get();
 
     if (!existingCustomerEmailSnapshot.empty) {
@@ -48,34 +67,20 @@ export const createCustomer = async (req, res) => {
         .status(400)
         .send({ message: "Customer with this email already exists." });
     }
-
-    // Check if a customer with the same contact number already exists
-    const existingCustomerphoneSnapshot = await customersCollection
-      .where("contactNumber", "==", contactNumber)
-      .get();
-
-    if (!existingCustomerphoneSnapshot.empty) {
-      return res
-        .status(400)
-        .send({ message: "Customer with this contact number already exists." });
-    }
-
-    // Create a new customer object
-    const customer = {
-      name,
-      surName,
-      email,
+    const customer = new Customer(
+      lowerCaseName,
+      lowerCaseSurName,
+      lowerCaseEmail,
       contactNumber,
       houseNo,
       street,
       city,
       postalcode,
       customerType,
-      addedDateAndTime,
-    };
+      addedDateAndTime
+    );
 
-    // Add customer to Firestore
-    const docRef = await customersCollection.add(customer);
+    const docRef = await customersCollection.add({ ...customer });
 
     // Create a response object
     const newCustomer = { id: docRef.id, ...customer };

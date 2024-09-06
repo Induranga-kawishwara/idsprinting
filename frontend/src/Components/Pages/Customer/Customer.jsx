@@ -7,12 +7,7 @@ import axios from "axios";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
 import CustomerFormModal from "./CustomerFormModal"; // Adjust the import path
-import { io } from "socket.io-client";
-
-// Initialize the socket connection
-const socket = io("https://candied-chartreuse-concavenator.glitch.me", {
-  transports: ["websocket"], // Force WebSocket transport
-});
+import socket from "../../../SocketConnection/SocketConnection.js";
 
 const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -26,7 +21,7 @@ const Customer = () => {
     const fetchData = async () => {
       try {
         const customerData = await axios.get(
-          "https://candied-chartreuse-concavenator.glitch.me/customers/"
+          "http://localhost:8080/customers/"
         );
 
         const formattedCustomers = customerData.data.map((customer) => {
@@ -80,6 +75,7 @@ const Customer = () => {
       const newCustomeradded = {
         ...newCustomer,
         surname: newCustomer.surName,
+        phone: newCustomer.contactNumber,
         postalCode: newCustomer.postalcode,
         addedDate: sltDate.toLocaleDateString("en-US", {
           year: "numeric",
@@ -147,7 +143,7 @@ const Customer = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${id}`
+          `http://localhost:8080/customers/customer/${id}`
         );
 
         // setCustomers((prevCustomers) =>
@@ -184,7 +180,7 @@ const Customer = () => {
     if (editingCustomer) {
       try {
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${editingCustomer.id}`,
+          `http://localhost:8080/customers/customer/${editingCustomer.id}`,
           data
         );
 
@@ -220,7 +216,7 @@ const Customer = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
+          "http://localhost:8080/customers/customer",
           data
         );
 

@@ -1,5 +1,6 @@
 import db from "../db.js";
 import Expenses from "../Models/Expenses.js";
+import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 
 const ExpensessCollection = db.collection("Expenses");
 
@@ -40,6 +41,8 @@ export const createExpenses = async (req, res) => {
     res
       .status(201)
       .send({ message: "Expenses created successfully", id: docRef.id });
+
+    broadcastCustomerChanges("expensesAdded", expenses);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -87,8 +90,17 @@ export const updateExpenses = async (req, res) => {
   const updatedData = req.body;
 
   try {
+    // Check if the customer exists
+    const doc = await ExpensessCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Expenses not found" });
+    }
+
     await ExpensessCollection.doc(id).update(updatedData);
     res.status(200).send({ message: "Expenses updated successfully" });
+
+    const updatedExpensess = { id, ...updatedData };
+    broadcastCustomerChanges("expensessUpdated", updatedExpensess);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -99,8 +111,15 @@ export const deleteExpenses = async (req, res) => {
   const { id } = req.params;
 
   try {
+    const doc = await customersCollection.doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ message: "Expenses not found" });
+    }
+
     await ExpensessCollection.doc(id).delete();
     res.status(200).send({ message: "Expenses deleted successfully" });
+
+    broadcastCustomerChanges("expensesDeleted", { id });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
