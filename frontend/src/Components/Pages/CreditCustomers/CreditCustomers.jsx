@@ -3,7 +3,6 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Button, Modal } from "@mui/material";
 import jsPDF from "jspdf"; // Import jsPDF
-// import "./CreditCustomers.scss";
 
 const initialCreditCustomers = [
   {

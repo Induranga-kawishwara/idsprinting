@@ -354,7 +354,23 @@ select.formdropdown::after {
   }
 
 
-
+  .sharebutton {
+    
+    background-color: #3360da; /* Green */
+    color: rgb(255, 255, 255);
+    border: none; /* Green */
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 4px 15px;
+    margin: 3px;
+  }
+  
+  .sharebutton:hover {
+    background-color: #ffffff; /* Green */
+    color:  #3360da;
+    border: 3px solid #3360da;
+  }
 
 
 
@@ -450,6 +466,8 @@ select.formdropdown::after {
     border-color: #007bff;
     outline: none;
   }
+
+  
 
   
 /* Media queries for responsive design */

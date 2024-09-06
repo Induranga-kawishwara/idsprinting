@@ -163,39 +163,39 @@ const Cashup = () => {
           </div>
 
           <div className="d-flex align-items-center mb-3">
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="formdropdown"
-          >
-            <option value="">All Types</option>
-            <option value="Profit">Profit</option>
-            <option value="Other">Other</option>
-          </select>
-         {/* Start Date Picker */}
-         <DatePicker
-        selected={dateRange.start}
-        onChange={(date) => setDateRange((prev) => ({ ...prev, start: date }))}
-        selectsStart
-        startDate={dateRange.start}
-        endDate={dateRange.end}
-        className="searchfunctionsdate me-2"
-        placeholderText="S.Date"
-        maxDate={dateRange.end || new Date()} // Prevent selecting a start date after the end date
-      />
+                  <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="formdropdown"
+                  >
+                    <option value="">All Types</option>
+                    <option value="Profit">Profit</option>
+                    <option value="Other">Other</option>
+                  </select>
+                {/* Start Date Picker */}
+                <DatePicker
+                selected={dateRange.start}
+                onChange={(date) => setDateRange((prev) => ({ ...prev, start: date }))}
+                selectsStart
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                className="searchfunctionsdate me-2"
+                placeholderText="S.Date"
+                maxDate={dateRange.end || new Date()} // Prevent selecting a start date after the end date
+              />
 
-      {/* End Date Picker */}
-      <DatePicker
-        selected={dateRange.end}
-        onChange={(date) => setDateRange((prev) => ({ ...prev, end: date }))}
-        selectsEnd
-        startDate={dateRange.start}
-        endDate={dateRange.end}
-        className="searchfunctionsdate me-2"
-        placeholderText="E.Date"
-        minDate={dateRange.start} // Prevent selecting an end date before the start date
-      />
-</div>
+              {/* End Date Picker */}
+              <DatePicker
+                selected={dateRange.end}
+                onChange={(date) => setDateRange((prev) => ({ ...prev, end: date }))}
+                selectsEnd
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                className="searchfunctionsdate me-2"
+                placeholderText="E.Date"
+                minDate={dateRange.start} // Prevent selecting an end date before the start date
+              />
+            </div>
           
         
 

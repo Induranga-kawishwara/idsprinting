@@ -161,7 +161,7 @@ const Supplier = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-                    <button
+            <button
             variant="outlined"
             color="secondary"
             onClick={handleClear}
