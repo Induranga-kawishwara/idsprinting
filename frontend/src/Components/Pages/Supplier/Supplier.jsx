@@ -3,7 +3,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Button, Modal } from "@mui/material";
 import { useTable } from "react-table";
-import "./Supplier.scss";
+import "../All.scss";
 
 const SupplierSchema = Yup.object().shape({
   name: Yup.string().required("Supplier Name is required"),
@@ -50,7 +50,6 @@ const Supplier = () => {
       prevSuppliers.filter((supplier) => supplier.id !== id)
     );
   }, []);
-
   const handleSubmit = (values) => {
     const currentDate = new Date();
     const formattedDate = currentDate.toISOString().split("T")[0];
@@ -83,12 +82,16 @@ const Supplier = () => {
     setIsModalOpen(false);
     setEditingSupplier(null);
   };
+  const handleClear = () => {
+    setSearchQuery(""); // Reset search query to an empty string
+  };
 
   const filteredSuppliers = suppliers.filter(
     (supplier) =>
       supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       supplier.contactNumber.includes(searchQuery)
   );
+  
 
   const columns = useMemo(
     () => [
@@ -107,24 +110,24 @@ const Supplier = () => {
         Header: "Actions",
         Cell: ({ row }) => (
           <div>
-            <Button
+            <button
               variant="contained"
               color="primary"
               size="small"
               onClick={() => handleEdit(row.original)}
-              className="edit-btn"
+              className="editbtn"
             >
               Edit
-            </Button>{" "}
-            <Button
+            </button>{" "}
+            <button
               variant="contained"
               color="secondary"
               size="small"
               onClick={() => handleDelete(row.original.id)}
-              className="delete-btn"
+              className="deletebtn"
             >
               Delete
-            </Button>
+            </button>
           </div>
         ),
       },
@@ -140,27 +143,35 @@ const Supplier = () => {
     tableInstance;
 
   return (
-    <div className="supplier">
-      <div className="container mt-4">
-        <Button
+    <div className="bodyofpage">
+      <div className="container">
+        <button
           variant="contained"
           color="primary"
           onClick={() => setIsModalOpen(true)}
-          className="newsupplier-btn"
+          className="addnewbtntop"
         >
           New Supplier
-        </Button>
-        <div className="mt-3 mb-3">
+        </button>
+        <div className="d-flex align-items-center mb-3">
           <input
             type="text"
-            className="form-control"
-            placeholder="Search by item code or name"
+            className="searchfunctions me-2"
+            placeholder="Search by item Name or Phone number"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+                    <button
+            variant="outlined"
+            color="secondary"
+            onClick={handleClear}
+            className="prevbutton"
+          >
+            Clear
+          </button>
         </div>
         <div className="table-responsive">
-          <table className="table table-striped mt-3" {...getTableProps()}>
+          <table className="table mt-3 custom-table" {...getTableProps()}>
             <thead>
               {headerGroups.map((headerGroup) => (
                 <tr {...headerGroup.getHeaderGroupProps()}>
@@ -172,7 +183,7 @@ const Supplier = () => {
                 </tr>
               ))}
             </thead>
-            <tbody {...getTableBodyProps()}>
+            <tbody {...getTableBodyProps()}className="custom-table">
               {rows.map((row) => {
                 prepareRow(row);
                 return (
@@ -189,7 +200,7 @@ const Supplier = () => {
 
         {/* Form Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
             <div className="modal-content custom-modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
@@ -269,22 +280,22 @@ const Supplier = () => {
                         <Field name="additionalData" className="form-control" />
                       </div>
                       <div className="d-flex justify-content-end">
-                        <Button
+                        <button
                           variant="contained"
                           color="primary"
                           type="submit"
-                          className="update-btn"
+                          className="savechangesbutton"
                         >
-                          {editingSupplier ? "Update" : "Add"}
-                        </Button>
-                        <Button
+                          {editingSupplier ? "Update Supplier" : "Add"}
+                        </button>
+                        <button
                           variant="contained"
                           color="secondary"
                           onClick={() => setIsModalOpen(false)}
-                          className="cancel-btn ms-2"
+                          className="closebutton"
                         >
                           Cancel
-                        </Button>
+                        </button>
                       </div>
                     </Form>
                   )}

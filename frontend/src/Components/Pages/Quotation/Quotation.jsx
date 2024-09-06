@@ -3,7 +3,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal, TextField } from "@mui/material";
-import "./Quotation.scss"; // Ensure the correct CSS file is imported
+//import "./Quotation.scss"; // Ensure the correct CSS file is imported
 import jsPDF from "jspdf"; // Import jsPDF
 
 const initialProducts = [

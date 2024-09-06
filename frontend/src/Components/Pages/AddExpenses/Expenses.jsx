@@ -6,11 +6,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "./Expenses.scss"; // Create this file for your styles
 import axios from "axios";
 import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
 import _ from "lodash";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
+import "../All.scss";
 
 const suppliers = [
   { id: 1, name: "Supplier A" },
@@ -51,14 +51,19 @@ const ExpenseSchema = Yup.object().shape({
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState(null);
+  const [typeOfExpensesFilter, setTypeOfExpensesFilter] = useState(""); // Add this line
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0); // Current page state
+  const itemsPerPage = 10; // Define how many items per page you want
+  const totalPages = Math.ceil(expenses.length / itemsPerPage); // Calculate total pages
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -234,15 +239,19 @@ const Expenses = () => {
       (!endDate || expenseDate <= endDate);
     const matchesPaymentMethod =
       !paymentMethodFilter || expense.paymentMethod === paymentMethodFilter;
-
+    const matchesTypeOfExpenses =
+      !typeOfExpensesFilter || expense.type === typeOfExpensesFilter; // New condition for type filter
+  
     return (
       isWithinDateRange &&
       matchesPaymentMethod &&
+      matchesTypeOfExpenses && // Ensure this is checked
       (expense.name.toLowerCase().includes(searchString) ||
         expense.invoiceNumber.toLowerCase().includes(searchString) ||
         expense.amount.toString().includes(searchString))
     );
   });
+  
 
   const columns = useMemo(
     () => [
@@ -266,6 +275,11 @@ const Expenses = () => {
       { Header: "Description", accessor: "description" },
       { Header: "Amount Rs", accessor: "amount" },
       { Header: "Payment Method", accessor: "paymentMethod" },
+      {
+        Header: "Added By",
+        accessor: "addedBy",
+      },
+      
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
       { Header: "Invoice Number", accessor: "invoiceNumber" },
@@ -287,24 +301,24 @@ const Expenses = () => {
         Header: "Actions",
         Cell: ({ row }) => (
           <div>
-            <Button
+            <button
               variant="contained"
               color="primary"
               size="small"
               onClick={() => handleEdit(row.original)}
-              className="edit-btn"
+              className="editbtn"
             >
               Edit
-            </Button>{" "}
-            <Button
+            </button>{" "}
+            <button
               variant="contained"
               color="secondary"
               size="small"
               onClick={() => handleDelete(row.original.name, row.original.id)}
-              className="delete-btn"
+              className="deletebtn"
             >
               Delete
-            </Button>
+            </button>
           </div>
         ),
       },
@@ -319,32 +333,38 @@ const Expenses = () => {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
 
+    const paginatedExpenses = expenses.slice(
+      currentPage * itemsPerPage,
+      (currentPage + 1) * itemsPerPage
+    );
+
   return (
-    <div className="expenses">
-      <div className="container mt-4">
-        <Button
+    <div className="bodyofpage">
+      <div className="container">
+        <button
           variant="contained"
           color="primary"
           onClick={() => {
             setIsModalOpen(true);
             setEditingExpense(null);
           }}
-          className="new-expense-btn"
+          className="addnewbtntop"
         >
           New Expense
-        </Button>
-        <div className="mt-3 mb-3">
+        </button>
+        <div className="d-flex align-items-center mb-3">
           <input
             type="text"
-            className="form-control"
+            className="searchfunctions me-2"
             placeholder="Search by Name, Amount, and Invoice Number"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+        
+            
         </div>
-        <div className="mb-3">
-          <label>Filter by Date Range:</label>
-          <div className="d-flex">
+            <div className="d-flex align-items-center mb-3">
+
             <DatePicker
               selected={startDate}
               onChange={(date) => setStartDate(date)}
@@ -352,9 +372,9 @@ const Expenses = () => {
               startDate={startDate}
               endDate={endDate}
               placeholderText="Start Date"
-              className="form-control me-2"
+              className="searchfunctionsdate me-2"
             />
-            <DatePicker
+            <DatePicker 
               selected={endDate}
               onChange={(date) => setEndDate(date)}
               selectsEnd
@@ -362,30 +382,59 @@ const Expenses = () => {
               endDate={endDate}
               minDate={startDate}
               placeholderText="End Date"
-              className="form-control"
+              className="searchfunctionsdate me-2"
             />
-          </div>
-        </div>
-        <div className="mb-3">
-          <label>Filter by Payment Method:</label>
-          <select
-            className="form-control"
-            value={paymentMethodFilter}
-            onChange={(e) => setPaymentMethodFilter(e.target.value)}
-          >
-            <option value="">All</option>
-            <option value="Card">Card</option>
-            <option value="Cash">Cash</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="Cheque">Cheque</option>
-          </select>
-        </div>
+              <select
+                className="formdropdown"
+                value={paymentMethodFilter}
+                onChange={(e) => setPaymentMethodFilter(e.target.value)}
+              >
+                <option value=""disabled>Payment Method</option>
+                <option value="Card">Card</option>
+                <option value="Cash">Cash</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cheque">Cheque</option>
+              </select>
+            
+              <select
+                className="formdropdown"
+                value={typeOfExpensesFilter} 
+                onChange={(e) => setTypeOfExpensesFilter(e.target.value)}  
+              >
+                <option value=""disabled>Expenses Type</option>
+                <option value="Suppliers">Suppliers</option>
+                <option value="Others">Others</option>
+                <option value="Electricity Bill">Electricity Bill</option>
+                <option value="Gas Bill">Gas Bill</option>
+                <option value="Phone Bill">Phone Bill</option>
+                {/* Add any other types of expenses */}
+              </select>
+            
+
+              <button
+                variant="contained"
+                color="secondary"
+                className="prevbutton"
+                onClick={() => {
+                  setSearchQuery("");
+                  setStartDate(null);
+                  setEndDate(null);
+                  setPaymentMethodFilter("");
+                  setTypeOfExpensesFilter("");  
+                }}
+              >
+                Clear 
+              </button>
+            </div>
+
+
+
 
         <div className="table-responsive">
           {loading || error || _.isEmpty(data) ? (
             <TableChecker loading={loading} error={error} data={data} />
           ) : (
-            <table {...getTableProps()} className="table table-striped mt-3">
+            <table {...getTableProps()} className="table mt-3 custom-table">
               <thead>
                 {headerGroups.map((headerGroup) => (
                   <tr
@@ -400,7 +449,7 @@ const Expenses = () => {
                   </tr>
                 ))}
               </thead>
-              <tbody {...getTableBodyProps()}>
+              <tbody {...getTableBodyProps()}className="custom-table">
                 {rows.map((row) => {
                   prepareRow(row);
                   return (
@@ -418,9 +467,30 @@ const Expenses = () => {
           )}
         </div>
 
+        {/* Pagination Controls */}
+      <div className="pagination">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+          disabled={currentPage === 0}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage + 1} of {totalPages}
+        </span>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+          }
+          disabled={currentPage === totalPages - 1}
+        >
+          Next
+        </button>
+      </div>
+ {/* Form Modal */}
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog">
-            <div className="modal-content">
+        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+            <div className="modal-content custom-modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
                   {editingExpense ? "Edit Expense" : "Add New Expense"}
@@ -654,16 +724,17 @@ const Expenses = () => {
                         />
                       </div>
                       <div className="modal-footer">
-                        <Button
+                        <button type="submit" className="savechangesbutton">
+                          {editingExpense ? "Update Expense" : "Add Expense"}
+                        </button>
+                        <button
                           type="button"
                           onClick={() => setIsModalOpen(false)}
-                          className="btn btn-secondary"
+                          className="closebutton"
                         >
                           Cancel
-                        </Button>
-                        <Button type="submit" className="btn btn-primary">
-                          {editingExpense ? "Update Expense" : "Add Expense"}
-                        </Button>
+                        </button>
+                        
                       </div>
                     </Form>
                   )}

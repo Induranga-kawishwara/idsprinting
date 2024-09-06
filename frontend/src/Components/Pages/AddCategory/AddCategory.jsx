@@ -4,7 +4,9 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-import "./AddCategory.scss";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "../All.scss";
 
 const initialCategories = [
   {
@@ -17,6 +19,7 @@ const initialCategories = [
     buyingPrice: "20.00",
     addedDate: "2024-08-13",
     addedTime: "14:30",
+    addedBy: "Admin",
   },
   // Add more categories if needed
 ];
@@ -28,6 +31,7 @@ const CategorySchema = Yup.object().shape({
   qty: Yup.number().required("Quantity is required"),
   supplier: Yup.string().required("Supplier is required"),
   buyingPrice: Yup.number().required("Buying Price is required"),
+  addedBy: Yup.string().required("Added By is required"),
 });
 
 const suppliers = [
@@ -37,11 +41,15 @@ const suppliers = [
   // Add more suppliers as needed
 ];
 
+const ITEMS_PER_PAGE = 100;
+
 const Category = () => {
   const [categories, setCategories] = useState(initialCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const [currentPage, setCurrentPage] = useState(0);
 
   const handleEdit = (category) => {
     setEditingCategory(category);
@@ -90,13 +98,33 @@ const Category = () => {
     setEditingCategory(null);
   };
 
-  const filteredCategories = categories.filter(
-    (category) =>
-      category.rawMaterialName
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      category.size.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Clear search and date filters
+  const clearFilters = () => {
+    setSearchQuery("");
+    setDateRange({ start: null, end: null });
+  };
+
+  // Combined search and date filter logic
+  const filteredCategories = categories.filter((category) => {
+    const matchesSearch =
+      category.rawMaterialName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      category.size.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      category.buyingPrice.toString().includes(searchQuery);
+
+    const matchesDate =
+      (!dateRange.start || new Date(category.addedDate) >= dateRange.start) &&
+      (!dateRange.end || new Date(category.addedDate) <= dateRange.end);
+
+    return matchesSearch && matchesDate;
+  });
+
+  const paginatedCategories = useMemo(() => {
+    const startIndex = currentPage * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredCategories.slice(startIndex, endIndex);
+  }, [filteredCategories, currentPage]);
+
+  const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);
 
   const columns = useMemo(
     () => [
@@ -109,28 +137,29 @@ const Category = () => {
       { Header: "Buying Price", accessor: "buyingPrice" },
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
+      { Header: "Added By", accessor: "addedBy" },
       {
         Header: "Actions",
         Cell: ({ row }) => (
           <div>
-            <Button
+            <button
               variant="contained"
               color="primary"
               size="small"
               onClick={() => handleEdit(row.original)}
-              className="edit-btn"
+              className="editbtn"
             >
               Edit
-            </Button>{" "}
-            <Button
+            </button>{" "}
+            <button
               variant="contained"
               color="secondary"
               size="small"
               onClick={() => handleDelete(row.original.id)}
-              className="delete-btn"
+              className="deletebtn"
             >
               Delete
-            </Button>
+            </button>
           </div>
         ),
       },
@@ -138,7 +167,7 @@ const Category = () => {
     [handleDelete]
   );
 
-  const data = useMemo(() => filteredCategories, [filteredCategories]);
+  const data = useMemo(() => paginatedCategories, [paginatedCategories]);
 
   const tableInstance = useTable({ columns, data });
 
@@ -146,28 +175,53 @@ const Category = () => {
     tableInstance;
 
   return (
-    <div className="category">
-      <div className="container mt-4">
-        <Button
+    <div className="bodyofpage">
+      <div className="container">
+        <button
           variant="contained"
           color="primary"
           onClick={() => setIsModalOpen(true)}
-          className="newcategory-btn"
+          className="addnewbtntop"
         >
           New Category
-        </Button>
-        <div className="mt-3 mb-3">
+        </button>
+        <div className="d-flex align-items-center mb-3">
           <input
             type="text"
-            className="form-control"
-            placeholder="Search by name or size"
+            className="searchfunctions me-2"
+            placeholder="Search by name, size, or price"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <DatePicker
+            selected={dateRange.start}
+            onChange={(date) => setDateRange((prev) => ({ ...prev, start: date }))}
+            selectsStart
+            startDate={dateRange.start}
+            endDate={dateRange.end}
+            className="searchfunctionsdate"
+            placeholderText="S.Date"
+          />
+          <DatePicker
+            selected={dateRange.end}
+            onChange={(date) => setDateRange((prev) => ({ ...prev, end: date }))}
+            selectsEnd
+            startDate={dateRange.start}
+            endDate={dateRange.end}
+            className="searchfunctionsdate"
+            placeholderText="E.Date"
+            minDate={dateRange.start}
+          />
+          <button
+            className="prevbutton"
+            onClick={clearFilters}
+          >
+            Clear
+          </button>
         </div>
-        <div class="table-responsive">
-          <table {...getTableProps()} className="table table-striped mt-3">
-            <thead>
+        <div className="table-responsive">
+          <table {...getTableProps()} className="table mt-3 custom-table">
+            <thead className="custom-table">
               {headerGroups.map((headerGroup) => (
                 <tr {...headerGroup.getHeaderGroupProps()}>
                   {headerGroup.headers.map((column) => (
@@ -178,7 +232,7 @@ const Category = () => {
                 </tr>
               ))}
             </thead>
-            <tbody {...getTableBodyProps()}>
+            <tbody {...getTableBodyProps()} className="custom-table">
               {rows.map((row) => {
                 prepareRow(row);
                 return (
@@ -191,6 +245,27 @@ const Category = () => {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="pagination">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+            }
+            disabled={currentPage === totalPages - 1}
+          >
+            Next
+          </button>
         </div>
 
         {/* Form Modal */}
@@ -217,6 +292,7 @@ const Category = () => {
                     qty: editingCategory?.qty || "",
                     supplier: editingCategory?.supplier || "",
                     buyingPrice: editingCategory?.buyingPrice || "",
+                    addedBy: editingCategory?.addedBy || "",
                   }}
                   validationSchema={CategorySchema}
                   onSubmit={handleSubmit}
@@ -289,17 +365,24 @@ const Category = () => {
                           </div>
                         ) : null}
                       </div>
+                      <div className="mb-3">
+                        <label>Added By</label>
+                        <Field name="addedBy" className="form-control" />
+                        {errors.addedBy && touched.addedBy ? (
+                          <div className="text-danger">{errors.addedBy}</div>
+                        ) : null}
+                      </div>
                       <div className="modal-footer">
-                        <Button
+                        
+                        <button type="submit" className="savechangesbutton">
+                        {editingCategory ? "Update" : "Add"}
+                        </button><button
                           type="button"
-                          className="btn btn-secondary"
+                          className="closebutton"
                           onClick={() => setIsModalOpen(false)}
                         >
                           Close
-                        </Button>
-                        <Button type="submit" className="btn btn-primary">
-                          Save changes
-                        </Button>
+                        </button>
                       </div>
                     </Form>
                   )}

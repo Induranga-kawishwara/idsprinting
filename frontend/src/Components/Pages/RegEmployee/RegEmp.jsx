@@ -3,7 +3,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-import "./RegEmp.scss";
+// import "./RegEmp.scss";
 import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar";
 
 const initialEmployees = [
