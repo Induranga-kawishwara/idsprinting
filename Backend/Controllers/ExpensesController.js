@@ -38,11 +38,13 @@ export const createExpenses = async (req, res) => {
     );
 
     const docRef = await ExpensessCollection.add({ ...expenses });
+    const newExpenses = { id: docRef.id, ...expenses };
+
     res
       .status(201)
       .send({ message: "Expenses created successfully", id: docRef.id });
 
-    broadcastCustomerChanges("expensesAdded", expenses);
+    broadcastCustomerChanges("expensesAdded", newExpenses);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }

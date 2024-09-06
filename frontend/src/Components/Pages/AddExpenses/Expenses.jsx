@@ -12,6 +12,7 @@ import _ from "lodash";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import "../All.scss";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import socket from "../../Utility/SocketConnection.js";
 
 const ExpenseSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -101,6 +102,80 @@ const Expenses = () => {
 
     // Call fetchData once
     fetchData();
+
+    // Listen for real-time expenses updates
+    socket.on("expensesAdded", (newexpenses) => {
+      const { date, time } = ConvertToSLT(newexpenses.dateAndTime);
+
+      const newExpenses = {
+        ...newexpenses,
+        name: newexpenses.expensesname,
+        type: newexpenses.expensesType,
+        addedDate: date,
+        addedTime: time,
+        photo: newexpenses.image,
+      };
+      setExpenses((prevExpenses) => [newExpenses, ...prevExpenses]);
+    });
+
+    socket.on("expensesUpdated", (updatedExpenses) => {
+      const { date, time } = ConvertToSLT(updatedExpenses.dateAndTime);
+
+      const newUpdatedExpenses = {
+        ...updatedExpenses,
+        name: updatedExpenses.expensesname,
+        type: updatedExpenses.expensesType,
+        addedDate: date,
+        addedTime: time,
+        photo: updatedExpenses.image,
+      };
+      setExpenses((prevExpenses) =>
+        prevExpenses.map((expenses) =>
+          expenses.id === updatedExpenses.id ? newUpdatedExpenses : expenses
+        )
+      );
+    });
+
+    socket.on("expensesDeleted", ({ id }) => {
+      setExpenses((prevExpenses) =>
+        prevExpenses.filter((expense) => expense.id !== id)
+      );
+    });
+
+    socket.on("supplierAdded", (newsupplier) => {
+      setSupplier((prevsuppliers) => [
+        { id: newsupplier.id, name: newsupplier.name },
+        ...prevsuppliers,
+      ]);
+    });
+
+    socket.on("supplierUpdated", (updatedsupplier) => {
+      setSupplier((prevsuppliers) =>
+        prevsuppliers.map((supplier) =>
+          supplier.id === updatedsupplier.id
+            ? { id: updatedsupplier.id, name: updatedsupplier.name }
+            : supplier
+        )
+      );
+    });
+
+    socket.on("supplierDeleted", ({ id }) => {
+      setSupplier((prevsuppliers) =>
+        prevsuppliers.filter((supplier) => supplier.id !== id)
+      );
+    });
+
+    return () => {
+      socket.off("expensesAdded");
+      socket.off("expensesUpdated");
+      socket.off("expensesDeleted");
+
+      //////
+
+      socket.off("supplierAdded");
+      socket.off("supplierUpdated");
+      socket.off("supplierDeleted");
+    };
   }, []);
 
   const handleEdit = (expense) => {
@@ -120,9 +195,8 @@ const Expenses = () => {
             `http://localhost:8080/expenses/expenses/${id}`
           );
 
-          setExpenses((prevExpenses) =>
-            prevExpenses.filter((expense) => expense.id !== id)
-          );
+          socket.emit("expensesDeleted", { id });
+
           alert(response.data.message);
         } catch (error) {
           console.error("Error deleting expense:", error);
@@ -163,18 +237,15 @@ const Expenses = () => {
           `http://localhost:8080/expenses/expenses/${editingExpense.id}`,
           { ...data, dateAndTime: isoDateString }
         );
-        setExpenses(
-          expenses.map((expense) =>
-            expense.id === editingExpense.id
-              ? {
-                  ...values,
-                  id: editingExpense.id,
-                  addedDate: expense.addedDate,
-                  addedTime: expense.addedTime,
-                }
-              : expense
-          )
-        );
+        const updatedExpenses = {
+          ...values,
+          id: editingExpense.id,
+          addedDate: editingExpense.addedDate,
+          addedTime: editingExpense.addedTime,
+        };
+
+        socket.emit("expensesUpdated", updatedExpenses);
+
         alert(response.data.message);
       } catch (error) {
         console.error("Error updating expense:", error);
@@ -189,21 +260,27 @@ const Expenses = () => {
           { ...data, dateAndTime: currentDate }
         );
 
-        setExpenses([
-          {
-            ...values,
-            id: response.data.id,
-            addedDate: date,
-            addedTime: time,
-            photo: downloadURL,
-          },
-          ...expenses,
-        ]);
+        const newExpenses = {
+          ...values,
+          id: response.data.id,
+          addedDate: date,
+          addedTime: time,
+          photo: downloadURL,
+        };
+        socket.emit("expensesAdded", newExpenses);
 
         alert(response.data.message);
       } catch (error) {
-        console.error("Error deleting expense:", error);
-        alert("Failed to add the expense. Please try again.");
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the expense. Please try again.");
+        }
       }
     }
     setIsModalOpen(false);
@@ -310,11 +387,6 @@ const Expenses = () => {
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
-
-  const paginatedExpenses = expenses.slice(
-    currentPage * itemsPerPage,
-    (currentPage + 1) * itemsPerPage
-  );
 
   return (
     <div className="bodyofpage">

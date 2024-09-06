@@ -38,7 +38,7 @@ const Supplier = () => {
         );
 
         const formattedSuppliers = supplierData.data.map((supplier) => {
-          const { date, time } = ConvertToSLT(supplier.additionalData);
+          const { date, time } = ConvertToSLT(supplier.dateAndTime);
 
           return {
             ...supplier,
@@ -61,25 +61,23 @@ const Supplier = () => {
 
     // Listen for real-time supplier updates
     socket.on("supplierAdded", (newsupplier) => {
-      const { date, time } = ConvertToSLT(newsupplier.additionalData);
+      const { date, time } = ConvertToSLT(newsupplier.dateAndTime);
 
       const newsupplieradded = {
         ...newsupplier,
         addedDate: date,
         addedTime: time,
-        totalSpent: "500", // Example data; replace with real data if needed
       };
       setup((prevsuppliers) => [newsupplieradded, ...prevsuppliers]);
     });
 
     socket.on("supplierUpdated", (updatedsupplier) => {
-      const { date, time } = ConvertToSLT(updatedsupplier.additionalData);
+      const { date, time } = ConvertToSLT(updatedsupplier.dateAndTime);
 
       const newupdatedsupplier = {
         ...updatedsupplier,
         addedDate: date,
         addedTime: time,
-        totalSpent: "600", // Example data; replace with real data if needed
       };
       setup((prevsuppliers) =>
         prevsuppliers.map((supplier) =>
@@ -131,7 +129,7 @@ const Supplier = () => {
 
     const data = {
       ...values,
-      additionalData: currentDate.toISOString(), // Automatically include the current date and time
+      dateAndTime: currentDate.toISOString(), // Automatically include the current date and time
     };
 
     if (editingSupplier) {
@@ -237,6 +235,11 @@ const Supplier = () => {
       {
         Header: "Business ID",
         accessor: "businessId",
+        Cell: ({ value }) => (value ? value : "-"),
+      },
+      {
+        Header: "Additional Data",
+        accessor: "additionalData",
         Cell: ({ value }) => (value ? value : "-"),
       },
       { Header: "Added Date", accessor: "addedDate" },

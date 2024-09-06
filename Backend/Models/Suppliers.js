@@ -8,7 +8,8 @@ class Suppliers {
     city,
     postalCode,
     businessId,
-    additionalData
+    additionalData,
+    dateAndTime
   ) {
     this.name = name;
     this.email = email;
@@ -19,6 +20,7 @@ class Suppliers {
     this.postalcode = postalCode;
     this.businessId = businessId;
     this.additionalData = additionalData;
+    this.dateAndTime = dateAndTime;
   }
 }
 
