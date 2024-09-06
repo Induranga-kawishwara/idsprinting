@@ -6,7 +6,7 @@ class Suppliers {
     address1,
     address2,
     city,
-    postalcode,
+    postalCode,
     businessId,
     additionalData
   ) {
@@ -16,7 +16,7 @@ class Suppliers {
     this.address1 = address1;
     this.address2 = address2;
     this.city = city;
-    this.postalcode = postalcode;
+    this.postalcode = postalCode;
     this.businessId = businessId;
     this.additionalData = additionalData;
   }
