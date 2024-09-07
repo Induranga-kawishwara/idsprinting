@@ -2,7 +2,7 @@ import db from "../db.js";
 import Supplier from "../Models/Suppliers.js";
 import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 
-const suppliersCollection = db.collection("suppliers");
+const suppliersCollection = db.collection("Suppliers");
 
 // Create a new Supplier
 export const createSupplier = async (req, res) => {

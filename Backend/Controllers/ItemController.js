@@ -2,7 +2,7 @@ import db from "../db.js";
 import Product from "../Models/Item.js";
 import { v4 as uuidv4 } from "uuid";
 
-const ItemCollection = db.collection("products");
+const ItemCollection = db.collection("Items");
 
 export const createProduct = async (req, res) => {
   const {
