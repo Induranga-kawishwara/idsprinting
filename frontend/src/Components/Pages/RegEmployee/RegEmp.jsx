@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Button, Modal } from "@mui/material";
+import { Button, Modal, Switch } from "@mui/material";
 import "./RegEmp.scss";
 import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar";
 
+// Initial employee data with birthDate field
 const initialEmployees = [
   {
     id: 1,
@@ -21,14 +22,17 @@ const initialEmployees = [
     employeePhoto: "",
     contactNumber: "0771234567",
     refContactNumber: "0777654321",
-    epfEtfNumber: "EPF001",
+    epfNumber: "EPF001",
+    EtfNumber: "ETF001",
     email: "john.doe@example.com",
     password: "password123",
+    birthDate: "1985-06-15", // Birth Date field
     updatedDate: "2024-08-13",
     updatedTime: "15:00",
-    sex: "Male", // Added field
+    sex: "Male",
+    isAdmin: true,
+    isEmployee: true,
   },
-  // Add more employee records if needed
 ];
 
 const RegEmpSchema = Yup.object().shape({
@@ -43,7 +47,9 @@ const RegEmpSchema = Yup.object().shape({
   refContactNumber: Yup.string().required(
     "Reference Contact Number is required"
   ),
-  epfEtfNumber: Yup.string().required("EPF/ETF Number is required"),
+  epfNumber: Yup.string().required("EPF Number is required"),
+  EtfNumber: Yup.string().required("ETF Number is required"),
+  birthDate: Yup.string().required("Birth Date is required"), // Birth Date validation
   email: Yup.string()
     .email("Invalid email format")
     .required("Email is required"),
@@ -51,7 +57,7 @@ const RegEmpSchema = Yup.object().shape({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords must match")
     .required("Re-entering the password is required"),
-  sex: Yup.string().required("Sex is required"), // Added validation for Sex
+  sex: Yup.string().required("Sex is required"),
 });
 
 const RegEmp = () => {
@@ -108,311 +114,387 @@ const RegEmp = () => {
     <div>
       <div className="reg-emp">
         <SecondaryNavbar />
-        <div className="container mt-4">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setIsModalOpen(true)}
-            className="new-emp-btn"
-          >
-            New Employee
-          </Button>
-          <div class="table-responsive">
-            <table className="table table-striped mt-3">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Surname</th>
-                  <th>NIC Number</th>
-                  <th>Email</th>
-                  <th>Contact Number</th>
-                  <th>Reference Contact</th>
-                  <th>EPF/ETF Number</th>
-                  <th>Sex</th> {/* Added column for Sex */}
-                  <th>Updated Date</th>
-                  <th>Updated Time</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {employees.map((employee) => (
-                  <tr key={employee.id}>
-                    <td>{employee.id}</td>
-                    <td>{employee.name}</td>
-                    <td>{employee.surname}</td>
-                    <td>{employee.nicNumber}</td>
-                    <td>{employee.email}</td>
-                    <td>{employee.contactNumber}</td>
-                    <td>{employee.refContactNumber}</td>
-                    <td>{employee.epfEtfNumber}</td>
-                    <td>{employee.sex}</td> {/* Display Sex */}
-                    <td>{employee.updatedDate}</td>
-                    <td>{employee.updatedTime}</td>
-                    <td>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => handleEdit(employee)}
-                        className="edit-btn"
-                      >
-                        Edit
-                      </Button>{" "}
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        size="small"
-                        onClick={() => handleDelete(employee.id)}
-                        className="delete-btn"
-                      >
-                        Delete
-                      </Button>
-                    </td>
+        <  br/>
+        <div className="">
+          <div className="container">
+            <button
+              variant="contained"
+              color="primary"
+              onClick={() => setIsModalOpen(true)}
+              className="addnewbtntop"
+            >
+              New Employee
+            </button>
+            <div className="table-responsive">
+              <table className="table mt-3 custom-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>NIC Number</th>
+                    <th>Email</th>
+                    <th>Contact Number</th>
+                    <th>Reference Contact</th>
+                    <th>EPF Number</th>
+                    <th>ETF Number</th>
+                    <th>Birth Date</th> {/* Birth Date Column */}
+                    <th>Sex</th>
+                    <th>Admin Access</th>
+                    <th>Employee Access</th>
+                    <th>Updated Date</th>
+                    <th>Updated Time</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="custom-table">
+                  {employees.map((employee) => (
+                    <tr key={employee.id}>
+                      <td>{employee.id}</td>
+                      <td>{employee.name}</td>
+                      <td>{employee.surname}</td>
+                      <td>{employee.nicNumber}</td>
+                      <td>{employee.email}</td>
+                      <td>{employee.contactNumber}</td>
+                      <td>{employee.refContactNumber}</td>
+                      <td>{employee.epfNumber}</td>
+                      <td>{employee.EtfNumber}</td>
+                      <td>{employee.birthDate}</td> {/* Display Birth Date */}
+                      <td>{employee.sex}</td>
+                      <td>
+                        <Switch
+                          checked={employee.isAdmin}
+                          onChange={() =>
+                            setEmployees(
+                              employees.map((emp) =>
+                                emp.id === employee.id
+                                  ? { ...emp, isAdmin: !emp.isAdmin }
+                                  : emp
+                              )
+                            )
+                          }
+                        />
+                      </td>
+                      <td>
+                        <Switch
+                          checked={employee.isEmployee}
+                          onChange={() =>
+                            setEmployees(
+                              employees.map((emp) =>
+                                emp.id === employee.id
+                                  ? { ...emp, isEmployee: !emp.isEmployee }
+                                  : emp
+                              )
+                            )
+                          }
+                        />
+                      </td>
+                      <td>{employee.updatedDate}</td>
+                      <td>{employee.updatedTime}</td>
+                      <td>
+                        <button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          onClick={() => handleEdit(employee)}
+                          className="editbtn"
+                        >
+                          Edit
+                        </button>{" "}
+                        <button
+                          variant="contained"
+                          color="secondary"
+                          size="small"
+                          onClick={() => handleDelete(employee.id)}
+                          className="deletebtn"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-              <div className="modal-content custom-modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">
-                    {editingEmployee ? "Edit Employee" : "New Employee"}
-                  </h5>
-                  <Button
-                    type="button"
-                    className="btn-close"
-                    aria-label="Close"
-                    onClick={() => setIsModalOpen(false)}
-                  />
-                </div>
-                <div className="modal-body">
-                  <Formik
-                    initialValues={{
-                      name: editingEmployee?.name || "",
-                      surname: editingEmployee?.surname || "",
-                      nicNumber: editingEmployee?.nicNumber || "",
-                      nicPhoto: editingEmployee?.nicPhoto || "",
-                      nicBackPhoto: editingEmployee?.nicBackPhoto || "",
-                      houseNo: editingEmployee?.houseNo || "",
-                      street: editingEmployee?.street || "",
-                      city: editingEmployee?.city || "",
-                      zipCode: editingEmployee?.zipCode || "",
-                      employeePhoto: editingEmployee?.employeePhoto || "",
-                      contactNumber: editingEmployee?.contactNumber || "",
-                      refContactNumber: editingEmployee?.refContactNumber || "",
-                      epfEtfNumber: editingEmployee?.epfEtfNumber || "",
-                      email: editingEmployee?.email || "",
-                      password: "",
-                      confirmPassword: "",
-                      sex: editingEmployee?.sex || "Male", // Added field
-                    }}
-                    validationSchema={RegEmpSchema}
-                    onSubmit={handleSubmit}
-                  >
-                    {({ errors, touched }) => (
-                      <Form>
-                        <div className="mb-3">
-                          <label>Name</label>
-                          <Field name="name" className="form-control" />
-                          {errors.name && touched.name ? (
-                            <div className="text-danger">{errors.name}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Surname</label>
-                          <Field name="surname" className="form-control" />
-                          {errors.surname && touched.surname ? (
-                            <div className="text-danger">{errors.surname}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>NIC Number</label>
-                          <Field name="nicNumber" className="form-control" />
-                          {errors.nicNumber && touched.nicNumber ? (
-                            <div className="text-danger">
-                              {errors.nicNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Email</label>
-                          <Field
-                            name="email"
-                            type="email"
-                            className="form-control"
-                          />
-                          {errors.email && touched.email ? (
-                            <div className="text-danger">{errors.email}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>NIC Photo</label>
-                          <Field
-                            name="nicPhoto"
-                            type="file"
-                            className="form-control"
-                          />
-                        </div>
-                        <div className="mb-3">
-                          <label>NIC Back Photo</label>
-                          <Field
-                            name="nicBackPhoto"
-                            type="file"
-                            className="form-control"
-                          />
-                        </div>
-                        <div className="mb-3">
-                          <label>House No.</label>
-                          <Field name="houseNo" className="form-control" />
-                          {errors.houseNo && touched.houseNo ? (
-                            <div className="text-danger">{errors.houseNo}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Street</label>
-                          <Field name="street" className="form-control" />
-                          {errors.street && touched.street ? (
-                            <div className="text-danger">{errors.street}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>City</label>
-                          <Field name="city" className="form-control" />
-                          {errors.city && touched.city ? (
-                            <div className="text-danger">{errors.city}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Zip Code</label>
-                          <Field name="zipCode" className="form-control" />
-                          {errors.zipCode && touched.zipCode ? (
-                            <div className="text-danger">{errors.zipCode}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Employee Photo</label>
-                          <Field
-                            name="employeePhoto"
-                            type="file"
-                            className="form-control"
-                          />
-                        </div>
-                        <div className="mb-3">
-                          <label>Contact Number</label>
-                          <Field
-                            name="contactNumber"
-                            className="form-control"
-                          />
-                          {errors.contactNumber && touched.contactNumber ? (
-                            <div className="text-danger">
-                              {errors.contactNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Reference Contact Number</label>
-                          <Field
-                            name="refContactNumber"
-                            className="form-control"
-                          />
-                          {errors.refContactNumber &&
-                          touched.refContactNumber ? (
-                            <div className="text-danger">
-                              {errors.refContactNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>EPF/ETF Number</label>
-                          <Field name="epfEtfNumber" className="form-control" />
-                          {errors.epfEtfNumber && touched.epfEtfNumber ? (
-                            <div className="text-danger">
-                              {errors.epfEtfNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Sex</label>
-                          <Field
-                            as="select"
-                            name="sex"
-                            className="form-control"
-                          >
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                          </Field>
-                          {errors.sex && touched.sex ? (
-                            <div className="text-danger">{errors.sex}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Password</label>
-                          <div className="input-group">
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+                <div className="modal-content custom-modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      {editingEmployee ? "Edit Employee" : "New Employee"}
+                    </h5>
+                    <Button
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={() => setIsModalOpen(false)}
+                    />
+                  </div>
+                  <div className="modal-body">
+                    <Formik
+                      initialValues={{
+                        name: editingEmployee?.name || "",
+                        surname: editingEmployee?.surname || "",
+                        nicNumber: editingEmployee?.nicNumber || "",
+                        nicPhoto: editingEmployee?.nicPhoto || "",
+                        nicBackPhoto: editingEmployee?.nicBackPhoto || "",
+                        houseNo: editingEmployee?.houseNo || "",
+                        street: editingEmployee?.street || "",
+                        city: editingEmployee?.city || "",
+                        zipCode: editingEmployee?.zipCode || "",
+                        employeePhoto: editingEmployee?.employeePhoto || "",
+                        contactNumber: editingEmployee?.contactNumber || "",
+                        refContactNumber:
+                          editingEmployee?.refContactNumber || "",
+                        epfNumber: editingEmployee?.epfNumber || "",
+                        EtfNumber: editingEmployee?.EtfNumber || "",
+                        birthDate: editingEmployee?.birthDate || "", // Birth Date Field
+                        email: editingEmployee?.email || "",
+                        password: "",
+                        confirmPassword: "",
+                        sex: editingEmployee?.sex || "Male",
+                      }}
+                      validationSchema={RegEmpSchema}
+                      onSubmit={handleSubmit}
+                    >
+                      {({ errors, touched }) => (
+                        <Form>
+                          <div className="mb-3">
+                            <label>Name</label>
+                            <Field name="name" className="form-control" />
+                            {errors.name && touched.name ? (
+                              <div className="text-danger">{errors.name}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Surname</label>
+                            <Field name="surname" className="form-control" />
+                            {errors.surname && touched.surname ? (
+                              <div className="text-danger">
+                                {errors.surname}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>NIC Number</label>
+                            <Field name="nicNumber" className="form-control" />
+                            {errors.nicNumber && touched.nicNumber ? (
+                              <div className="text-danger">
+                                {errors.nicNumber}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Birth Date</label> {/* Birth Date Field in Form */}
                             <Field
-                              name="password"
-                              type={showPassword ? "text" : "password"}
+                              name="birthDate"
+                              type="date"
                               className="form-control"
                             />
-                            <Button
-                              onClick={toggleShowPassword}
-                              className="btn btn-outline-secondary"
-                            >
-                              {showPassword ? "Hide" : "Show"}
-                            </Button>
+                            {errors.birthDate && touched.birthDate ? (
+                              <div className="text-danger">
+                                {errors.birthDate}
+                              </div>
+                            ) : null}
                           </div>
-                          {errors.password && touched.password ? (
-                            <div className="text-danger">{errors.password}</div>
-                          ) : null}
-                        </div>
-                        <div className="mb-3">
-                          <label>Re-enter Password</label>
-                          <div className="input-group">
+                          <div className="mb-3">
+                            <label>Email</label>
                             <Field
-                              name="confirmPassword"
-                              type={showPassword ? "text" : "password"}
+                              name="email"
+                              type="email"
                               className="form-control"
                             />
-                            <Button
-                              onClick={toggleShowPassword}
-                              className="btn btn-outline-secondary"
-                            >
-                              {showPassword ? "Hide" : "Show"}
-                            </Button>
+                            {errors.email && touched.email ? (
+                              <div className="text-danger">{errors.email}</div>
+                            ) : null}
                           </div>
-                          {errors.confirmPassword && touched.confirmPassword ? (
-                            <div className="text-danger">
-                              {errors.confirmPassword}
+                          <div className="mb-3">
+                            <label>NIC Photo</label>
+                            <Field
+                              name="nicPhoto"
+                              type="file"
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label>NIC Back Photo</label>
+                            <Field
+                              name="nicBackPhoto"
+                              type="file"
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label>House No.</label>
+                            <Field name="houseNo" className="form-control" />
+                            {errors.houseNo && touched.houseNo ? (
+                              <div className="text-danger">
+                                {errors.houseNo}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Street</label>
+                            <Field name="street" className="form-control" />
+                            {errors.street && touched.street ? (
+                              <div className="text-danger">{errors.street}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>City</label>
+                            <Field name="city" className="form-control" />
+                            {errors.city && touched.city ? (
+                              <div className="text-danger">{errors.city}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Zip Code</label>
+                            <Field name="zipCode" className="form-control" />
+                            {errors.zipCode && touched.zipCode ? (
+                              <div className="text-danger">{errors.zipCode}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Employee Photo</label>
+                            <Field
+                              name="employeePhoto"
+                              type="file"
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label>Contact Number</label>
+                            <Field
+                              name="contactNumber"
+                              className="form-control"
+                            />
+                            {errors.contactNumber && touched.contactNumber ? (
+                              <div className="text-danger">
+                                {errors.contactNumber}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Reference Contact Number</label>
+                            <Field
+                              name="refContactNumber"
+                              className="form-control"
+                            />
+                            {errors.refContactNumber &&
+                            touched.refContactNumber ? (
+                              <div className="text-danger">
+                                {errors.refContactNumber}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>EPF Number</label>
+                            <Field
+                              name="epfNumber"
+                              className="form-control"
+                            />
+                            {errors.epfNumber && touched.epfNumber ? (
+                              <div className="text-danger">
+                                {errors.epfNumber}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>ETF Number</label>
+                            <Field
+                              name="EtfNumber"
+                              className="form-control"
+                            />
+                            {errors.EtfNumber && touched.EtfNumber ? (
+                              <div className="text-danger">
+                                {errors.EtfNumber}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Sex</label>
+                            <Field
+                              as="select"
+                              name="sex"
+                              className="form-control"
+                            >
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                            </Field>
+                            {errors.sex && touched.sex ? (
+                              <div className="text-danger">{errors.sex}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Password</label>
+                            <div className="input-group">
+                              <Field
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                className="form-control"
+                              />
+                              <Button
+                                onClick={toggleShowPassword}
+                                className="btn btn-outline-secondary"
+                              >
+                                {showPassword ? "Hide" : "Show"}
+                              </Button>
                             </div>
-                          ) : null}
-                        </div>
-                        <div className="text-end">
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            type="submit"
-                            className="me-2"
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={() => setIsModalOpen(false)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </Form>
-                    )}
-                  </Formik>
+                            {errors.password && touched.password ? (
+                              <div className="text-danger">
+                                {errors.password}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Re-enter Password</label>
+                            <div className="input-group">
+                              <Field
+                                name="confirmPassword"
+                                type={showPassword ? "text" : "password"}
+                                className="form-control"
+                              />
+                              <Button
+                                onClick={toggleShowPassword}
+                                className="btn btn-outline-secondary"
+                              >
+                                {showPassword ? "Hide" : "Show"}
+                              </Button>
+                            </div>
+                            {errors.confirmPassword &&
+                            touched.confirmPassword ? (
+                              <div className="text-danger">
+                                {errors.confirmPassword}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="text-end">
+                            <button
+                              variant="contained"
+                              color="primary"
+                              type="submit"
+                              className="savechangesbutton"
+                            >
+                              Save
+                            </button>
+                            <button
+                              variant="contained"
+                              color="secondary"
+                              onClick={() => setIsModalOpen(false)}
+                              className="closebutton"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </Form>
+                      )}
+                    </Formik>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Modal>
+            </Modal>
+          </div>
         </div>
       </div>
     </div>
