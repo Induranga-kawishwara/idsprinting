@@ -17,12 +17,7 @@ const SecondaryNavbar = () => {
       <Navbar.Toggle aria-controls="secondary-navbar" />
       <Navbar.Collapse id="secondary-navbar">
         <Nav className={`${classes.nav__linkgroup} `}>
-          <Nav.Link className={`${classes.nav__link} me-4`}>
-            <RouterLink to="/adminreg">
-              <FcManager className={classes.iconSize} />
-              Add Admin
-            </RouterLink>
-          </Nav.Link>
+
 
           <Nav.Link className={`${classes.nav__link} me-4`}>
             <RouterLink to="/settings">
