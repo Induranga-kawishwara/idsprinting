@@ -211,14 +211,12 @@ const CreditCustomers = () => {
   );
 
   return (
-    <div className="credit-customers">
-      <br />
-      <br />
-      <div className="container mt-4">
+    <div className="bodyofpage">
+      <div className="container">
         <h3>Credit Customers</h3>
 
         {/* Search and Filters */}
-        <div className="search-filters mb-3">
+        <div className="d-flex align-items-center mb-3">
           <input
             type="text"
             value={searchTerm}
@@ -234,7 +232,7 @@ const CreditCustomers = () => {
             selectsStart
             startDate={dateRange.start}
             endDate={dateRange.end}
-            className="searchfunctionsdate me-2"
+            className="searchfunctionsdate"
             placeholderText="Start Date"
           />
           <DatePicker
@@ -245,17 +243,20 @@ const CreditCustomers = () => {
             selectsEnd
             startDate={dateRange.start}
             endDate={dateRange.end}
-            className="searchfunctionsdate me-2"
+            className="searchfunctionsdate"
             placeholderText="End Date"
           />
-          <Button variant="contained" onClick={handleClearFilters}>
+          <button variant="contained"
+          className="prevbutton" 
+          onClick={handleClearFilters
+          }>
             Clear
-          </Button>
+          </button>
         </div>
 
         {/* Customer Table */}
         <div className="table-responsive">
-          <table className="table table-striped mt-3">
+          <table className="table mt-3 custom-table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -268,7 +269,7 @@ const CreditCustomers = () => {
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="custom-table">
               {paginatedCustomers.map((customer) => (
                 <tr key={customer.id}>
                   <td>{customer.id}</td>
@@ -279,27 +280,30 @@ const CreditCustomers = () => {
                   <td>{customer.creditBalance ?? 0}</td>
                   <td>{customer.addedBy}</td>
                   <td>
-                    <Button
+                    <button
                       variant="contained"
                       size="small"
                       onClick={() => handleEditCredit(customer)}
+              className="editbtn"
                     >
                       Edit
-                    </Button>{" "}
-                    <Button
+                    </button>{" "}
+                    <button
                       variant="contained"
                       size="small"
                       onClick={() => handleOpenReceiptModal(customer)}
+              className="sharebutton"
                     >
                       View Receipt
-                    </Button>{" "}
-                    <Button
+                    </button>{" "}
+                    <button
                       variant="contained"
                       size="small"
                       onClick={() => handleDeleteCredit(customer.id)}
+              className="deletebtn"
                     >
                       Delete
-                    </Button>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -368,20 +372,20 @@ const CreditCustomers = () => {
                         ) : null}
                       </div>
                       <div className="d-flex justify-content-end">
-                        <Button
+                        <button
                           variant="contained"
                           type="submit"
-                          className="update-btn"
-                        >
+                          className="savechangesbutton"
+                          >
                           Submit Payment
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           variant="contained"
                           onClick={() => setIsPaymentModalOpen(false)}
-                          className="cancel-btn ms-2"
+                          className="closebutton"
                         >
                           Cancel
-                        </Button>
+                        </button>
                       </div>
                     </Form>
                   )}
@@ -431,34 +435,34 @@ const CreditCustomers = () => {
                     <strong>Added By:</strong> {selectedCustomer.addedBy}
                   </p>
                   <div className="d-flex justify-content-end">
-                    <Button
+                    <button
                       variant="contained"
                       onClick={downloadReceipt}
-                      className="download-btn me-2"
+                      className="sharebutton"
                     >
                       Download PDF
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       variant="contained"
                       onClick={printReceipt}
-                      className="print-btn me-2"
+                      className="sharebutton"
                     >
                       Print Receipt
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       variant="contained"
                       onClick={shareReceipt}
-                      className="share-btn me-2"
+                          className="sharebutton"
                     >
                       Share
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       variant="contained"
                       onClick={handleCloseReceiptModal}
-                      className="close-btn"
+                          className="closebutton"
                     >
                       Close
-                    </Button>
+                    </button>
                   </div>
                 </div>
               )}
