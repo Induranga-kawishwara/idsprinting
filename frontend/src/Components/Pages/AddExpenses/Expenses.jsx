@@ -187,29 +187,24 @@ const Expenses = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = useCallback(
-    async (name, id) => {
-      const confirmDelete = window.confirm(
-        `Do you want to delete the expense: ${name}?`
-      );
+  const handleDelete = useCallback(async (name, id) => {
+    const confirmDelete = window.confirm(
+      `Do you want to delete the expense: ${name}?`
+    );
 
-      if (confirmDelete) {
-        try {
-          const response = await axios.delete(
-            `https://candied-chartreuse-concavenator.glitch.me/expenses/expenses/${id}`
-          );
+    if (confirmDelete) {
+      try {
+        const response = await axios.delete(
+          `https://candied-chartreuse-concavenator.glitch.me/expenses/expenses/${id}`
+        );
 
-          socket.emit("expensesDeleted", { id });
-
-          alert(response.data.message);
-        } catch (error) {
-          console.error("Error deleting expense:", error);
-          alert("Failed to delete the expense. Please try again.");
-        }
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting expense:", error);
+        alert("Failed to delete the expense. Please try again.");
       }
-    },
-    [setExpenses]
-  );
+    }
+  }, []);
   const handleSubmit = async (values) => {
     const currentDate = new Date();
 
@@ -241,14 +236,6 @@ const Expenses = () => {
           `https://candied-chartreuse-concavenator.glitch.me/expenses/expenses/${editingExpense.id}`,
           { ...data, dateAndTime: isoDateString }
         );
-        const updatedExpenses = {
-          ...values,
-          id: editingExpense.id,
-          addedDate: editingExpense.addedDate,
-          addedTime: editingExpense.addedTime,
-        };
-
-        socket.emit("expensesUpdated", updatedExpenses);
 
         alert(response.data.message);
       } catch (error) {
@@ -257,21 +244,10 @@ const Expenses = () => {
       }
     } else {
       try {
-        const { date, time } = ConvertToSLT(currentDate);
-
         const response = await axios.post(
           "https://candied-chartreuse-concavenator.glitch.me/expenses/expenses",
           { ...data, dateAndTime: currentDate }
         );
-
-        const newExpenses = {
-          ...values,
-          id: response.data.id,
-          addedDate: date,
-          addedTime: time,
-          photo: downloadURL,
-        };
-        socket.emit("expensesAdded", newExpenses);
 
         alert(response.data.message);
       } catch (error) {
