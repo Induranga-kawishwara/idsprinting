@@ -12,6 +12,7 @@ import AddItem from "./Components/Pages/Additem/Additem";
 import SalesHistory from "./Components/Pages/SalesHistory/SalesHistory";
 import Supplier from "./Components/Pages/Supplier/Supplier";
 import NavBar from "./Components/Reusable/NavBar/NavBar";
+import Footer from "./Components/Reusable/Footer/Footer";
 import Category from "./Components/Pages/AddCategory/AddCategory";
 import Expenses from "./Components/Pages/AddExpenses/Expenses";
 import CashUp from "./Components/Pages/CashUp/Cashup";
@@ -41,6 +42,7 @@ const Layout = () => {
         <Route path="/credit-customers" element={<CreditCustomers />} />
         <Route path="/sales-history" element={<SalesHistory />} />
       </Routes>
+      <Footer />
     </>
   );
 };
