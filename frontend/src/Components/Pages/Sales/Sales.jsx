@@ -3,11 +3,11 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal } from "@mui/material";
-// import "./Sales.scss";
+import "./Sales.scss";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
 import CustomerFormModal from '../Customer/CustomerFormModal'; // Adjust the import path
-
+import "../All.scss";
 const initialProducts = [
   {
     id: 1,
@@ -48,10 +48,58 @@ const initialCustomers = [
     email: "valoy@domain.com",
     phone: "0711093799",
     totalSpent: "RD $50.00",
-    houseNo: "",
-    street: "",
-    city: "",
-    postalCode: "",
+    houseNo: "12B",
+    street: "Maple Street",
+    city: "Santo Domingo",
+    postalCode: "10101",
+  },
+  {
+    id: 2,
+    name: "Maria",
+    surname: "Santiago",
+    email: "maria.santiago@example.com",
+    phone: "0711223344",
+    totalSpent: "RD $200.00",
+    houseNo: "45",
+    street: "Elm Avenue",
+    city: "Santiago",
+    postalCode: "51000",
+  },
+  {
+    id: 3,
+    name: "Pedro",
+    surname: "Gomez",
+    email: "pedro.gomez@example.com",
+    phone: "0722334455",
+    totalSpent: "RD $120.50",
+    houseNo: "89A",
+    street: "Cedar Lane",
+    city: "La Vega",
+    postalCode: "41000",
+  },
+  {
+    id: 4,
+    name: "Laura",
+    surname: "Martinez",
+    email: "laura.martinez@example.com",
+    phone: "0712334455",
+    totalSpent: "RD $75.75",
+    houseNo: "22C",
+    street: "Oak Street",
+    city: "Puerto Plata",
+    postalCode: "57000",
+  },
+  {
+    id: 5,
+    name: "Juan",
+    surname: "Rodriguez",
+    email: "juan.rodriguez@example.com",
+    phone: "0733445566",
+    totalSpent: "RD $300.00",
+    houseNo: "5",
+    street: "Pine Boulevard",
+    city: "Punta Cana",
+    postalCode: "23000",
   },
   // Add more customers if needed
 ];
@@ -456,34 +504,39 @@ const Sales = () => {
         <br />
         <div className="sales-body">
           <div className="left-panel">
+            
+            {/* Display Day Sales */}
+            <div className="day-sales-box">
+              <h3>Day's Sale  Rs. {daySales.toFixed(2)}</h3>
+            </div>
+
             {/* Net Amount Box */}
             <div className="net-amount-box">
               <h2>Net Amount</h2>
               <p>Rs. {transaction.net.toFixed(2)}</p>
             </div>
 
-            <Button
-              variant="contained"
-              onClick={() => navigate("/credit-customers")} // Use navigate instead of history.push
-            >
-              Show Credit Customers
-            </Button>
+            <div className="d-flex align-items-center mb-3 buttoncontainer">
+            <button
+             variant="contained" onClick={handleOpenModal}
+             className="newcustomerbtn">
+              New Customer
+              </button>
 
-            {/* Display Day Sales */}
-            <div className="day-sales-box">
-              <h3>Day's Sales</h3>
-              <p>Rs. {daySales.toFixed(2)}</p>
-            </div>
-
-            {/* Sales History Button */}
-            <Button
+            
+            <button
               variant="contained"
               onClick={() => navigate("/sales-history")} // Navigate to SalesHistory.jsx
-            >
+              className="saleshistorybtn">
               Sales History
-            </Button>
-            <Button variant="contained" onClick={handleOpenModal}>Add New Customer</Button>
-
+            </button>
+            <button
+              variant="contained"
+              onClick={() => navigate("/credit-customers")} 
+              className="creditcustomersbtn">
+            Credit Customers
+            </button>
+            </div>
                 {/* Use the modal component */}
                 <CustomerFormModal
                   isOpen={isModalOpen}
@@ -539,8 +592,8 @@ const Sales = () => {
             </div>
 
             <div className="transaction-summary">
-              <div class="table-responsive">
-                <table>
+              <div class="custom-table-sale">
+                <table className="table mt-3 custom-table">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -550,7 +603,7 @@ const Sales = () => {
                       <th>Action</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody classname = "custom-table-sale">
                     {transaction.products.map((product) => (
                       <tr key={product.id}>
                         <td>{product.name}</td>
@@ -577,7 +630,9 @@ const Sales = () => {
                         </td>
                         <td>Rs. {(product.qty * product.price).toFixed(2)}</td>
                         <td>
-                          <button onClick={() => removeProduct(product.id)}>
+                          <button
+                          className="tableremovebtn"
+                          onClick={() => removeProduct(product.id)}>
                             Remove
                           </button>
                         </td>
@@ -587,14 +642,15 @@ const Sales = () => {
                 </table>
               </div>
 
+              <div className="d-flex align-items-center mb-3">
               {/* Plus Button to Add Products Manually */}
               <div className="add-product-button-container">
-                <Button
+                <button
                   onClick={() => setIsAddProductModalOpen(true)}
                   className="button-add-product"
                 >
                   + Add Product
-                </Button>
+                </button>
               </div>
 
               <div className="totals">
@@ -606,11 +662,12 @@ const Sales = () => {
                     min="0"
                     step="0.01"
                     onChange={(e) => updateDiscount(e.target.value)}
+                    classname="searchfunctions me-2"
                   />
                 </p>
-                <p>Net: Rs. {transaction.net.toFixed(2)}</p>
-              </div>
-            </div>
+               
+              </div> {/* <p>Net: Rs. {transaction.net.toFixed(2)}</p> */}
+              </div></div>
             <div className="action-buttons">
               <button
                 onClick={completeSale}

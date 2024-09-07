@@ -1,4 +1,4 @@
-@import "~bootstrap/scss/bootstrap"; // Import Bootstrap for utilities
+// @import "~bootstrap/scss/bootstrap"; // Import Bootstrap for utilities
 
 // Define variables for colors and spacing
 $white: #ffffff;
@@ -36,42 +36,118 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
     border-radius: 8px;
     box-shadow: $box-shadow-dark;
-    transition: all 0.3s ease;
+    transition: all 1s ease;
+    margin-bottom: 25px;
 
     &:hover {
       transform: translateY(-2px);
     }
   }
 
+  .day-sales-box{
+    background-color: $primary-color;
+    color: $white;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+
+    h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+  }
   /* Net Amount Box */
   .net-amount-box {
     background-color: $primary-color;
     color: $white;
-    padding: 20px;
+    padding-bottom: 5px;
+    padding-top: 10px;
     border-radius: 8px;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
 
     h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
     }
 
     p {
-      margin: 5px 0 0 0;
-      font-size: 50px;
+      margin: 1px 0 0 0;
+      font-size: 35px;
       font-weight: bold;
     }
   }
 
-  /* Customer Info */
+  .buttoncontainer{
+
+    .newcustomerbtn {
+      width: 100%; /* Full width on mobile */
+      background-color: #04AA6D; /* Green */
+      color: rgb(255, 255, 255);
+      border: none; /* Green */
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: clamp(12px, 2vw, 18px); /* Responsive font size */
+      padding: 4px 15px;
+      margin: 3px;
+    }
+    
+    .newcustomerbtn:hover {
+      background-color: #ffffff; /* Green */
+      color:  #04AA6D;
+      border: 3px solid #04AA6D;
+    }
+
+    
+    .saleshistorybtn {
+      width: 100%; /* Full width on mobile */    
+      background-color: #3360da; /* Green */
+      color: rgb(255, 255, 255);
+      border: none; /* Green */
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: clamp(12px, 2vw, 18px); /* Responsive font size */
+      padding: 4px 15px;
+      margin: 3px;
+    }
+    
+    .saleshistorybtn:hover {
+      background-color: #ffffff; /* Green */
+      color:  #3360da;
+      border: 3px solid #3360da;
+    }
+
+    /* Customer Info */
+
+    .creditcustomersbtn {
+      width: 100%; /* Full width on mobile */    
+      background-color: #f44336; /* Green */
+      color: white;
+      border: none; /* Green */
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: clamp(12px, 2vw, 18px); /* Responsive font size */
+      padding: 4px 15px;
+      margin: 3px;
+    }
+    
+    .creditcustomersbtn:hover {
+      background-color: #ffffff; /* Green */
+      color:  #f44336;
+      border: 3px solid #f44336;
+    }
+}
   .customer-info {
     margin-top: 20px;
     margin-bottom: 20px;
   }
-
   /* Product Grid */
   .product-grid {
     display: grid;
@@ -105,23 +181,67 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   }
 
+  .button-add-product {
+    background-color: #4d7cff; /* Green */
+    color: rgb(255, 255, 255);
+    border: none; /* Green */
+    border-radius: 8px;
+    font-weight: bold;
+      font-size: clamp(12px, 2vw, 18px); /* Responsive font size */
+    padding: 8px 25px;
+    margin: 3px;
+  }
+.button-add-product:hover {
+    background-color: #ffffff; /* Green */
+    color: #4d7cff;
+    border: 3px solid #4d7cff;
+  }
+
   /* Transaction Summary */
   .transaction-summary {
     table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
 
-      th,
-      td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: left;
-        font-size: 14px;
+     
+      .custom-table-sale {
+        background-color: #0000004b; /* Change this to your desired table background color */
+        color: #333; /* Change this to your desired text color */
+        border-radius: 8px; /* Adjust this value for the desired roundness */
+        overflow: hidden; /* Ensures content doesn't overflow the rounded corners */
+        border-collapse: separate; /* Makes sure border radius works */
+        font-weight: none;
       }
-
-      th {
-        background-color: #f4f4f4;
+      
+      /* Apply different colors for the table headers */
+      .custom-table-sale thead th {
+        background-color: #e0e0e0; /* Header background color */
+        color: #000; /* Header text color */
+      }
+      
+      /* Apply different colors for table rows */
+      .custom-table-sale tbody tr {
+        background-color: #f8f8f8; /* Row background color */
+        color: #333; /* Row text color */
+      }.custom-table-sale tbody td {
+        background-color: #f8f8f8; /* Row background color */
+        color: #525252; /* Row text color */
+      }
+      
+      /* Optional: Hover effect for rows */
+      .custom-table-sale tbody tr:hover {
+        background-color: #ddd; /* Hover background color */
+      }
+      
+      /* Border radius for individual corners if needed */
+      .custom-table-sale th:first-child,
+      .custom-table-sale td:first-child {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+      }
+      
+      .custom-table-sale th:last-child,
+      .custom-table-saletd:last-child {
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
       }
     }
 
@@ -134,45 +254,99 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   }
 
-  /* Totals */
+
   .totals {
-    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end; /* Align everything to the right */
+    font-family: Arial, sans-serif;
+    margin-bottom: 15px;
     font-size: 16px;
+    width: 100%; /* Ensure the container takes up full width */
   }
-
-  /* Buttons */
-  .button-pay,
-  .button-save {
-    padding: 10px 20px;
+  
+  .totals p {
+    margin: 0;
+    font-weight: 600;
+    text-align: right; /* Align text to the right */
+  }
+  
+  .totals input[type="number"] {
+    padding: 8px;
     font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    margin-left: 10px;
+    transition: border-color 0.3s ease;
+    width: 100px;
+    text-align: right; /* Ensure the text inside the input is right-aligned */
+  }
+  
+  .totals input[type="number"]:focus {
+    border-color: #007bff;
+  }
+  
+  .searchfunctions {
     margin-right: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    display: inline-block;
   }
-
-  .button-pay {
-    background-color: $button-pay-bg;
-    color: $button-text-color;
-
-    &:hover {
-      background-color: $button-pay-bg-hover;
+  
+  @media (max-width: 768px) {
+    .totals {
+      flex-direction: column;
+      align-items: flex-end; /* Align elements to the right on smaller screens */
+    }
+  
+    .totals input[type="number"] {
+      margin-left: 0;
+      margin-top: 8px;
+      width: 60%;
     }
   }
+  
+  
+        .tableremovebtn {
+    
+        background-color: #f44336; /* Green */
+        color: white;
+        border: none; /* Green */
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: clamp(12px, 2vw, 18px); /* Responsive font size */
+        padding: 4px 10px;
+        margin: 3px;
+      }
+      
+      .tableremovebtn:hover {
+        background-color: #dbdbdb; /* Green */
+        color:  #f44336;
+        border: 3px solid #f44336;
+      }
 
-  .button-save {
-    background-color: $button-save-bg;
-    color: $button-text-color;
+  
+  
 
-    &:hover {
-      background-color: $button-save-bg-hover;
-    }
-  }
+ 
 
   .action-buttons {
     display: flex;
     justify-content: flex-start;
+    .button-pay{
+      width: 100%;
+      background-color: #4d7cff; /* Green */
+      color: rgb(255, 255, 255);
+      border: none; /* Green */
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      padding: 8px 25px;
+      margin: 3px;
+    }
+  .button-pay:hover {
+      background-color: #ffffff; /* Green */
+      color: #4d7cff;
+      border: 3px solid #4d7cff;
+    }
   }
 
   /* Customer Search */
@@ -292,5 +466,41 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
       font-size: 18px;
       margin-right: 12px;
     }
+    .net-amount-box {
+      background-color: $primary-color;
+      color: $white;
+      padding-bottom: 5px;
+      padding-top: 10px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+  
+      
+  
+      p {
+        margin: 2px 0 0 0;
+        font-size: 50px;
+        font-weight: bold;
+      }
+    }
+    .day-sales-box{
+      background-color: $primary-color;
+      color: $white;
+      padding-bottom: 10px;
+      padding-top: 10px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+  
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    }
+    
   }
+  
 } // End of scoping
