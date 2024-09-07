@@ -282,7 +282,9 @@ const Category = () => {
               variant="contained"
               color="secondary"
               size="small"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() =>
+                handleDelete(row.original.rawMaterialName, row.original.id)
+              }
               className="deletebtn"
             >
               Delete
