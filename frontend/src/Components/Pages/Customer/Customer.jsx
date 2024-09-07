@@ -20,7 +20,7 @@ const Customer = () => {
     const fetchData = async () => {
       try {
         const customerData = await axios.get(
-          "http://localhost:8080/customers/"
+          "https://candied-chartreuse-concavenator.glitch.me/customers/"
         );
 
         const formattedCustomers = customerData.data.map((customer) => {
@@ -104,7 +104,7 @@ const Customer = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `http://localhost:8080/customers/customer/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${id}`
         );
 
         // setCustomers((prevCustomers) =>
@@ -135,7 +135,7 @@ const Customer = () => {
     if (editingCustomer) {
       try {
         const response = await axios.put(
-          `http://localhost:8080/customers/customer/${editingCustomer.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${editingCustomer.id}`,
           data
         );
         const { date, time } = ConvertToSLT(currentDate);
@@ -145,16 +145,8 @@ const Customer = () => {
           id: editingCustomer.id,
           addedDate: date,
           addedTime: time,
-          totalSpent: "200", // Example data; replace with real data if needed
+          totalSpent: "200",
         };
-
-        // setCustomers((prevCustomers) =>
-        //   prevCustomers.map((customer) =>
-        //     customer.id === editingCustomer.id ? updatedCustomer : customer
-        //   )
-        // );
-
-        // Emit event for customer update
         socket.emit("customerUpdated", updatedCustomer);
 
         alert(response.data.message);
@@ -165,7 +157,7 @@ const Customer = () => {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:8080/customers/customer",
+          "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
           data
         );
         const { date, time } = ConvertToSLT(currentDate);
@@ -175,12 +167,8 @@ const Customer = () => {
           id: response.data.id,
           addedDate: date,
           addedTime: time,
-          totalSpent: "100", // Example data; replace with real data if needed
+          totalSpent: "100",
         };
-
-        // setCustomers((prevCustomers) => [newCustomer, ...prevCustomers]);
-
-        // Emit event for new customer
         socket.emit("customerAdded", newCustomer);
 
         alert(response.data.message);

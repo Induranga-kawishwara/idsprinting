@@ -65,8 +65,12 @@ const Expenses = () => {
       try {
         // Fetch both expenses and suppliers concurrently
         const [expensesData, suppliersData] = await Promise.all([
-          axios.get("http://localhost:8080/expenses/"),
-          axios.get("http://localhost:8080/suppliers/"),
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/expenses/"
+          ),
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/suppliers/"
+          ),
         ]);
 
         // Format suppliers data (only extracting id and name)
@@ -192,7 +196,7 @@ const Expenses = () => {
       if (confirmDelete) {
         try {
           const response = await axios.delete(
-            `http://localhost:8080/expenses/expenses/${id}`
+            `https://candied-chartreuse-concavenator.glitch.me/expenses/expenses/${id}`
           );
 
           socket.emit("expensesDeleted", { id });
@@ -234,7 +238,7 @@ const Expenses = () => {
         const isoDateString = dateObject.toISOString();
 
         const response = await axios.put(
-          `http://localhost:8080/expenses/expenses/${editingExpense.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/expenses/expenses/${editingExpense.id}`,
           { ...data, dateAndTime: isoDateString }
         );
         const updatedExpenses = {
@@ -256,7 +260,7 @@ const Expenses = () => {
         const { date, time } = ConvertToSLT(currentDate);
 
         const response = await axios.post(
-          "http://localhost:8080/expenses/expenses",
+          "https://candied-chartreuse-concavenator.glitch.me/expenses/expenses",
           { ...data, dateAndTime: currentDate }
         );
 
