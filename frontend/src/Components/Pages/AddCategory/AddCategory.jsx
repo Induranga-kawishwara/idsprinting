@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useTable } from "react-table";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
@@ -7,22 +7,11 @@ import { Button, Modal } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../All.scss";
-
-const initialCategories = [
-  {
-    id: 1,
-    rawMaterialName: "Material A",
-    size: "Medium",
-    thickness: "0.5 mm",
-    qty: "100",
-    supplier: "Supplier A",
-    buyingPrice: "20.00",
-    addedDate: "2024-08-13",
-    addedTime: "14:30",
-    addedBy: "Admin",
-  },
-  // Add more categories if needed
-];
+import socket from "../../Utility/SocketConnection.js";
+import axios from "axios";
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
+import _ from "lodash";
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
 const CategorySchema = Yup.object().shape({
   rawMaterialName: Yup.string().required("Raw Material Name is required"),
@@ -34,66 +23,198 @@ const CategorySchema = Yup.object().shape({
   addedBy: Yup.string().required("Added By is required"),
 });
 
-const suppliers = [
-  { id: 1, name: "Supplier A" },
-  { id: 2, name: "Supplier B" },
-  { id: 3, name: "Supplier C" },
-  // Add more suppliers as needed
-];
-
 const ITEMS_PER_PAGE = 100;
 
 const Category = () => {
-  const [categories, setCategories] = useState(initialCategories);
+  const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [currentPage, setCurrentPage] = useState(0);
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleEdit = (category) => {
-    setEditingCategory(category);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch both Category and suppliers concurrently
+        const [categoriesData, suppliersData] = await Promise.all([
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/categories/"
+          ),
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/suppliers/"
+          ),
+        ]);
+
+        // Format suppliers data (only extracting id and name)
+        const needDetailsSuppliers = suppliersData.data.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.name,
+        }));
+
+        // Format Category data with date and time conversion
+        const formattedCategories = categoriesData.data.map((Category) => {
+          const { date, time } = ConvertToSLT(Category.dateAndTime);
+
+          return {
+            ...Category,
+            id: Category.id,
+            addedDate: date,
+            addedTime: time,
+          };
+        });
+
+        // Update state
+        setCategories(formattedCategories);
+        setSuppliers(needDetailsSuppliers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    // Call fetchData once
+    fetchData();
+
+    // Listen for real-time Category updates
+    socket.on("CategoryAdded", (newCategory) => {
+      const { date, time } = ConvertToSLT(newCategory.dateAndTime);
+
+      const newcategory = {
+        ...newCategory,
+        addedDate: date,
+        addedTime: time,
+      };
+      setCategories((prevCategory) => [newcategory, ...prevCategory]);
+    });
+
+    socket.on("CategoryUpdated", (updatedCategory) => {
+      const { date, time } = ConvertToSLT(updatedCategory.dateAndTime);
+
+      const newUpdatedCategory = {
+        ...updatedCategory,
+        addedDate: date,
+        addedTime: time,
+      };
+      setCategories((prevCategory) =>
+        prevCategory.map((Category) =>
+          Category.id === updatedCategory.id ? newUpdatedCategory : Category
+        )
+      );
+    });
+
+    socket.on("CategoryDeleted", ({ id }) => {
+      setCategories((prevCategory) =>
+        prevCategory.filter((Category) => Category.id !== id)
+      );
+    });
+
+    socket.on("supplierAdded", (newsupplier) => {
+      setSuppliers((prevsuppliers) => [
+        { id: newsupplier.id, name: newsupplier.name },
+        ...prevsuppliers,
+      ]);
+    });
+
+    socket.on("supplierUpdated", (updatedsupplier) => {
+      setSuppliers((prevsuppliers) =>
+        prevsuppliers.map((supplier) =>
+          supplier.id === updatedsupplier.id
+            ? { id: updatedsupplier.id, name: updatedsupplier.name }
+            : supplier
+        )
+      );
+    });
+
+    socket.on("supplierDeleted", ({ id }) => {
+      setSuppliers((prevsuppliers) =>
+        prevsuppliers.filter((supplier) => supplier.id !== id)
+      );
+    });
+
+    return () => {
+      socket.off("CategoryAdded");
+      socket.off("CategoryUpdated");
+      socket.off("CategoryDeleted");
+
+      //////
+
+      socket.off("supplierAdded");
+      socket.off("supplierUpdated");
+      socket.off("supplierDeleted");
+    };
+  }, []);
+
+  const handleEdit = (Category) => {
+    setEditingCategory(Category);
     setIsModalOpen(true);
   };
 
-  const handleDelete = useCallback(
-    (id) => {
-      setCategories((prevCategories) =>
-        prevCategories.filter((category) => category.id !== id)
-      );
-    },
-    [setCategories]
-  );
+  const handleDelete = useCallback(async (name, id) => {
+    const confirmDelete = window.confirm(
+      `Do you want to delete the Category: ${name}?`
+    );
 
-  const handleSubmit = (values) => {
+    if (confirmDelete) {
+      try {
+        const response = await axios.delete(
+          `https://candied-chartreuse-concavenator.glitch.me/categories/Category/${id}`
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting expense:", error);
+        alert("Failed to delete the expense. Please try again.");
+      }
+    }
+  }, []);
+
+  const handleSubmit = async (values) => {
     const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
-    const formattedTime = currentDate.toTimeString().split(" ")[0]; // HH:MM:SS
+
+    const data = {
+      ...values,
+      dateAndTime: currentDate.toISOString(),
+    };
 
     if (editingCategory) {
-      setCategories(
-        categories.map((category) =>
-          category.id === editingCategory.id
-            ? {
-                ...values,
-                id: editingCategory.id,
-                addedDate: category.addedDate,
-                addedTime: category.addedTime,
-              }
-            : category
-        )
-      );
+      try {
+        const response = await axios.put(
+          `https://candied-chartreuse-concavenator.glitch.me/categories/Category/${editingCategory.id}`,
+          data
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error updating Category:", error);
+        alert("Failed to update the Category. Please try again.");
+      }
     } else {
-      setCategories([
-        ...categories,
-        {
-          ...values,
-          id: categories.length + 1,
-          addedDate: formattedDate,
-          addedTime: formattedTime,
-        },
-      ]);
+      try {
+        const response = await axios.post(
+          "https://candied-chartreuse-concavenator.glitch.me/categories/Category",
+          data
+        );
+        alert(response.data.message);
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the Category. Please try again.");
+        }
+      }
     }
+
     setIsModalOpen(false);
     setEditingCategory(null);
   };
@@ -105,15 +226,17 @@ const Category = () => {
   };
 
   // Combined search and date filter logic
-  const filteredCategories = categories.filter((category) => {
+  const filteredCategories = categories.filter((Category) => {
     const matchesSearch =
-      category.rawMaterialName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.size.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.buyingPrice.toString().includes(searchQuery);
+      Category.rawMaterialName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      Category.size.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      Category.buyingPrice.toString().includes(searchQuery);
 
     const matchesDate =
-      (!dateRange.start || new Date(category.addedDate) >= dateRange.start) &&
-      (!dateRange.end || new Date(category.addedDate) <= dateRange.end);
+      (!dateRange.start || new Date(Category.addedDate) >= dateRange.start) &&
+      (!dateRange.end || new Date(Category.addedDate) <= dateRange.end);
 
     return matchesSearch && matchesDate;
   });
@@ -128,7 +251,11 @@ const Category = () => {
 
   const columns = useMemo(
     () => [
-      { Header: "ID", accessor: "id" },
+      {
+        Header: "No",
+        accessor: "id",
+        Cell: ({ row }) => row.index + 1,
+      },
       { Header: "Raw Material Name", accessor: "rawMaterialName" },
       { Header: "Size", accessor: "size" },
       { Header: "Thickness (Gsm Or mm)", accessor: "thickness" },
@@ -195,7 +322,9 @@ const Category = () => {
           />
           <DatePicker
             selected={dateRange.start}
-            onChange={(date) => setDateRange((prev) => ({ ...prev, start: date }))}
+            onChange={(date) =>
+              setDateRange((prev) => ({ ...prev, start: date }))
+            }
             selectsStart
             startDate={dateRange.start}
             endDate={dateRange.end}
@@ -204,7 +333,9 @@ const Category = () => {
           />
           <DatePicker
             selected={dateRange.end}
-            onChange={(date) => setDateRange((prev) => ({ ...prev, end: date }))}
+            onChange={(date) =>
+              setDateRange((prev) => ({ ...prev, end: date }))
+            }
             selectsEnd
             startDate={dateRange.start}
             endDate={dateRange.end}
@@ -212,39 +343,40 @@ const Category = () => {
             placeholderText="E.Date"
             minDate={dateRange.start}
           />
-          <button
-            className="prevbutton"
-            onClick={clearFilters}
-          >
+          <button className="prevbutton" onClick={clearFilters}>
             Clear
           </button>
         </div>
         <div className="table-responsive">
-          <table {...getTableProps()} className="table mt-3 custom-table">
-            <thead className="custom-table">
-              {headerGroups.map((headerGroup) => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <th {...column.getHeaderProps()}>
-                      {column.render("Header")}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody {...getTableBodyProps()} className="custom-table">
-              {rows.map((row) => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map((cell) => (
-                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+          {loading || error || _.isEmpty(data) ? (
+            <TableChecker loading={loading} error={error} data={data} />
+          ) : (
+            <table {...getTableProps()} className="table mt-3 custom-table">
+              <thead className="custom-table">
+                {headerGroups.map((headerGroup) => (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      <th {...column.getHeaderProps()}>
+                        {column.render("Header")}
+                      </th>
                     ))}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </thead>
+              <tbody {...getTableBodyProps()} className="custom-table">
+                {rows.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => (
+                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination Controls */}
@@ -373,10 +505,10 @@ const Category = () => {
                         ) : null}
                       </div>
                       <div className="modal-footer">
-                        
                         <button type="submit" className="savechangesbutton">
-                        {editingCategory ? "Update" : "Add"}
-                        </button><button
+                          {editingCategory ? "Update" : "Add"}
+                        </button>
+                        <button
                           type="button"
                           className="closebutton"
                           onClick={() => setIsModalOpen(false)}

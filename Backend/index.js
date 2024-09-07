@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/customers", Customer);
-app.use("/item", Item);
+app.use("/items", Item);
 app.use("/suppliers", Supplier);
 app.use("/expenses", Expenses);
 app.use("/cashup", Cashup);

@@ -14,6 +14,7 @@ export const createCategory = async (req, res) => {
     supplier,
     buyingPrice,
     addedBy,
+    dateAndTime,
   } = req.body;
 
   try {
@@ -45,7 +46,8 @@ export const createCategory = async (req, res) => {
       qty,
       supplier,
       buyingPrice,
-      addedBy
+      addedBy,
+      dateAndTime
     );
 
     const docRef = await CategoriesCollection.add({ ...category });
