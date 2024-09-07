@@ -251,7 +251,11 @@ const Category = () => {
 
   const columns = useMemo(
     () => [
-      { Header: "ID", accessor: "id" },
+      {
+        Header: "No",
+        accessor: "id",
+        Cell: ({ row }) => row.index + 1,
+      },
       { Header: "Raw Material Name", accessor: "rawMaterialName" },
       { Header: "Size", accessor: "size" },
       { Header: "Thickness (Gsm Or mm)", accessor: "thickness" },
