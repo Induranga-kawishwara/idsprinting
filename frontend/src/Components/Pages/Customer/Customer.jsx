@@ -145,16 +145,8 @@ const Customer = () => {
           id: editingCustomer.id,
           addedDate: date,
           addedTime: time,
-          totalSpent: "200", // Example data; replace with real data if needed
+          totalSpent: "200",
         };
-
-        // setCustomers((prevCustomers) =>
-        //   prevCustomers.map((customer) =>
-        //     customer.id === editingCustomer.id ? updatedCustomer : customer
-        //   )
-        // );
-
-        // Emit event for customer update
         socket.emit("customerUpdated", updatedCustomer);
 
         alert(response.data.message);
@@ -175,12 +167,8 @@ const Customer = () => {
           id: response.data.id,
           addedDate: date,
           addedTime: time,
-          totalSpent: "100", // Example data; replace with real data if needed
+          totalSpent: "100",
         };
-
-        // setCustomers((prevCustomers) => [newCustomer, ...prevCustomers]);
-
-        // Emit event for new customer
         socket.emit("customerAdded", newCustomer);
 
         alert(response.data.message);

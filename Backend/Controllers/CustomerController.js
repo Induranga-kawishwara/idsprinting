@@ -14,7 +14,7 @@ export const createCustomer = async (req, res) => {
     houseNo,
     street,
     city,
-    postalcode,
+    postalCode,
     customerType,
     addedDateAndTime,
   } = req.body;
@@ -75,7 +75,7 @@ export const createCustomer = async (req, res) => {
       houseNo,
       street,
       city,
-      postalcode,
+      postalCode,
       customerType,
       addedDateAndTime
     );
@@ -163,7 +163,6 @@ export const updateCustomer = async (req, res) => {
 // Delete a customer
 export const deleteCustomer = async (req, res) => {
   const { id } = req.params;
-
   try {
     const doc = await customersCollection.doc(id).get();
     if (!doc.exists) {
