@@ -107,13 +107,6 @@ const Customer = () => {
           `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${id}`
         );
 
-        // setCustomers((prevCustomers) =>
-        //   prevCustomers.filter((customer) => customer.id !== id)
-        // );
-
-        // Emit event for customer deletion
-        socket.emit("customerDeleted", { id });
-
         alert(response.data.message);
       } catch (error) {
         console.error("Error deleting details:", error);
@@ -138,16 +131,6 @@ const Customer = () => {
           `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${editingCustomer.id}`,
           data
         );
-        const { date, time } = ConvertToSLT(currentDate);
-
-        const updatedCustomer = {
-          ...values,
-          id: editingCustomer.id,
-          addedDate: date,
-          addedTime: time,
-          totalSpent: "200",
-        };
-        socket.emit("customerUpdated", updatedCustomer);
 
         alert(response.data.message);
       } catch (error) {
@@ -160,16 +143,6 @@ const Customer = () => {
           "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
           data
         );
-        const { date, time } = ConvertToSLT(currentDate);
-
-        const newCustomer = {
-          ...values,
-          id: response.data.id,
-          addedDate: date,
-          addedTime: time,
-          totalSpent: "100",
-        };
-        socket.emit("customerAdded", newCustomer);
 
         alert(response.data.message);
       } catch (error) {

@@ -113,9 +113,6 @@ const Supplier = () => {
           `https://candied-chartreuse-concavenator.glitch.me/suppliers/supplier/${id}`
         );
 
-        // Emit event for supplier deletion
-        socket.emit("supplierDeleted", { id });
-
         alert(response.data.message);
       } catch (error) {
         console.error("Error deleting details:", error);
@@ -125,7 +122,6 @@ const Supplier = () => {
   }, []);
   const handleSubmit = async (values) => {
     const currentDate = new Date();
-    const { date, time } = ConvertToSLT(currentDate);
 
     const data = {
       ...values,
@@ -139,16 +135,6 @@ const Supplier = () => {
           data
         );
 
-        const updatedsupplier = {
-          ...values,
-          id: editingSupplier.id,
-          addedDate: date,
-          addedTime: time,
-        };
-
-        // Emit event for supplier update
-        socket.emit("supplierUpdated", updatedsupplier);
-
         alert(response.data.message);
       } catch (error) {
         console.error("Error updating Supplier:", error);
@@ -160,16 +146,6 @@ const Supplier = () => {
           "https://candied-chartreuse-concavenator.glitch.me/suppliers/supplier",
           data
         );
-
-        const newsupplier = {
-          ...values,
-          id: response.data.id,
-          addedDate: date,
-          addedTime: time,
-        };
-
-        // Emit event for new supplier
-        socket.emit("supplierAdded", newsupplier);
 
         alert(response.data.message);
       } catch (error) {
