@@ -597,13 +597,13 @@ const Sales = () => {
                     </p>
                     <div className="customer-metrics">
                       <span>Email: {selectedCustomer.email}</span>
-                      <br />
+                      
                       <span>Phone: {selectedCustomer.phone}</span>
                     </div>
                   </div>
                   <button
                     onClick={handleRemoveCustomer}
-                    className="remove-customer-button"
+                    className="creditcustomersbtn"
                   >
                     Remove Customer
                   </button>
@@ -719,10 +719,12 @@ const Sales = () => {
               </button>
             </div>
           </div>
+
+
+
           <div className="right-panel">
             {/* Product Search and Filter */}
-            <div className="product-search">
-              <div className="input-group">
+            <div className="d-flex align-items-center mb-3">
                 <input
                   type="text"
                   className="form-control"
@@ -730,15 +732,9 @@ const Sales = () => {
                   value={productSearchQuery}
                   onChange={(e) => setProductSearchQuery(e.target.value)}
                 />
-                <button
-                  className="btn btn-outline-secondary"
-                  onClick={clearSearch}
-                >
-                  Clear
-                </button>
-              </div>
+
               <select
-                className="form-control mt-2"
+                className="form-control"
                 value={searchField}
                 onChange={(e) => setSearchField(e.target.value)}
               >
@@ -747,6 +743,12 @@ const Sales = () => {
                 <option value="gsm">GSM</option>
                 <option value="color">Color</option>
               </select>
+              <button
+                  className="prevbutton2"
+                  onClick={clearSearch}
+                >
+                  Clear
+                </button>
             </div>
             <div className="product-grid">
               {filteredProducts.map((product) => (
@@ -762,6 +764,9 @@ const Sales = () => {
             </div>
           </div>
         </div>
+
+
+
 
         {/* Payment Modal */}
         <Modal

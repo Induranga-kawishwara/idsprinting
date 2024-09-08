@@ -23,9 +23,12 @@ import Quatation from "./Components/Pages/Quotation/Quotation";
 
 const Layout = () => {
   const location = useLocation();
+  
+  const isLoginPage = location.pathname === "/"; // Check if current path is login
+
   return (
     <>
-      {location.pathname !== "/" && <NavBar />}
+      {!isLoginPage && <NavBar />} {/* Show NavBar if not on login page */}
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Home />} />
@@ -42,7 +45,7 @@ const Layout = () => {
         <Route path="/credit-customers" element={<CreditCustomers />} />
         <Route path="/sales-history" element={<SalesHistory />} />
       </Routes>
-      <Footer />
+      {!isLoginPage && <Footer />} {/* Show Footer if not on login page */}
     </>
   );
 };
