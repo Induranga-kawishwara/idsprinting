@@ -6,7 +6,7 @@ import { Button, Modal } from "@mui/material";
 import "./Sales.scss";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
-import CustomerFormModal from '../Customer/CustomerFormModal'; // Adjust the import path
+import CustomerFormModal from "../Customer/CustomerFormModal"; // Adjust the import path
 import "../All.scss";
 const initialProducts = [
   {
@@ -312,15 +312,20 @@ const Sales = () => {
       const balance = values.cashGiven - transaction.net;
       alert(`Transaction completed. Change due: Rs.${balance.toFixed(2)}`);
     } else if (values.paymentMethod === "Card") {
-      alert(`Transaction completed using card. Details saved: ${values.cardDetails}`);
+      alert(
+        `Transaction completed using card. Details saved: ${values.cardDetails}`
+      );
     } else if (values.paymentMethod === "Bank Transfer") {
-      alert(`Transaction completed using bank transfer. Number: ${values.bankTransferNumber}`);
+      alert(
+        `Transaction completed using bank transfer. Number: ${values.bankTransferNumber}`
+      );
     } else if (values.paymentMethod === "Cheque") {
-      alert(`Transaction completed using cheque. Number: ${values.chequeNumber}`);
+      alert(
+        `Transaction completed using cheque. Number: ${values.chequeNumber}`
+      );
     } else if (values.paymentMethod === "Credit") {
       alert(`Credit payment of Rs.${values.creditAmount} recorded.`);
     }
-  
 
     // Generate a unique invoice number
     const newInvoiceNumber = `INV-${new Date().getTime()}`;
@@ -336,9 +341,8 @@ const Sales = () => {
       generatePDF(values);
     }
 
-      // Open the modal to choose download, print, or share
-  setIsReceiptOptionsModalOpen(true);
-
+    // Open the modal to choose download, print, or share
+    setIsReceiptOptionsModalOpen(true);
 
     // Clear the transaction table after payment
     setTransaction({
@@ -354,19 +358,19 @@ const Sales = () => {
 
   const generatePDF = (paymentDetails) => {
     const doc = new jsPDF();
-  
+
     // Get current date and time
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString();
     const formattedTime = currentDate.toLocaleTimeString();
-  
+
     doc.setFontSize(18);
     doc.text("Transaction Receipt", 14, 22);
     doc.setFontSize(12);
     doc.text(`Invoice Number: ${invoiceNumber}`, 14, 30);
     doc.text(`Date: ${formattedDate}`, 14, 36);
     doc.text(`Time: ${formattedTime}`, 14, 42);
-  
+
     doc.text("Customer:", 14, 50);
     if (selectedCustomer) {
       doc.text(
@@ -377,7 +381,7 @@ const Sales = () => {
       doc.text(`Email: ${selectedCustomer.email}`, 14, 62);
       doc.text(`Phone: ${selectedCustomer.phone}`, 14, 68);
     }
-  
+
     doc.text("Products:", 14, 80);
     transaction.products.forEach((product, index) => {
       const y = 86 + index * 6;
@@ -389,11 +393,11 @@ const Sales = () => {
         y
       );
     });
-  
+
     doc.text(`Total: Rs.${transaction.total.toFixed(2)}`, 14, 120);
     doc.text(`Discount: Rs.${transaction.discount.toFixed(2)}`, 14, 126);
     doc.text(`Net: Rs.${transaction.net.toFixed(2)}`, 14, 132);
-  
+
     doc.text("Payment Details:", 14, 150);
     doc.text(`Method: ${paymentDetails.paymentMethod}`, 14, 156);
     if (paymentDetails.paymentMethod === "Cash") {
@@ -413,7 +417,7 @@ const Sales = () => {
     } else if (paymentDetails.paymentMethod === "Credit") {
       doc.text(`Credit Amount: Rs.${paymentDetails.creditAmount}`, 14, 162);
     }
-  
+
     return doc;
   };
 
@@ -448,54 +452,61 @@ const Sales = () => {
     setSelectedCustomer(null);
   };
 
-
-
-
   const downloadReceipt = () => {
     const doc = generatePDF(invoiceNumber);
     doc.save(`receipt_${invoiceNumber}.pdf`);
   };
-  
+
   const printReceipt = () => {
     const doc = generatePDF(invoiceNumber);
-    const pdfBlob = doc.output('blob');
+    const pdfBlob = doc.output("blob");
     const pdfURL = URL.createObjectURL(pdfBlob);
-  
-    const printWindow = window.open(pdfURL, '_blank');
+
+    const printWindow = window.open(pdfURL, "_blank");
     printWindow.onload = () => {
       printWindow.print();
     };
   };
-  
+
   const shareReceipt = (paymentDetails) => {
     if (!selectedCustomer) return;
-  
+
     const formattedDate = new Date().toLocaleDateString();
     const formattedTime = new Date().toLocaleTimeString();
-  
+
     // Construct the text message for sharing
-    const textMessage = `IDS Printing House\nTransaction Receipt\nInvoice Number: ${invoiceNumber}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${selectedCustomer.name} ${selectedCustomer.surname}\nContact: ${selectedCustomer.phone}\n\nProducts:\n${transaction.products
+    const textMessage = `IDS Printing House\nTransaction Receipt\nInvoice Number: ${invoiceNumber}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${
+      selectedCustomer.name
+    } ${selectedCustomer.surname}\nContact: ${
+      selectedCustomer.phone
+    }\n\nProducts:\n${transaction.products
       .map(
         (product) =>
-          `${product.name} - ${product.qty} x Rs.${product.price.toFixed(2)} = Rs.${(
-            product.qty * product.price
-          ).toFixed(2)}`
+          `${product.name} - ${product.qty} x Rs.${product.price.toFixed(
+            2
+          )} = Rs.${(product.qty * product.price).toFixed(2)}`
       )
-      .join('\n')}\n\nTotal: Rs.${transaction.total.toFixed(2)}\nPayment Method: ${paymentDetails.paymentMethod}`;
-  
+      .join("\n")}\n\nTotal: Rs.${transaction.total.toFixed(
+      2
+    )}\nPayment Method: ${paymentDetails.paymentMethod}`;
+
     // Construct the WhatsApp and Email URLs with the text message
-    const whatsappURL = `https://wa.me/+94${selectedCustomer.phone}?text=${encodeURIComponent(textMessage)}`;
+    const whatsappURL = `https://wa.me/+94${
+      selectedCustomer.phone
+    }?text=${encodeURIComponent(textMessage)}`;
     const emailSubject = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}`;
     const emailBody = textMessage;
-    const mailtoURL = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-  
+    const mailtoURL = `mailto:?subject=${encodeURIComponent(
+      emailSubject
+    )}&body=${encodeURIComponent(emailBody)}`;
+
     // Open the share options
-    window.open(whatsappURL, '_blank'); // Open WhatsApp
-    window.open(mailtoURL, '_blank'); // Open Email
+    window.open(whatsappURL, "_blank"); // Open WhatsApp
+    window.open(mailtoURL, "_blank"); // Open Email
   };
 
-  const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] = useState(false);
-
+  const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] =
+    useState(false);
 
   return (
     <div className="sales-page">
@@ -504,10 +515,9 @@ const Sales = () => {
         <br />
         <div className="sales-body">
           <div className="left-panel">
-            
             {/* Display Day Sales */}
             <div className="day-sales-box">
-              <h3>Day's Sale  Rs. {daySales.toFixed(2)}</h3>
+              <h3>Day's Sale Rs. {daySales.toFixed(2)}</h3>
             </div>
 
             {/* Net Amount Box */}
@@ -517,33 +527,46 @@ const Sales = () => {
             </div>
 
             <div className="d-flex align-items-center mb-3 buttoncontainer">
-            <button
-             variant="contained" onClick={handleOpenModal}
-             className="newcustomerbtn">
-              New Customer
+              <button
+                variant="contained"
+                onClick={handleOpenModal}
+                className="newcustomerbtn"
+              >
+                New Customer
               </button>
 
-            
-            <button
-              variant="contained"
-              onClick={() => navigate("/sales-history")} // Navigate to SalesHistory.jsx
-              className="saleshistorybtn">
-              Sales History
-            </button>
-            <button
-              variant="contained"
-              onClick={() => navigate("/credit-customers")} 
-              className="creditcustomersbtn">
-            Credit Customers
-            </button>
+              <button
+                variant="contained"
+                onClick={() => navigate("/sales-history")} // Navigate to SalesHistory.jsx
+                className="saleshistorybtn"
+              >
+                Sales History
+              </button>
+              <button
+                variant="contained"
+                onClick={() => navigate("/credit-customers")}
+                className="creditcustomersbtn"
+              >
+                Credit Customers
+              </button>
             </div>
-                {/* Use the modal component */}
-                <CustomerFormModal
-                  isOpen={isModalOpen}
-                  onClose={() => setIsModalOpen(false)}
-                  onSubmit={handleSubmit}
-                  initialValues={{ name: '', surname: '', email: '', phone: '', houseNo: '', street: '', city: '', postalCode: '', customerType: '' }}
-                />
+            {/* Use the modal component */}
+            <CustomerFormModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onSubmit={handleSubmit}
+              initialValues={{
+                name: "",
+                surname: "",
+                email: "",
+                phone: "",
+                houseNo: "",
+                street: "",
+                city: "",
+                postalCode: "",
+                customerType: "",
+              }}
+            />
 
             <div className="customer-info">
               {selectedCustomer ? (
@@ -592,7 +615,7 @@ const Sales = () => {
             </div>
 
             <div className="transaction-summary">
-              <div class="custom-table-sale">
+              <div class="custom-table-sale table-responsive">
                 <table className="table mt-3 custom-table">
                   <thead>
                     <tr>
@@ -603,7 +626,7 @@ const Sales = () => {
                       <th>Action</th>
                     </tr>
                   </thead>
-                  <tbody classname = "custom-table-sale">
+                  <tbody classname="custom-table-sale">
                     {transaction.products.map((product) => (
                       <tr key={product.id}>
                         <td>{product.name}</td>
@@ -631,8 +654,9 @@ const Sales = () => {
                         <td>Rs. {(product.qty * product.price).toFixed(2)}</td>
                         <td>
                           <button
-                          className="tableremovebtn"
-                          onClick={() => removeProduct(product.id)}>
+                            className="tableremovebtn"
+                            onClick={() => removeProduct(product.id)}
+                          >
                             Remove
                           </button>
                         </td>
@@ -643,31 +667,31 @@ const Sales = () => {
               </div>
 
               <div className="d-flex align-items-center mb-3">
-              {/* Plus Button to Add Products Manually */}
-              <div className="add-product-button-container">
-                <button
-                  onClick={() => setIsAddProductModalOpen(true)}
-                  className="button-add-product"
-                >
-                  + Add Product
-                </button>
+                {/* Plus Button to Add Products Manually */}
+                <div className="add-product-button-container">
+                  <button
+                    onClick={() => setIsAddProductModalOpen(true)}
+                    className="button-add-product"
+                  >
+                    + Add Product
+                  </button>
+                </div>
+                <div className="totals">
+                  <p>
+                    Discount:{" "}
+                    <input
+                      type="number"
+                      value={transaction.discount}
+                      min="0"
+                      step="0.01"
+                      onChange={(e) => updateDiscount(e.target.value)}
+                      classname="searchfunctions me-2"
+                    />
+                  </p>
+                </div>{" "}
+                {/* <p>Net: Rs. {transaction.net.toFixed(2)}</p> */}
               </div>
-
-              <div className="totals">
-                <p>
-                  Discount:{" "}
-                  <input
-                    type="number"
-                    value={transaction.discount}
-                    min="0"
-                    step="0.01"
-                    onChange={(e) => updateDiscount(e.target.value)}
-                    classname="searchfunctions me-2"
-                  />
-                </p>
-               
-              </div> {/* <p>Net: Rs. {transaction.net.toFixed(2)}</p> */}
-              </div></div>
+            </div>
             <div className="action-buttons">
               <button
                 onClick={completeSale}
@@ -860,57 +884,57 @@ const Sales = () => {
         </Modal>
 
         {/* Receipt Options Modal */}
-    <Modal
-      open={isReceiptOptionsModalOpen}
-      onClose={() => setIsReceiptOptionsModalOpen(false)}
-    >
-      <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-        <div className="modal-content custom-modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">Receipt Options</h5>
-            <Button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={() => setIsReceiptOptionsModalOpen(false)}
-            />
-          </div>
-          <div className="modal-body">
-            <p>What would you like to do with the receipt?</p>
-            <div className="d-flex justify-content-end">
-              <Button
-                variant="contained"
-                onClick={downloadReceipt}
-                className="download-btn me-2"
-              >
-                Download PDF
-              </Button>
-              <Button
-                variant="contained"
-                onClick={printReceipt}
-                className="print-btn me-2"
-              >
-                Print Receipt
-              </Button>
-              <Button
-                variant="contained"
-                onClick={shareReceipt}
-                className="share-btn me-2"
-              >
-                Share
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => setIsReceiptOptionsModalOpen(false)}
-                className="close-btn"
-              >
-                Close
-              </Button>
+        <Modal
+          open={isReceiptOptionsModalOpen}
+          onClose={() => setIsReceiptOptionsModalOpen(false)}
+        >
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+            <div className="modal-content custom-modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Receipt Options</h5>
+                <Button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setIsReceiptOptionsModalOpen(false)}
+                />
+              </div>
+              <div className="modal-body">
+                <p>What would you like to do with the receipt?</p>
+                <div className="d-flex justify-content-end">
+                  <Button
+                    variant="contained"
+                    onClick={downloadReceipt}
+                    className="download-btn me-2"
+                  >
+                    Download PDF
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={printReceipt}
+                    className="print-btn me-2"
+                  >
+                    Print Receipt
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={shareReceipt}
+                    className="share-btn me-2"
+                  >
+                    Share
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => setIsReceiptOptionsModalOpen(false)}
+                    className="close-btn"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </Modal>
+        </Modal>
 
         {/* Add Product Modal */}
         <Modal
