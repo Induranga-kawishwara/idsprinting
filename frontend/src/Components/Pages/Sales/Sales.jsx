@@ -173,6 +173,23 @@ const Sales = () => {
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const [searchField, setSearchField] = useState("name");
 
+  const generateUniqueInvoiceNumber = () => {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const seconds = String(now.getSeconds()).padStart(2, "0");
+    const milliseconds = String(now.getMilliseconds()).padStart(3, "0");
+
+    // Combine them into a unique invoice number
+    const invoiceNumber = `INV-${year}${month}${day}-${hours}${minutes}${seconds}-${milliseconds}`;
+
+    return invoiceNumber;
+  };
+
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       if (searchField === "name") {
@@ -327,8 +344,8 @@ const Sales = () => {
       alert(`Credit payment of Rs.${values.creditAmount} recorded.`);
     }
 
-    // Generate a unique invoice number
-    const newInvoiceNumber = `INV-${new Date().getTime()}`;
+    //  invoice number
+    const newInvoiceNumber = generateUniqueInvoiceNumber();
     setInvoiceNumber(newInvoiceNumber);
 
     // Ask the user if they want a receipt
