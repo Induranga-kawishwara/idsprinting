@@ -42,6 +42,25 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
     &:hover {
       transform: translateY(-2px);
     }
+
+
+    .prevbutton2 {
+    
+      background-color: #f44336; /* Green */
+      color: rgb(255, 255, 255);
+      border: none; /* Green */
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 4px 15px;
+    }
+    
+    .prevbutton2:hover {
+      background-color: #ffffff; /* Green */
+      color:  #f44336;
+      border: 3px solid #f44336;
+    }
+  
   }
 
   .day-sales-box{
@@ -147,6 +166,91 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
   .customer-info {
     margin-top: 20px;
     margin-bottom: 20px;
+    
+    .customer-info {
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: auto;
+}
+
+.customer-selected {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.customer-details h3 {
+  color: #000000;
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 35px;
+}
+
+.customer-details p {
+  color: #383838;
+  font-style: italic;
+  margin-bottom: 0px;
+}
+
+.customer-metrics span {
+  display: block;
+  color: #2e2e2e;
+  font-size: 14px;
+}
+
+.creditcustomersbtn { 
+  background-color: #f44336; /* Green */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: clamp(12px, 2vw, 18px); /* Responsive font size */
+
+}
+
+.creditcustomersbtn:hover {
+  background-color: #ffffff; /* Green */
+  color:  #f44336;
+  border: 3px solid #f44336;
+}
+
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.customer-search-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.customer-search-list li {
+  background-color: #fff;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+}
+
+.customer-search-list li:hover {
+  background-color: #f1f1f1;
+}
+
   }
   /* Product Grid */
   .product-grid {
