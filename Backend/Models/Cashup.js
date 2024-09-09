@@ -1,9 +1,18 @@
 class Cashup {
-  constructor(reasonName, profitOrOther, details, amount) {
+  constructor(
+    reasonName,
+    profitOrOther,
+    reasonDetails,
+    amount,
+    addedDateAndTime,
+    addedBy
+  ) {
     this.reasonName = reasonName;
     this.profitOrOther = profitOrOther;
-    this.details = details;
+    this.reasonDetails = reasonDetails;
     this.amount = amount;
+    this.addedDateAndTime = addedDateAndTime;
+    this.addedBy = addedBy;
   }
 }
 

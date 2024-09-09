@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -6,23 +6,14 @@ import { Button, Modal } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../All.scss";
+import socket from "../../Utility/SocketConnection.js";
+import _ from "lodash";
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import axios from "axios";
 
 // Constants for pagination
 const ITEMS_PER_PAGE = 100;
-
-const initialCashups = [
-  {
-    id: 1,
-    reasonName: "Sale",
-    profitOrOther: "Profit",
-    reasonDetails: "",
-    amount: "5000.00",
-    addedDate: "2024-08-13",
-    addedTime: "15:00",
-    addedBy: "John Doe", // Add this field
-  },
-  // Add more cashups if needed
-];
 
 const CashupSchema = Yup.object().shape({
   reasonName: Yup.string().required("Reason Name is required"),
@@ -37,18 +28,16 @@ const CashupSchema = Yup.object().shape({
 });
 
 const Cashup = () => {
-  const [cashups, setCashups] = useState(initialCashups);
+  const [cashups, setCashups] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCashup, setEditingCashup] = useState(null);
   const [dateRange, setDateRange] = useState({
     start: null,
     end: null,
   });
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
-
-  // State for search and filters
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -90,43 +79,137 @@ const Cashup = () => {
     );
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const CashupData = await axios.get(
+          "https://candied-chartreuse-concavenator.glitch.me/cashup/"
+        );
+        const formattedCashups = CashupData.data.map((Cashup) => {
+          const { date, time } = ConvertToSLT(Cashup.addedDateAndTime);
+
+          return {
+            ...Cashup,
+            id: Cashup.id,
+            addedDate: date,
+            addedTime: time,
+          };
+        });
+
+        setCashups(formattedCashups);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Listen for real-time Cashup updates
+    socket.on("CashupAdded", (newCashup) => {
+      const { date, time } = ConvertToSLT(newCashup.addedDateAndTime);
+
+      const newCashupadded = {
+        ...newCashup,
+        addedDate: date,
+        addedTime: time,
+      };
+      setCashups((prevCashups) => [newCashupadded, ...prevCashups]);
+    });
+
+    socket.on("CashupUpdated", (updatedCashup) => {
+      const { date, time } = ConvertToSLT(updatedCashup.addedDateAndTime);
+
+      const newupdatedCashup = {
+        ...updatedCashup,
+        addedDate: date,
+        addedTime: time,
+      };
+      setCashups((prevCashups) =>
+        prevCashups.map((Cashup) =>
+          Cashup.id === updatedCashup.id ? newupdatedCashup : Cashup
+        )
+      );
+    });
+
+    socket.on("CashupDeleted", ({ id }) => {
+      setCashups((prevCashups) =>
+        prevCashups.filter((Cashup) => Cashup.id !== id)
+      );
+    });
+
+    return () => {
+      socket.off("CashupAdded");
+      socket.off("CashupUpdated");
+      socket.off("CashupDeleted");
+    };
+  }, []);
+
   const handleEdit = (cashup) => {
     setEditingCashup(cashup);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setCashups(cashups.filter((cashup) => cashup.id !== id));
+  const handleDelete = async (id, name) => {
+    const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
+
+    if (confirmDelete) {
+      try {
+        const response = await axios.delete(
+          `https://candied-chartreuse-concavenator.glitch.me/cashup/Cashup/${id}`
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting details:", error);
+        alert("Failed to delete the details. Please try again.");
+      }
+    }
   };
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0];
-    const formattedTime = currentDate.toTimeString().split(" ")[0];
 
     if (editingCashup) {
-      setCashups(
-        cashups.map((cashup) =>
-          cashup.id === editingCashup.id
-            ? {
-                ...values,
-                id: editingCashup.id,
-                addedDate: cashup.addedDate,
-                addedTime: cashup.addedTime,
-              }
-            : cashup
-        )
-      );
+      try {
+        const dateObject = new Date(
+          `${editingCashup.addedDate} ${editingCashup.addedTime}`
+        );
+
+        const isoDateString = dateObject.toISOString();
+
+        const response = await axios.put(
+          `https://candied-chartreuse-concavenator.glitch.me/cashup/Cashup/${editingCashup.id}`,
+          { ...values, addedDateAndTime: isoDateString }
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error updating Cashup:", error);
+        alert("Failed to update the Cashup. Please try again.");
+      }
     } else {
-      setCashups([
-        ...cashups,
-        {
-          ...values,
-          id: cashups.length + 1,
-          addedDate: formattedDate,
-          addedTime: formattedTime,
-        },
-      ]);
+      try {
+        const response = await axios.post(
+          "https://candied-chartreuse-concavenator.glitch.me/cashup/Cashup",
+          { ...values, addedDateAndTime: currentDate }
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the customer. Please try again.");
+        }
+      }
     }
     setIsModalOpen(false);
     setEditingCashup(null);
@@ -144,7 +227,6 @@ const Cashup = () => {
           New Cashup
         </button>
 
-        
         <div className="d-flex align-items-center mb-3">
           <input
             type="text"
@@ -152,7 +234,8 @@ const Cashup = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="searchfunctions me-2"
-          /><button
+          />
+          <button
             variant="contained"
             color="secondary"
             onClick={clearFilters}
@@ -160,95 +243,107 @@ const Cashup = () => {
           >
             Clear
           </button>
-          </div>
+        </div>
 
-          <div className="d-flex align-items-center mb-3">
-                  <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="formdropdown"
-                  >
-                    <option value="">All Types</option>
-                    <option value="Profit">Profit</option>
-                    <option value="Other">Other</option>
-                  </select>
-                {/* Start Date Picker */}
-                <DatePicker
-                selected={dateRange.start}
-                onChange={(date) => setDateRange((prev) => ({ ...prev, start: date }))}
-                selectsStart
-                startDate={dateRange.start}
-                endDate={dateRange.end}
-                className="searchfunctionsdate me-2"
-                placeholderText="S.Date"
-                maxDate={dateRange.end || new Date()} // Prevent selecting a start date after the end date
-              />
+        <div className="d-flex align-items-center mb-3">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="formdropdown"
+          >
+            <option value="">All Types</option>
+            <option value="Profit">Profit</option>
+            <option value="Other">Other</option>
+          </select>
+          {/* Start Date Picker */}
+          <DatePicker
+            selected={dateRange.start}
+            onChange={(date) =>
+              setDateRange((prev) => ({ ...prev, start: date }))
+            }
+            selectsStart
+            startDate={dateRange.start}
+            endDate={dateRange.end}
+            className="searchfunctionsdate me-2"
+            placeholderText="S.Date"
+            maxDate={dateRange.end || new Date()} // Prevent selecting a start date after the end date
+          />
 
-              {/* End Date Picker */}
-              <DatePicker
-                selected={dateRange.end}
-                onChange={(date) => setDateRange((prev) => ({ ...prev, end: date }))}
-                selectsEnd
-                startDate={dateRange.start}
-                endDate={dateRange.end}
-                className="searchfunctionsdate me-2"
-                placeholderText="E.Date"
-                minDate={dateRange.start} // Prevent selecting an end date before the start date
-              />
-            </div>
-          
-        
+          {/* End Date Picker */}
+          <DatePicker
+            selected={dateRange.end}
+            onChange={(date) =>
+              setDateRange((prev) => ({ ...prev, end: date }))
+            }
+            selectsEnd
+            startDate={dateRange.start}
+            endDate={dateRange.end}
+            className="searchfunctionsdate me-2"
+            placeholderText="E.Date"
+            minDate={dateRange.start} // Prevent selecting an end date before the start date
+          />
+        </div>
 
         <div className="table-responsive">
-          <table className="table mt-3 custom-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Reason Name</th>
-                <th>Profit/Other</th>
-                <th>Reason Details</th>
-                <th>Amount Rs</th>
-                <th>Added Date</th>
-                <th>Added Time</th>
-                <th>Added By</th> {/* New column for who added */}
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody className="custom-table">
-              {filteredCashups.map((cashup) => (
-                <tr key={cashup.id}>
-                  <td>{cashup.id}</td>
-                  <td>{cashup.reasonName}</td>
-                  <td>{cashup.profitOrOther}</td>
-                  <td>{cashup.reasonDetails || "N/A"}</td>
-                  <td>{cashup.amount}</td>
-                  <td>{cashup.addedDate}</td>
-                  <td>{cashup.addedTime}</td>
-                  <td>{cashup.addedBy}</td> {/* Display who added */}
-                  <td>
-                    <button
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      onClick={() => handleEdit(cashup)}
-                      className="editbtn"
-                    >
-                      Edit
-                    </button>{" "}
-                    <button
-                      variant="contained"
-                      color="secondary"
-                      size="small"
-                      onClick={() => handleDelete(cashup.id)}
-                      className="deletebtn"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          {loading || error || _.isEmpty(filteredCashups) ? (
+            <TableChecker
+              loading={loading}
+              error={error}
+              data={filteredCashups}
+            />
+          ) : (
+            <table className="table mt-3 custom-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Reason Name</th>
+                  <th>Profit/Other</th>
+                  <th>Reason Details</th>
+                  <th>Amount Rs</th>
+                  <th>Added Date</th>
+                  <th>Added Time</th>
+                  <th>Added By</th> {/* New column for who added */}
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="custom-table">
+                {filteredCashups.map((cashup, index) => (
+                  <tr key={cashup.id}>
+                    <td>{index + 1}</td>
+                    <td>{cashup.reasonName}</td>
+                    <td>{cashup.profitOrOther}</td>
+                    <td>{cashup.reasonDetails || "N/A"}</td>
+                    <td>{cashup.amount}</td>
+                    <td>{cashup.addedDate}</td>
+                    <td>{cashup.addedTime}</td>
+                    <td>{cashup.addedBy}</td> {/* Display who added */}
+                    <td>
+                      <button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => handleEdit(cashup)}
+                        className="editbtn"
+                      >
+                        Edit
+                      </button>{" "}
+                      <button
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        onClick={() =>
+                          handleDelete(cashup.id, cashup.reasonName)
+                        }
+                        className="deletebtn"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination Controls */}
@@ -353,8 +448,11 @@ const Cashup = () => {
                         ) : null}
                       </div>
                       <div className="modal-footer">
-                        
-                        <button type="submit" variant="primary"className="savechangesbutton">
+                        <button
+                          type="submit"
+                          variant="primary"
+                          className="savechangesbutton"
+                        >
                           {editingCashup ? "Update" : "Add"}
                         </button>
                         <button
