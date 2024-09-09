@@ -732,7 +732,7 @@ const Sales = () => {
                   value={productSearchQuery}
                   onChange={(e) => setProductSearchQuery(e.target.value)}
                 />
-
+ 
               <select
                 className="form-control"
                 value={searchField}
