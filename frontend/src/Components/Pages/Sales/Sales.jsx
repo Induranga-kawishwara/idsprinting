@@ -8,6 +8,10 @@ import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
 import CustomerFormModal from "../Customer/CustomerFormModal"; // Adjust the import path
 import "../All.scss";
+import ProductFormModal from "./AddProductModal"
+import ReceiptOptionsModal from "./ReceiptOptionsModal"
+import PaymentModal from "./PaymentModal"
+
 const initialProducts = [
   {
     id: 1,
@@ -210,6 +214,9 @@ const Sales = () => {
       return true;
     });
   }, [productSearchQuery, searchField, products]);
+
+  const [editingProduct, setEditingProduct] = useState(null);
+
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
@@ -567,23 +574,8 @@ const Sales = () => {
                 Credit Customers
               </button>
             </div>
-            {/* Use the modal component */}
-            <CustomerFormModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              onSubmit={handleSubmit}
-              initialValues={{
-                name: "",
-                surname: "",
-                email: "",
-                phone: "",
-                houseNo: "",
-                street: "",
-                city: "",
-                postalCode: "",
-                customerType: "",
-              }}
-            />
+           
+
 
             <div className="customer-info">
               {selectedCustomer ? (
@@ -732,7 +724,7 @@ const Sales = () => {
                   value={productSearchQuery}
                   onChange={(e) => setProductSearchQuery(e.target.value)}
                 />
- 
+
               <select
                 className="form-control"
                 value={searchField}
@@ -764,275 +756,63 @@ const Sales = () => {
             </div>
           </div>
         </div>
+        
+            <CustomerFormModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onSubmit={handleSubmit}
+              initialValues={{
+                name: "",
+                surname: "",
+                email: "",
+                phone: "",
+                houseNo: "",
+                street: "",
+                city: "",
+                postalCode: "",
+                customerType: "",
+              }}
+            />
 
 
+        <PaymentModal
+  isOpen={isPaymentModalOpen}
+  onClose={() => setIsPaymentModalOpen(false)}
+  initialValues={{
+    paymentMethod: "",
+    cashGiven: "",
+    cardDetails: "",
+    bankTransferNumber: "",
+    chequeNumber: "",
+    creditAmount: "",
+  }}
+  validationSchema={PaymentSchema}
+  handleSubmit={handlePaymentSubmit}
+/>
 
 
-        {/* Payment Modal */}
-        <Modal
-          open={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
-        >
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Payment</h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsPaymentModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <Formik
-                  initialValues={{
-                    paymentMethod: "",
-                    cashGiven: "",
-                    cardDetails: "",
-                    bankTransferNumber: "",
-                    chequeNumber: "",
-                    creditAmount: "",
-                  }}
-                  validationSchema={PaymentSchema}
-                  onSubmit={handlePaymentSubmit}
-                >
-                  {({ values, errors, touched }) => (
-                    <Form>
-                      <div className="mb-3">
-                        <label>Payment Method</label>
-                        <Field
-                          as="select"
-                          name="paymentMethod"
-                          className="form-control"
-                        >
-                          <option value="" label="Select" disabled />
-                          <option value="Cash">Cash</option>
-                          <option value="Card">Card</option>
-                          <option value="Bank Transfer">Bank Transfer</option>
-                          <option value="Cheque">Cheque</option>
-                          <option value="Credit">Credit</option>
-                        </Field>
-                        {errors.paymentMethod && touched.paymentMethod ? (
-                          <div className="text-danger">
-                            {errors.paymentMethod}
-                          </div>
-                        ) : null}
-                      </div>
-                      {values.paymentMethod === "Cash" && (
-                        <div className="mb-3">
-                          <label>Cash Given</label>
-                          <Field
-                            name="cashGiven"
-                            type="number"
-                            className="form-control"
-                          />
-                          {errors.cashGiven && touched.cashGiven ? (
-                            <div className="text-danger">
-                              {errors.cashGiven}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Card" && (
-                        <div className="mb-3">
-                          <label>Card Holder's Name or Last 4 Digits</label>
-                          <Field name="cardDetails" className="form-control" />
-                          {errors.cardDetails && touched.cardDetails ? (
-                            <div className="text-danger">
-                              {errors.cardDetails}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Bank Transfer" && (
-                        <div className="mb-3">
-                          <label>Bank Transfer Number</label>
-                          <Field
-                            name="bankTransferNumber"
-                            className="form-control"
-                          />
-                          {errors.bankTransferNumber &&
-                          touched.bankTransferNumber ? (
-                            <div className="text-danger">
-                              {errors.bankTransferNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Cheque" && (
-                        <div className="mb-3">
-                          <label>Cheque Number</label>
-                          <Field name="chequeNumber" className="form-control" />
-                          {errors.chequeNumber && touched.chequeNumber ? (
-                            <div className="text-danger">
-                              {errors.chequeNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Credit" && (
-                        <div className="mb-3">
-                          <label>Paying Amount</label>
-                          <Field
-                            name="creditAmount"
-                            type="number"
-                            className="form-control"
-                          />
-                          {errors.creditAmount && touched.creditAmount ? (
-                            <div className="text-danger">
-                              {errors.creditAmount}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      <div className="modal-footer">
-                        <Button
-                          variant="secondary"
-                          onClick={() => setIsPaymentModalOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button type="submit" variant="primary">
-                          Submit Payment
-                        </Button>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
-            </div>
-          </div>
-        </Modal>
+        <ReceiptOptionsModal
+  isOpen={isReceiptOptionsModalOpen}
+  onClose={() => setIsReceiptOptionsModalOpen(false)}
+  downloadReceipt={downloadReceipt}
+  printReceipt={printReceipt}
+  shareReceipt={shareReceipt}
+/>
 
-        {/* Receipt Options Modal */}
-        <Modal
-          open={isReceiptOptionsModalOpen}
-          onClose={() => setIsReceiptOptionsModalOpen(false)}
-        >
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Receipt Options</h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsReceiptOptionsModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <p>What would you like to do with the receipt?</p>
-                <div className="d-flex justify-content-end">
-                  <Button
-                    variant="contained"
-                    onClick={downloadReceipt}
-                    className="download-btn me-2"
-                  >
-                    Download PDF
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={printReceipt}
-                    className="print-btn me-2"
-                  >
-                    Print Receipt
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={shareReceipt}
-                    className="share-btn me-2"
-                  >
-                    Share
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={() => setIsReceiptOptionsModalOpen(false)}
-                    className="close-btn"
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Modal>
 
-        {/* Add Product Modal */}
-        <Modal
-          open={isAddProductModalOpen}
-          onClose={() => setIsAddProductModalOpen(false)}
-        >
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Add Product</h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsAddProductModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <Formik
-                  initialValues={{
-                    name: "",
-                    price: "",
-                    qty: "",
-                  }}
-                  validationSchema={ProductSchema}
-                  onSubmit={handleAddProductSubmit}
-                >
-                  {({ errors, touched }) => (
-                    <Form>
-                      <div className="mb-3">
-                        <label>Product Name</label>
-                        <Field name="name" className="form-control" />
-                        {errors.name && touched.name ? (
-                          <div className="text-danger">{errors.name}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Price</label>
-                        <Field
-                          name="price"
-                          type="number"
-                          className="form-control"
-                        />
-                        {errors.price && touched.price ? (
-                          <div className="text-danger">{errors.price}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Quantity</label>
-                        <Field
-                          name="qty"
-                          type="number"
-                          className="form-control"
-                        />
-                        {errors.qty && touched.qty ? (
-                          <div className="text-danger">{errors.qty}</div>
-                        ) : null}
-                      </div>
-                      <div className="modal-footer">
-                        <Button
-                          variant="secondary"
-                          onClick={() => setIsAddProductModalOpen(false)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button type="submit" variant="primary">
-                          Add Product
-                        </Button>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
-            </div>
-          </div>
-        </Modal>
+        <ProductFormModal
+  isOpen={isAddProductModalOpen}
+  onClose={() => setIsAddProductModalOpen(false)}
+  onSubmit={handleAddProductSubmit}
+  initialValues={
+    editingProduct || {
+      name: "",
+      price: "",
+      qty: "",
+    }
+  }
+/>
+
       </div>
     </div>
   );
