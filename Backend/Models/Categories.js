@@ -8,7 +8,7 @@ class Categories {
     buyingPrice,
     addedBy,
     dateAndTime,
-    items = {}
+    items = []
   ) {
     this.rawMaterialName = rawMaterialName;
     this.size = size;

@@ -1,209 +1,161 @@
 import db from "../db.js";
-import Product from "../Models/Categories.js";
 import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 import { v4 as uuidv4 } from "uuid";
 
 const ItemCollection = db.collection("Categories");
 
-export const createProduct = async (req, res) => {
+export const createItem = async (req, res) => {
+  const { categoryId } = req.params;
   const {
-    productID,
-    name,
-    image,
-    stock,
-    stockPrice,
-    otherExpenses,
-    totalExpenses,
-    expectedProfit,
-    oneItemSellingPrice,
-    revenue,
-    netProfit,
+    itemCode,
+    itemName,
+    color,
+    wholesale,
+    company,
+    retailPrice,
+    addedDateTime,
   } = req.body;
 
   try {
-    // Check if a product with the same productID or name already exists
-    const existingProductSnapshot = await ItemCollection.where(
-      "productID",
-      "==",
-      productID
-    ).get();
+    // Reference to the specific document within the Categories collection
+    const categoryDoc = ItemCollection.doc(categoryId);
+    const categorySnapshot = await categoryDoc.get();
 
-    if (!existingProductSnapshot.empty) {
-      return res
-        .status(400)
-        .send({ message: "Product with this ID already exists." });
+    if (!categorySnapshot.exists) {
+      return res.status(404).json({ message: "Category not found." });
     }
 
-    const existingNameSnapshot = await ItemCollection.where(
-      "name",
-      "==",
-      name
-    ).get();
+    const { items = [] } = categorySnapshot.data();
 
-    if (!existingNameSnapshot.empty) {
-      return res
-        .status(400)
-        .send({ message: "Product with this name already exists." });
-    }
+    const newItem = {
+      itemId: uuidv4(),
+      itemCode,
+      itemName,
+      color,
+      wholesale,
+      company,
+      retailPrice,
+      addedDateTime,
+    };
 
-    // Create a new product if it doesn't exista
-    const product = new Product(productID, name, image, [
-      {
-        id: uuidv4(),
-        stock,
-        stockPrice,
-        otherExpenses,
-        totalExpenses,
-        expectedProfit,
-        oneItemSellingPrice,
-        revenue,
-        netProfit,
-        createdAt: new Date().toISOString(),
-      },
-    ]);
+    // Update the document with the new item
+    await categoryDoc.update({ items: [...items, newItem] });
 
-    const docRef = await ItemCollection.add({ ...product });
-    res
-      .status(201)
-      .send({ message: "Product created successfully", id: docRef.id });
+    return res
+      .status(200)
+      .json({ message: "Product added to category successfully." });
   } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-};
-
-// Get all product
-export const getProducts = async (req, res) => {
-  try {
-    const snapshot = await ItemCollection.get();
-    const products = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    res.status(200).send(products);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
+    console.error("Error adding product:", error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
 // Get a product by ID
-export const getProductById = async (req, res) => {
-  const { id } = req.params;
+export const getCategoryAndItemDetails = async (req, res) => {
+  const { categoryId, itemId } = req.params;
 
   try {
-    const doc = await ItemCollection.doc(id).get();
-    if (!doc.exists) {
-      return res.status(404).send({ message: "Product not found" });
-    }
-    res.status(200).send({ id: doc.id, ...doc.data() });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-};
+    const categoryRef = ItemCollection.doc(categoryId);
 
-export const getstockdetailsById = async (req, res) => {
-  const { id, detailId } = req.params;
+    const categorySnapshot = await categoryRef.get();
 
-  try {
-    const doc = await ItemCollection.doc(id).get();
-    if (!doc.exists) {
-      return res.status(404).send({ message: "Product not found" });
+    if (!categorySnapshot.exists) {
+      return res.status(404).json({ message: "Category not found." });
     }
 
-    const productData = doc.data();
+    const categoryData = categorySnapshot.data();
+    const { items = [], ...categoryDetails } = categoryData;
 
-    // If a specific detailId is provided, find the corresponding detail
-    if (detailId) {
-      const matchingDetail = productData.details.find(
-        (detail) => detail.id === detailId
-      );
+    const item = items.find((item) => item.itemId === itemId);
 
-      if (!matchingDetail) {
-        return res.status(404).send({ message: "Detail not found" });
-      }
-
-      return res.status(200).send({ detail: matchingDetail });
+    if (!item) {
+      return res
+        .status(404)
+        .json({ message: "Item not found in this category." });
     }
 
-    // If no detailId is provided, return the entire product
-    res.status(200).send({ id: doc.id, ...productData });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
-};
-
-export const updateStockDetailById = async (req, res) => {
-  const { id, detailId } = req.params;
-  const updatedDetail = req.body;
-
-  try {
-    const doc = await ItemCollection.doc(id).get();
-    if (!doc.exists) {
-      return res.status(404).send({ message: "Product not found" });
-    }
-
-    const productData = doc.data();
-
-    const detailIndex = productData.details.findIndex(
-      (detail) => detail.id === detailId
-    );
-
-    if (detailIndex === -1) {
-      return res.status(404).send({ message: "Detail not found" });
-    }
-
-    productData.details[detailIndex] = {
-      ...productData.details[detailIndex],
-      ...updatedDetail,
-      updatedAt: new Date().toISOString(),
+    const result = {
+      category: categoryDetails,
+      item,
     };
 
-    // Save the updated product data back to Firestore
-    await ItemCollection.doc(id).update(productData);
-
-    res.status(200).send({ message: "Detail updated successfully" });
+    res.status(200).json(result);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    console.error("Error retrieving category and item details:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Delete a Product's stock detail
-export const deleteProductsStock = async (req, res) => {
-  const { id, detailId } = req.params;
+export const updateItemByItemId = async (req, res) => {
+  const { categoryId, itemId } = req.params;
+  const {
+    itemCode,
+    itemName,
+    color,
+    wholesale,
+    company,
+    retailPrice,
+    addedDateTime,
+  } = req.body;
 
   try {
-    const doc = await ItemCollection.doc(id).get();
-    if (!doc.exists) {
-      return res.status(404).send({ message: "Product not found" });
+    const categoryRef = ItemCollection.doc(categoryId);
+
+    const categorySnapshot = await categoryRef.get();
+
+    if (!categorySnapshot.exists) {
+      return res.status(404).json({ message: "Category not found." });
     }
 
-    const productData = doc.data();
+    const { items = [] } = categorySnapshot.data();
 
-    const detailIndex = productData.details.findIndex(
-      (detail) => detail.id === detailId
-    );
+    const updatedItems = items.map((item) => {
+      if (item.itemId === itemId) {
+        return {
+          ...item,
+          itemCode,
+          itemName,
+          color,
+          wholesale,
+          company,
+          retailPrice,
+          addedDateTime,
+        };
+      }
+      return item;
+    });
 
-    if (detailIndex === -1) {
-      return res.status(404).send({ message: "Detail not found" });
-    }
+    await updateDoc(categoryRef, { items: updatedItems });
 
-    productData.details.splice(detailIndex, 1);
-
-    await ItemCollection.doc(id).update({ details: productData.details });
-
-    res.status(200).send({ message: "Detail deleted successfully" });
+    res.status(200).json({ message: "Item updated successfully." });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    console.error("Error updating item:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Delete a Products
-export const deleteProducts = async (req, res) => {
-  const { id } = req.params;
+// Delete a Item's stock detail
+export const deleteItemByItemId = async (req, res) => {
+  const { categoryId, itemId } = req.params;
 
   try {
-    await ItemCollection.doc(id).delete();
-    res.status(200).send({ message: "Product deleted successfully" });
+    const categoryRef = ItemCollection.doc(categoryId);
+
+    const categorySnapshot = await categoryRef.get();
+
+    if (!categorySnapshot.exists) {
+      return res.status(404).json({ message: "Category not found." });
+    }
+
+    const { items = [] } = categorySnapshot.data();
+
+    const updatedItems = items.filter((item) => item.itemId !== itemId);
+
+    await updateDoc(categoryRef, { items: updatedItems });
+
+    res.status(200).json({ message: "Item deleted successfully." });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    console.error("Error deleting item:", error);
+    res.status(500).json({ error: error.message });
   }
 };
