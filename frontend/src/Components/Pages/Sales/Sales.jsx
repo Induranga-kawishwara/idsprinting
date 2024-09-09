@@ -8,9 +8,9 @@ import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
 import CustomerFormModal from "../Customer/CustomerFormModal"; // Adjust the import path
 import "../All.scss";
-import ProductFormModal from "./AddProductModal"
-import ReceiptOptionsModal from "./ReceiptOptionsModal"
-import PaymentModal from "./PaymentModal"
+import ProductFormModal from "./AddProductModal";
+import ReceiptOptionsModal from "./ReceiptOptionsModal";
+import PaymentModal from "./PaymentModal";
 
 const initialProducts = [
   {
@@ -180,7 +180,7 @@ const Sales = () => {
   const generateUniqueInvoiceNumber = () => {
     const now = new Date();
 
-    const year = now.getFullYear();
+    const year = String(now.getFullYear()).slice(2); // Get the last two digits of the year
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     const hours = String(now.getHours()).padStart(2, "0");
@@ -217,7 +217,6 @@ const Sales = () => {
 
   const [editingProduct, setEditingProduct] = useState(null);
 
-
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
 
@@ -240,9 +239,11 @@ const Sales = () => {
 
   const addProductToTransaction = (product) => {
     setTransaction((prevTransaction) => {
-      const existingProduct = prevTransaction.products.find((p) => p.id === product.id);
+      const existingProduct = prevTransaction.products.find(
+        (p) => p.id === product.id
+      );
       let updatedProducts;
-  
+
       if (existingProduct) {
         updatedProducts = prevTransaction.products.map((p) =>
           p.id === product.id ? { ...p, qty: p.qty + 1 } : p
@@ -250,16 +251,19 @@ const Sales = () => {
       } else {
         updatedProducts = [...prevTransaction.products, { ...product, qty: 1 }];
       }
-  
-      const total = updatedProducts.reduce((sum, p) => sum + p.qty * p.price, 0);
+
+      const total = updatedProducts.reduce(
+        (sum, p) => sum + p.qty * p.price,
+        0
+      );
       const net = total - prevTransaction.discount;
-  
-      console.log('Updated Products:', updatedProducts); // Log updated products
-  
+
+      console.log("Updated Products:", updatedProducts); // Log updated products
+
       return { ...prevTransaction, products: updatedProducts, total, net };
     });
   };
-  
+
   const updateProductQty = (productId, qty) => {
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.map((product) =>
@@ -317,8 +321,8 @@ const Sales = () => {
   const completeSale = () => {
     if (selectedCustomer) {
       // Log the transaction object to debug
-      console.log('Transaction:', transaction);
-  
+      console.log("Transaction:", transaction);
+
       // Ensure the transaction contains products before proceeding to payment
       if (transaction.products.length > 0) {
         setIsPaymentModalOpen(true);
@@ -329,7 +333,6 @@ const Sales = () => {
       alert("Please select a customer before proceeding to payment.");
     }
   };
-  
 
   const clearSearch = () => {
     setProductSearchQuery("");
@@ -337,82 +340,96 @@ const Sales = () => {
   };
 
   const handlePaymentSubmit = (values) => {
-  // Handle different payment methods
-  if (values.paymentMethod === "Cash") {
-    const balance = values.cashGiven - transaction.net;
-    alert(`Transaction completed. Change due: Rs.${balance.toFixed(2)}`);
-  } else if (values.paymentMethod === "Card") {
-    alert(`Transaction completed using card. Details saved: ${values.cardDetails}`);
-  } else if (values.paymentMethod === "Bank Transfer") {
-    alert(`Transaction completed using bank transfer. Number: ${values.bankTransferNumber}`);
-  } else if (values.paymentMethod === "Cheque") {
-    alert(`Transaction completed using cheque. Number: ${values.chequeNumber}`);
-  } else if (values.paymentMethod === "Credit") {
-    alert(`Credit payment of Rs.${values.creditAmount} recorded.`);
-  }
+    // Handle different payment methods
+    if (values.paymentMethod === "Cash") {
+      const balance = values.cashGiven - transaction.net;
+      alert(`Transaction completed. Change due: Rs.${balance.toFixed(2)}`);
+    } else if (values.paymentMethod === "Card") {
+      alert(
+        `Transaction completed using card. Details saved: ${values.cardDetails}`
+      );
+    } else if (values.paymentMethod === "Bank Transfer") {
+      alert(
+        `Transaction completed using bank transfer. Number: ${values.bankTransferNumber}`
+      );
+    } else if (values.paymentMethod === "Cheque") {
+      alert(
+        `Transaction completed using cheque. Number: ${values.chequeNumber}`
+      );
+    } else if (values.paymentMethod === "Credit") {
+      alert(`Credit payment of Rs.${values.creditAmount} recorded.`);
+    }
 
-  // Generate a unique invoice number
-  const newInvoiceNumber = generateUniqueInvoiceNumber();
-  setInvoiceNumber(newInvoiceNumber);
+    // Generate a unique invoice number
+    const newInvoiceNumber = generateUniqueInvoiceNumber();
+    setInvoiceNumber(newInvoiceNumber);
 
-  // Define `wantsReceipt` to check if the user wants to download the receipt
-  const wantsReceipt = window.confirm("Would you like to download a receipt?");
-  
-  // Generate PDF if the user wants a receipt
-  if (wantsReceipt) {
-    console.log("Products in Transaction before generating PDF:", transaction.products);
-    generatePDF(values);  // Pass `values` as `paymentDetails` to the function
-  }
+    // Define `wantsReceipt` to check if the user wants to download the receipt
+    const wantsReceipt = window.confirm(
+      "Would you like to download a receipt?"
+    );
 
-  // Open the modal to choose download, print, or share
-  setIsReceiptOptionsModalOpen(true);
+    // Generate PDF if the user wants a receipt
+    if (wantsReceipt) {
+      console.log(
+        "Products in Transaction before generating PDF:",
+        transaction.products
+      );
+      generatePDF(values); // Pass `values` as `paymentDetails` to the function
+    }
 
-  // Close the payment modal after handling payment
-  setIsPaymentModalOpen(false);
-};
+    // Open the modal to choose download, print, or share
+    setIsReceiptOptionsModalOpen(true);
 
-const clearTransaction = () => {
-  setTransaction({
-    products: [],
-    total: 0.0,
-    discount: 0.0,
-    net: 0.0,
-  });
-};
+    // Close the payment modal after handling payment
+    setIsPaymentModalOpen(false);
+  };
 
-
-  
+  const clearTransaction = () => {
+    setTransaction({
+      products: [],
+      total: 0.0,
+      discount: 0.0,
+      net: 0.0,
+    });
+  };
 
   const generatePDF = (paymentDetails) => {
     const doc = new jsPDF();
-  
+
     // Get current date and time
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString();
     const formattedTime = currentDate.toLocaleTimeString();
-  
+
     doc.setFontSize(18);
     doc.text("Transaction Receipt", 14, 22);
     doc.setFontSize(12);
     doc.text(`Invoice Number: ${invoiceNumber}`, 14, 30);
     doc.text(`Date: ${formattedDate}`, 14, 36);
     doc.text(`Time: ${formattedTime}`, 14, 42);
-  
+
     // Customer details
     doc.text("Customer:", 14, 50);
     if (selectedCustomer) {
-      doc.text(`Name: ${selectedCustomer.name} ${selectedCustomer.surname}`, 14, 56);
+      doc.text(
+        `Name: ${selectedCustomer.name} ${selectedCustomer.surname}`,
+        14,
+        56
+      );
       doc.text(`Email: ${selectedCustomer.email}`, 14, 62);
       doc.text(`Phone: ${selectedCustomer.phone}`, 14, 68);
     }
-  
+
     // Products in the transaction
     doc.text("Products:", 14, 80);
     if (transaction.products.length > 0) {
       transaction.products.forEach((product, index) => {
         const y = 86 + index * 6;
         doc.text(
-          `${product.name} - ${product.qty} x Rs.${product.price.toFixed(2)} = Rs.${(product.qty * product.price).toFixed(2)}`,
+          `${product.name} - ${product.qty} x Rs.${product.price.toFixed(
+            2
+          )} = Rs.${(product.qty * product.price).toFixed(2)}`,
           14,
           y
         );
@@ -420,16 +437,16 @@ const clearTransaction = () => {
     } else {
       doc.text("No products", 14, 86);
     }
-  
+
     // Totals
     doc.text(`Total: Rs.${transaction.total.toFixed(2)}`, 14, 120);
     doc.text(`Discount: Rs.${transaction.discount.toFixed(2)}`, 14, 126);
     doc.text(`Net: Rs.${transaction.net.toFixed(2)}`, 14, 132);
-  
+
     // Payment details
     doc.text("Payment Details:", 14, 150);
     doc.text(`Method: ${paymentDetails.paymentMethod || "N/A"}`, 14, 156);
-  
+
     if (paymentDetails.paymentMethod === "Cash") {
       doc.text(`Cash Given: Rs.${paymentDetails.cashGiven}`, 14, 162);
       const changeDue = paymentDetails.cashGiven - transaction.net;
@@ -437,18 +454,27 @@ const clearTransaction = () => {
     } else if (paymentDetails.paymentMethod === "Card") {
       doc.text(`Card Details: ${paymentDetails.cardDetails || "N/A"}`, 14, 162);
     } else if (paymentDetails.paymentMethod === "Bank Transfer") {
-      doc.text(`Bank Transfer Number: ${paymentDetails.bankTransferNumber || "N/A"}`, 14, 162);
+      doc.text(
+        `Bank Transfer Number: ${paymentDetails.bankTransferNumber || "N/A"}`,
+        14,
+        162
+      );
     } else if (paymentDetails.paymentMethod === "Cheque") {
-      doc.text(`Cheque Number: ${paymentDetails.chequeNumber || "N/A"}`, 14, 162);
+      doc.text(
+        `Cheque Number: ${paymentDetails.chequeNumber || "N/A"}`,
+        14,
+        162
+      );
     } else if (paymentDetails.paymentMethod === "Credit") {
-      doc.text(`Credit Amount: Rs.${paymentDetails.creditAmount || 0}`, 14, 162);
+      doc.text(
+        `Credit Amount: Rs.${paymentDetails.creditAmount || 0}`,
+        14,
+        162
+      );
     }
-  
+
     return doc;
   };
-  
-  
-  
 
   const handleAddProductSubmit = (values) => {
     const newProduct = {
@@ -579,8 +605,6 @@ const clearTransaction = () => {
                 Credit Customers
               </button>
             </div>
-           
-
 
             <div className="customer-info">
               {selectedCustomer ? (
@@ -594,7 +618,7 @@ const clearTransaction = () => {
                     </p>
                     <div className="customer-metrics">
                       <span>Email: {selectedCustomer.email}</span>
-                      
+
                       <span>Phone: {selectedCustomer.phone}</span>
                     </div>
                   </div>
@@ -706,7 +730,7 @@ const clearTransaction = () => {
                 {/* <p>Net: Rs. {transaction.net.toFixed(2)}</p> */}
               </div>
             </div>
-            
+
             <div className="action-buttons">
               <button
                 onClick={completeSale}
@@ -718,18 +742,16 @@ const clearTransaction = () => {
             </div>
           </div>
 
-
-
           <div className="right-panel">
             {/* Product Search and Filter */}
             <div className="d-flex align-items-center mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder={`Search by ${searchField}`}
-                  value={productSearchQuery}
-                  onChange={(e) => setProductSearchQuery(e.target.value)}
-                />
+              <input
+                type="text"
+                className="form-control"
+                placeholder={`Search by ${searchField}`}
+                value={productSearchQuery}
+                onChange={(e) => setProductSearchQuery(e.target.value)}
+              />
 
               <select
                 className="form-control"
@@ -741,12 +763,9 @@ const clearTransaction = () => {
                 <option value="gsm">GSM</option>
                 <option value="color">Color</option>
               </select>
-              <button
-                  className="prevbutton2"
-                  onClick={clearSearch}
-                >
-                  Clear
-                </button>
+              <button className="prevbutton2" onClick={clearSearch}>
+                Clear
+              </button>
             </div>
             <div className="product-grid">
               {filteredProducts.map((product) => (
@@ -762,64 +781,60 @@ const clearTransaction = () => {
             </div>
           </div>
         </div>
-        
-            <CustomerFormModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              onSubmit={handleSubmit}
-              initialValues={{
-                name: "",
-                surname: "",
-                email: "",
-                phone: "",
-                houseNo: "",
-                street: "",
-                city: "",
-                postalCode: "",
-                customerType: "",
-              }}
-            />
 
+        <CustomerFormModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialValues={{
+            name: "",
+            surname: "",
+            email: "",
+            phone: "",
+            houseNo: "",
+            street: "",
+            city: "",
+            postalCode: "",
+            customerType: "",
+          }}
+        />
 
         <PaymentModal
-  isOpen={isPaymentModalOpen}
-  onClose={() => setIsPaymentModalOpen(false)}
-  initialValues={{
-    paymentMethod: "",
-    cashGiven: "",
-    cardDetails: "",
-    bankTransferNumber: "",
-    chequeNumber: "",
-    creditAmount: "",
-  }}
-  validationSchema={PaymentSchema}
-  handleSubmit={handlePaymentSubmit}
-  clearTransaction={clearTransaction}
-/>
-
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          initialValues={{
+            paymentMethod: "",
+            cashGiven: "",
+            cardDetails: "",
+            bankTransferNumber: "",
+            chequeNumber: "",
+            creditAmount: "",
+          }}
+          validationSchema={PaymentSchema}
+          handleSubmit={handlePaymentSubmit}
+          clearTransaction={clearTransaction}
+        />
 
         <ReceiptOptionsModal
-  isOpen={isReceiptOptionsModalOpen}
-  onClose={() => setIsReceiptOptionsModalOpen(false)}
-  downloadReceipt={downloadReceipt}
-  printReceipt={printReceipt}
-  shareReceipt={shareReceipt}
-/>
-
+          isOpen={isReceiptOptionsModalOpen}
+          onClose={() => setIsReceiptOptionsModalOpen(false)}
+          downloadReceipt={downloadReceipt}
+          printReceipt={printReceipt}
+          shareReceipt={shareReceipt}
+        />
 
         <ProductFormModal
-  isOpen={isAddProductModalOpen}
-  onClose={() => setIsAddProductModalOpen(false)}
-  onSubmit={handleAddProductSubmit}
-  initialValues={
-    editingProduct || {
-      name: "",
-      price: "",
-      qty: "",
-    }
-  }
-/>
-
+          isOpen={isAddProductModalOpen}
+          onClose={() => setIsAddProductModalOpen(false)}
+          onSubmit={handleAddProductSubmit}
+          initialValues={
+            editingProduct || {
+              name: "",
+              price: "",
+              qty: "",
+            }
+          }
+        />
       </div>
     </div>
   );
