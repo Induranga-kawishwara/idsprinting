@@ -20,10 +20,11 @@ import Sales from "./Components/Pages/Sales/Sales";
 import Settings from "./Components/Pages/RegEmployee/RegEmp";
 import AdminReg from "./Components/Pages/RegAdmin/AdminReg";
 import Quatation from "./Components/Pages/Quotation/Quotation";
+import Loading from "./Components/Reusable/Loadingcomp/Loading";
 
 const Layout = () => {
   const location = useLocation();
-  
+
   const isLoginPage = location.pathname === "/"; // Check if current path is login
 
   return (
@@ -44,6 +45,7 @@ const Layout = () => {
         <Route path="/quatation" element={<Quatation />} />
         <Route path="/credit-customers" element={<CreditCustomers />} />
         <Route path="/sales-history" element={<SalesHistory />} />
+        <Route path="/loading" element={<Loading />} />
       </Routes>
       {!isLoginPage && <Footer />} {/* Show Footer if not on login page */}
     </>
