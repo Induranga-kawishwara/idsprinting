@@ -8,9 +8,9 @@ import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
 import CustomerFormModal from "../Customer/CustomerFormModal"; // Adjust the import path
 import "../All.scss";
-import ProductFormModal from "./AddProductModal"
-import ReceiptOptionsModal from "./ReceiptOptionsModal"
-import PaymentModal from "./PaymentModal"
+import ProductFormModal from "./AddProductModal";
+import ReceiptOptionsModal from "./ReceiptOptionsModal";
+import PaymentModal from "./PaymentModal";
 
 const initialProducts = [
   {
@@ -180,7 +180,7 @@ const Sales = () => {
   const generateUniqueInvoiceNumber = () => {
     const now = new Date();
 
-    const year = now.getFullYear();
+    const year = String(now.getFullYear()).slice(2);
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     const hours = String(now.getHours()).padStart(2, "0");
@@ -216,7 +216,6 @@ const Sales = () => {
   }, [productSearchQuery, searchField, products]);
 
   const [editingProduct, setEditingProduct] = useState(null);
-
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
@@ -574,8 +573,6 @@ const Sales = () => {
                 Credit Customers
               </button>
             </div>
-           
-
 
             <div className="customer-info">
               {selectedCustomer ? (
@@ -589,7 +586,7 @@ const Sales = () => {
                     </p>
                     <div className="customer-metrics">
                       <span>Email: {selectedCustomer.email}</span>
-                      
+
                       <span>Phone: {selectedCustomer.phone}</span>
                     </div>
                   </div>
@@ -712,18 +709,16 @@ const Sales = () => {
             </div>
           </div>
 
-
-
           <div className="right-panel">
             {/* Product Search and Filter */}
             <div className="d-flex align-items-center mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder={`Search by ${searchField}`}
-                  value={productSearchQuery}
-                  onChange={(e) => setProductSearchQuery(e.target.value)}
-                />
+              <input
+                type="text"
+                className="form-control"
+                placeholder={`Search by ${searchField}`}
+                value={productSearchQuery}
+                onChange={(e) => setProductSearchQuery(e.target.value)}
+              />
 
               <select
                 className="form-control"
@@ -735,12 +730,9 @@ const Sales = () => {
                 <option value="gsm">GSM</option>
                 <option value="color">Color</option>
               </select>
-              <button
-                  className="prevbutton2"
-                  onClick={clearSearch}
-                >
-                  Clear
-                </button>
+              <button className="prevbutton2" onClick={clearSearch}>
+                Clear
+              </button>
             </div>
             <div className="product-grid">
               {filteredProducts.map((product) => (
@@ -756,63 +748,59 @@ const Sales = () => {
             </div>
           </div>
         </div>
-        
-            <CustomerFormModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              onSubmit={handleSubmit}
-              initialValues={{
-                name: "",
-                surname: "",
-                email: "",
-                phone: "",
-                houseNo: "",
-                street: "",
-                city: "",
-                postalCode: "",
-                customerType: "",
-              }}
-            />
 
+        <CustomerFormModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialValues={{
+            name: "",
+            surname: "",
+            email: "",
+            phone: "",
+            houseNo: "",
+            street: "",
+            city: "",
+            postalCode: "",
+            customerType: "",
+          }}
+        />
 
         <PaymentModal
-  isOpen={isPaymentModalOpen}
-  onClose={() => setIsPaymentModalOpen(false)}
-  initialValues={{
-    paymentMethod: "",
-    cashGiven: "",
-    cardDetails: "",
-    bankTransferNumber: "",
-    chequeNumber: "",
-    creditAmount: "",
-  }}
-  validationSchema={PaymentSchema}
-  handleSubmit={handlePaymentSubmit}
-/>
-
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          initialValues={{
+            paymentMethod: "",
+            cashGiven: "",
+            cardDetails: "",
+            bankTransferNumber: "",
+            chequeNumber: "",
+            creditAmount: "",
+          }}
+          validationSchema={PaymentSchema}
+          handleSubmit={handlePaymentSubmit}
+        />
 
         <ReceiptOptionsModal
-  isOpen={isReceiptOptionsModalOpen}
-  onClose={() => setIsReceiptOptionsModalOpen(false)}
-  downloadReceipt={downloadReceipt}
-  printReceipt={printReceipt}
-  shareReceipt={shareReceipt}
-/>
-
+          isOpen={isReceiptOptionsModalOpen}
+          onClose={() => setIsReceiptOptionsModalOpen(false)}
+          downloadReceipt={downloadReceipt}
+          printReceipt={printReceipt}
+          shareReceipt={shareReceipt}
+        />
 
         <ProductFormModal
-  isOpen={isAddProductModalOpen}
-  onClose={() => setIsAddProductModalOpen(false)}
-  onSubmit={handleAddProductSubmit}
-  initialValues={
-    editingProduct || {
-      name: "",
-      price: "",
-      qty: "",
-    }
-  }
-/>
-
+          isOpen={isAddProductModalOpen}
+          onClose={() => setIsAddProductModalOpen(false)}
+          onSubmit={handleAddProductSubmit}
+          initialValues={
+            editingProduct || {
+              name: "",
+              price: "",
+              qty: "",
+            }
+          }
+        />
       </div>
     </div>
   );
