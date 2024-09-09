@@ -148,6 +148,9 @@ const ProductSchema = Yup.object().shape({
 });
 
 const Sales = () => {
+  const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] =
+    useState(false);
+
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
   const [customers] = useState(initialCustomers);
@@ -519,14 +522,19 @@ const Sales = () => {
     }
   };
 
-  const shareReceipt = (paymentDetails) => {
+  const shareReceipt = () => {
     if (!selectedCustomer) return;
 
+    // Generate the PDF content using the paymentDetailsState
+    const pdfDoc = generatePDF(paymentDetailsState);
+    const pdfDataUrl = pdfDoc.output("dataurl"); // Generate the PDF as a Data URL
+
+    // Prepare the text and sharing content
     const formattedDate = new Date().toLocaleDateString();
     const formattedTime = new Date().toLocaleTimeString();
 
-    // Construct the text message for sharing
-    const textMessage = `IDS Printing House\nTransaction Receipt\nInvoice Number: ${invoiceNumber}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${
+    // Use 'let' instead of 'const' because 'textMessage' will be updated later
+    let textMessage = `IDS Printing House\nTransaction Receipt\nInvoice Number: ${invoiceNumber}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${
       selectedCustomer.name
     } ${selectedCustomer.surname}\nContact: ${
       selectedCustomer.phone
@@ -539,25 +547,49 @@ const Sales = () => {
       )
       .join("\n")}\n\nTotal: Rs.${transaction.total.toFixed(
       2
-    )}\nPayment Method: ${paymentDetails.paymentMethod}`;
+    )}\nDiscount: Rs.${transaction.discount.toFixed(
+      2
+    )}\nNet Amount: Rs.${transaction.net.toFixed(2)}\n\nPayment Method: ${
+      paymentDetailsState.paymentMethod
+    }`;
 
-    // Construct the WhatsApp and Email URLs with the text message
+    // Handle different payment methods
+    if (paymentDetailsState.paymentMethod === "Cash") {
+      const changeDue = paymentDetailsState.cashGiven - transaction.net;
+      textMessage += `\nCash Given: Rs.${
+        paymentDetailsState.cashGiven
+      }\nChange Due: Rs.${changeDue.toFixed(2)}`;
+    } else if (paymentDetailsState.paymentMethod === "Card") {
+      textMessage += `\nCard Details: ${paymentDetailsState.cardDetails}`;
+    } else if (paymentDetailsState.paymentMethod === "Bank Transfer") {
+      textMessage += `\nBank Transfer Number: ${paymentDetailsState.bankTransferNumber}`;
+    } else if (paymentDetailsState.paymentMethod === "Cheque") {
+      textMessage += `\nCheque Number: ${paymentDetailsState.chequeNumber}`;
+    } else if (paymentDetailsState.paymentMethod === "Credit") {
+      textMessage += `\nCredit Amount Paid: Rs.${paymentDetailsState.creditAmount}`;
+      if (paymentDetailsState.creditBalance > 0) {
+        textMessage += `\nRemaining Balance: Rs.${paymentDetailsState.creditBalance}`;
+      } else {
+        textMessage += `\nFull payment received. No outstanding balance.`;
+      }
+    }
+
+    // Prepare WhatsApp and email sharing URLs
     const whatsappURL = `https://wa.me/+94${
       selectedCustomer.phone
     }?text=${encodeURIComponent(textMessage)}`;
+
+    // Prepare the email content with the PDF URL
     const emailSubject = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}`;
-    const emailBody = textMessage;
+    const emailBody = `${textMessage}\n\nHere is your receipt PDF: ${pdfDataUrl}`;
     const mailtoURL = `mailto:?subject=${encodeURIComponent(
       emailSubject
     )}&body=${encodeURIComponent(emailBody)}`;
 
-    // Open the share options
+    // Open the sharing options
     window.open(whatsappURL, "_blank"); // Open WhatsApp
     window.open(mailtoURL, "_blank"); // Open Email
   };
-
-  const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] =
-    useState(false);
 
   return (
     <div className="sales-page">

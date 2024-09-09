@@ -39,7 +39,11 @@ const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
                   </div>
                   <div className="mb-3">
                     <label>Price</label>
-                    <Field name="price" type="number" className="form-control" />
+                    <Field
+                      name="price"
+                      type="number"
+                      className="form-control"
+                    />
                     {errors.price && touched.price ? (
                       <div className="text-danger">{errors.price}</div>
                     ) : null}
@@ -52,12 +56,20 @@ const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
                     ) : null}
                   </div>
                   <div className="modal-footer">
-                    <Button variant="secondary" onClick={onClose}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" variant="primary">
+                    <button
+                      type="submit"
+                      variant="primary"
+                      className="closebutton"
+                    >
                       Add Product
-                    </Button>
+                    </button>
+                    <button
+                      variant="secondary"
+                      onClick={onClose}
+                      className="savechangesbutton"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </Form>
               )}

@@ -24,34 +24,34 @@ const ReceiptOptionsModal = ({
           <div className="modal-body">
             <p>What would you like to do with the receipt?</p>
             <div className="d-flex justify-content-end">
-              <Button
+              <button
                 variant="contained"
                 onClick={downloadReceipt}
-                className="download-btn me-2"
+                className="sharebutton"
               >
                 Download PDF
-              </Button>
-              <Button
+              </button>
+              <button
                 variant="contained"
                 onClick={printReceipt}
-                className="print-btn me-2"
+                className="sharebutton"
               >
                 Print Receipt
-              </Button>
-              <Button
+              </button>
+              <button
                 variant="contained"
                 onClick={shareReceipt}
-                className="share-btn me-2"
+                className="sharebutton"
               >
                 Share
-              </Button>
-              <Button
+              </button>
+              <button
                 variant="contained"
                 onClick={onClose}
-                className="close-btn"
+                className="prevbutton"
               >
                 Close
-              </Button>
+              </button>
             </div>
           </div>
         </div>

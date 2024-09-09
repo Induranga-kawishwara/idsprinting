@@ -139,12 +139,20 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
                     </div>
                   )}
                   <div className="modal-footer">
-                    <Button variant="secondary" onClick={onClose}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" variant="primary">
+                    <button
+                      type="submit"
+                      variant="primary"
+                      className="savechangesbutton"
+                    >
                       Submit Payment
-                    </Button>
+                    </button>
+                    <button
+                      variant="secondary"
+                      onClick={onClose}
+                      className="closebutton"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </Form>
               )}
