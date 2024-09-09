@@ -1,4 +1,3 @@
-// PaymentModal.jsx
 import React from "react";
 import { Modal, Button } from "@mui/material";
 import { Formik, Form, Field } from "formik";
@@ -9,7 +8,18 @@ const PaymentModal = ({
   initialValues,
   validationSchema,
   handleSubmit,
+  clearTransaction, // New prop to clear the transaction
 }) => {
+  
+  const handleCancel = (resetForm) => {
+    // Reset the form
+    resetForm();
+    // Clear the transaction table and state
+    clearTransaction();
+    // Close the modal
+    onClose();
+  };
+
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
@@ -29,7 +39,7 @@ const PaymentModal = ({
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
             >
-              {({ values, errors, touched }) => (
+              {({ values, errors, touched, resetForm }) => (
                 <Form>
                   <div className="mb-3">
                     <label>Payment Method</label>
@@ -125,7 +135,7 @@ const PaymentModal = ({
                   <div className="modal-footer">
                     <Button
                       variant="secondary"
-                      onClick={onClose}
+                      onClick={() => handleCancel(resetForm)}
                     >
                       Cancel
                     </Button>
