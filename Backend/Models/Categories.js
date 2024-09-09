@@ -7,7 +7,8 @@ class Categories {
     supplier,
     buyingPrice,
     addedBy,
-    dateAndTime
+    dateAndTime,
+    items = {}
   ) {
     this.rawMaterialName = rawMaterialName;
     this.size = size;
@@ -17,6 +18,7 @@ class Categories {
     this.buyingPrice = buyingPrice;
     this.addedBy = addedBy;
     this.dateAndTime = dateAndTime;
+    this.items = items;
   }
 }
 

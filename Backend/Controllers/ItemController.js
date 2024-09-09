@@ -1,8 +1,9 @@
 import db from "../db.js";
-import Product from "../Models/Item.js";
+import Product from "../Models/Categories.js";
+import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 import { v4 as uuidv4 } from "uuid";
 
-const ItemCollection = db.collection("Items");
+const ItemCollection = db.collection("Categories");
 
 export const createProduct = async (req, res) => {
   const {
