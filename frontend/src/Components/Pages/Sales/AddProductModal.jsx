@@ -1,35 +1,30 @@
-// ProductFormModal.jsx
-import React from 'react';
-import { Modal, Button } from '@mui/material';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
+import React from "react";
+import { Modal, Button } from "@mui/material";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
 
-// Define the product validation schema
 const ProductSchema = Yup.object().shape({
-  name: Yup.string().required('Product Name is required'),
-  price: Yup.number().required('Price is required').min(0, 'Price must be greater than zero'),
-  qty: Yup.number().required('Quantity is required').min(1, 'Quantity must be at least 1'),
+  name: Yup.string().required("Product name is required"),
+  price: Yup.number()
+    .required("Price is required")
+    .min(0, "Price must be a positive number"),
+  qty: Yup.number()
+    .required("Quantity is required")
+    .min(1, "Quantity must be at least 1"),
 });
 
-const ProductFormModal = ({ isOpen, onClose, onSubmit, initialValues }) => {
+const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
         <div className="modal-content custom-modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">
-              {initialValues.id ? 'Edit Product' : 'Add Product'}
-            </h5>
-            <Button
-              type="button"
-              className="btn-close"
-              aria-label="Close"
-              onClick={onClose}
-            />
+            <h5 className="modal-title">Add Product</h5>
+            <Button type="button" className="btn-close" onClick={onClose} />
           </div>
           <div className="modal-body">
             <Formik
-              initialValues={initialValues}
+              initialValues={{ name: "", price: "", qty: "" }}
               validationSchema={ProductSchema}
               onSubmit={onSubmit}
             >
@@ -44,36 +39,24 @@ const ProductFormModal = ({ isOpen, onClose, onSubmit, initialValues }) => {
                   </div>
                   <div className="mb-3">
                     <label>Price</label>
-                    <Field
-                      name="price"
-                      type="number"
-                      className="form-control"
-                    />
+                    <Field name="price" type="number" className="form-control" />
                     {errors.price && touched.price ? (
                       <div className="text-danger">{errors.price}</div>
                     ) : null}
                   </div>
                   <div className="mb-3">
                     <label>Quantity</label>
-                    <Field
-                      name="qty"
-                      type="number"
-                      className="form-control"
-                    />
+                    <Field name="qty" type="number" className="form-control" />
                     {errors.qty && touched.qty ? (
                       <div className="text-danger">{errors.qty}</div>
                     ) : null}
                   </div>
                   <div className="modal-footer">
-                    <Button
-                      variant="secondary"
-                      onClick={onClose}
-                      className="me-2"
-                    >
+                    <Button variant="secondary" onClick={onClose}>
                       Cancel
                     </Button>
                     <Button type="submit" variant="primary">
-                      {initialValues.id ? 'Update Product' : 'Add Product'}
+                      Add Product
                     </Button>
                   </div>
                 </Form>
@@ -86,4 +69,4 @@ const ProductFormModal = ({ isOpen, onClose, onSubmit, initialValues }) => {
   );
 };
 
-export default ProductFormModal;
+export default AddProductModal;
