@@ -8,8 +8,9 @@ import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
 import CustomerFormModal from "../Customer/CustomerFormModal"; // Adjust the import path
 import "../All.scss";
-import AddProductModal from "./AddProductModal";  // Import your new component
-
+import AddProductModal from "./AddProductModal"; // Import your new component
+import ReceiptOptionsModal from "./ReceiptOptionsModal"; // Import the new component
+import PaymentModal from "./PaymentModal"; // Import the new component
 
 const initialProducts = [
   {
@@ -147,7 +148,9 @@ const ProductSchema = Yup.object().shape({
 });
 
 const Sales = () => {
-  
+  const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] =
+    useState(false);
+
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
   const [customers] = useState(initialCustomers);
@@ -319,24 +322,34 @@ const Sales = () => {
 
     // Handle different payment methods
     if (values.paymentMethod === "Cash") {
-        const balance = values.cashGiven - transaction.net;
-        alert(`Transaction completed. Change due: Rs.${balance.toFixed(2)}`);
+      const balance = values.cashGiven - transaction.net;
+      alert(`Transaction completed. Change due: Rs.${balance.toFixed(2)}`);
     } else if (values.paymentMethod === "Card") {
-        alert(`Transaction completed using card. Details saved: ${values.cardDetails}`);
+      alert(
+        `Transaction completed using card. Details saved: ${values.cardDetails}`
+      );
     } else if (values.paymentMethod === "Bank Transfer") {
-        alert(`Transaction completed using bank transfer. Number: ${values.bankTransferNumber}`);
+      alert(
+        `Transaction completed using bank transfer. Number: ${values.bankTransferNumber}`
+      );
     } else if (values.paymentMethod === "Cheque") {
-        alert(`Transaction completed using cheque. Number: ${values.chequeNumber}`);
+      alert(
+        `Transaction completed using cheque. Number: ${values.chequeNumber}`
+      );
     } else if (values.paymentMethod === "Credit") {
-        // Calculate credit balance (outstanding amount)
-        creditBalance = transaction.net - values.creditAmount;
-        alert(`Credit payment of Rs.${values.creditAmount} recorded. Remaining balance: Rs.${creditBalance.toFixed(2)}`);
+      // Calculate credit balance (outstanding amount)
+      creditBalance = transaction.net - values.creditAmount;
+      alert(
+        `Credit payment of Rs.${
+          values.creditAmount
+        } recorded. Remaining balance: Rs.${creditBalance.toFixed(2)}`
+      );
     }
 
     // Save the payment details and credit balance in state
     setPaymentDetailsState({
-        ...values,
-        creditBalance: creditBalance > 0 ? creditBalance : 0 // Store credit balance if there's any
+      ...values,
+      creditBalance: creditBalance > 0 ? creditBalance : 0, // Store credit balance if there's any
     });
 
     // Generate a unique invoice number
@@ -344,14 +357,16 @@ const Sales = () => {
     setInvoiceNumber(newInvoiceNumber);
 
     // Ask the user if they want a receipt
-    const wantsReceipt = window.confirm("Would you like to download a receipt?");
-    
+    const wantsReceipt = window.confirm(
+      "Would you like to download a receipt?"
+    );
+
     // Generate PDF if user wants a receipt
     if (wantsReceipt) {
-        generatePDF({
-            ...values,
-            creditBalance: creditBalance > 0 ? creditBalance : 0 // Pass credit balance to the PDF function
-        });
+      generatePDF({
+        ...values,
+        creditBalance: creditBalance > 0 ? creditBalance : 0, // Pass credit balance to the PDF function
+      });
     }
 
     // Open the modal to choose download, print, or share
@@ -359,74 +374,90 @@ const Sales = () => {
 
     // Close the modal after handling payment
     setIsPaymentModalOpen(false);
-};
+  };
 
-  
+  const generatePDF = (paymentDetails) => {
+    console.log("Generating PDF with payment details:", paymentDetails); // Log payment details
 
-const generatePDF = (paymentDetails) => {
-  console.log("Generating PDF with payment details:", paymentDetails); // Log payment details
+    const doc = new jsPDF();
 
-  const doc = new jsPDF();
+    // Get current date and time
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString();
+    const formattedTime = currentDate.toLocaleTimeString();
 
-  // Get current date and time
-  const currentDate = new Date();
-  const formattedDate = currentDate.toLocaleDateString();
-  const formattedTime = currentDate.toLocaleTimeString();
+    doc.setFontSize(18);
+    doc.text("Transaction Receipt", 14, 22);
+    doc.setFontSize(12);
+    doc.text(`Invoice Number: ${invoiceNumber}`, 14, 30);
+    doc.text(`Date: ${formattedDate}`, 14, 36);
+    doc.text(`Time: ${formattedTime}`, 14, 42);
 
-  doc.setFontSize(18);
-  doc.text("Transaction Receipt", 14, 22);
-  doc.setFontSize(12);
-  doc.text(`Invoice Number: ${invoiceNumber}`, 14, 30);
-  doc.text(`Date: ${formattedDate}`, 14, 36);
-  doc.text(`Time: ${formattedTime}`, 14, 42);
+    doc.text("Customer:", 14, 50);
+    if (selectedCustomer) {
+      doc.text(
+        `Name: ${selectedCustomer.name} ${selectedCustomer.surname}`,
+        14,
+        56
+      );
+      doc.text(`Email: ${selectedCustomer.email}`, 14, 62);
+      doc.text(`Phone: ${selectedCustomer.phone}`, 14, 68);
+    }
 
-  doc.text("Customer:", 14, 50);
-  if (selectedCustomer) {
-    doc.text(`Name: ${selectedCustomer.name} ${selectedCustomer.surname}`, 14, 56);
-    doc.text(`Email: ${selectedCustomer.email}`, 14, 62);
-    doc.text(`Phone: ${selectedCustomer.phone}`, 14, 68);
-  }
+    doc.text("Products:", 14, 80);
+    transaction.products.forEach((product, index) => {
+      const y = 86 + index * 6;
+      doc.text(
+        `${product.name} - ${product.qty} x Rs.${product.price.toFixed(
+          2
+        )} = Rs.${(product.qty * product.price).toFixed(2)}`,
+        14,
+        y
+      );
+    });
 
-  doc.text("Products:", 14, 80);
-  transaction.products.forEach((product, index) => {
-    const y = 86 + index * 6;
-    doc.text(`${product.name} - ${product.qty} x Rs.${product.price.toFixed(2)} = Rs.${(product.qty * product.price).toFixed(2)}`, 14, y);
-  });
+    doc.text(`Total: Rs.${transaction.total.toFixed(2)}`, 14, 120);
+    doc.text(`Discount: Rs.${transaction.discount.toFixed(2)}`, 14, 126);
+    doc.text(`Net: Rs.${transaction.net.toFixed(2)}`, 14, 132);
 
-  doc.text(`Total: Rs.${transaction.total.toFixed(2)}`, 14, 120);
-  doc.text(`Discount: Rs.${transaction.discount.toFixed(2)}`, 14, 126);
-  doc.text(`Net: Rs.${transaction.net.toFixed(2)}`, 14, 132);
+    doc.text("Payment Details:", 14, 150);
+    doc.text(`Method: ${paymentDetails.paymentMethod}`, 14, 156); // Ensure this prints correctly
 
-  doc.text("Payment Details:", 14, 150);
-  doc.text(`Method: ${paymentDetails.paymentMethod}`, 14, 156); // Ensure this prints correctly
-
-  if (paymentDetails.paymentMethod === "Cash") {
+    if (paymentDetails.paymentMethod === "Cash") {
       doc.text(`Cash Given: Rs.${paymentDetails.cashGiven}`, 14, 162);
       const changeDue = paymentDetails.cashGiven - transaction.net;
       doc.text(`Change Due: Rs.${changeDue.toFixed(2)}`, 14, 168);
-  } else if (paymentDetails.paymentMethod === "Card") {
+    } else if (paymentDetails.paymentMethod === "Card") {
       doc.text(`Card Details: ${paymentDetails.cardDetails}`, 14, 162);
-  } else if (paymentDetails.paymentMethod === "Bank Transfer") {
-      doc.text(`Bank Transfer Number: ${paymentDetails.bankTransferNumber}`, 14, 162);
-  } else if (paymentDetails.paymentMethod === "Cheque") {
+    } else if (paymentDetails.paymentMethod === "Bank Transfer") {
+      doc.text(
+        `Bank Transfer Number: ${paymentDetails.bankTransferNumber}`,
+        14,
+        162
+      );
+    } else if (paymentDetails.paymentMethod === "Cheque") {
       doc.text(`Cheque Number: ${paymentDetails.chequeNumber}`, 14, 162);
-  } else if (paymentDetails.paymentMethod === "Credit") {
-      doc.text(`Credit Amount Paid: Rs.${paymentDetails.creditAmount}`, 14, 162);
-      
+    } else if (paymentDetails.paymentMethod === "Credit") {
+      doc.text(
+        `Credit Amount Paid: Rs.${paymentDetails.creditAmount}`,
+        14,
+        162
+      );
+
       // Show the credit balance if there's any remaining balance
       if (paymentDetails.creditBalance > 0) {
-          doc.text(`Remaining Balance: Rs.${paymentDetails.creditBalance}`, 14, 168);
+        doc.text(
+          `Remaining Balance: Rs.${paymentDetails.creditBalance}`,
+          14,
+          168
+        );
       } else {
-          doc.text(`Full payment received. No outstanding balance.`, 14, 168);
+        doc.text(`Full payment received. No outstanding balance.`, 14, 168);
       }
-  }
+    }
 
-  return doc;
-};
-
-
-
-
+    return doc;
+  };
 
   const handleAddProductSubmit = (values) => {
     const newProduct = {
@@ -461,37 +492,49 @@ const generatePDF = (paymentDetails) => {
 
   const downloadReceipt = () => {
     if (paymentDetailsState) {
-        const doc = generatePDF(paymentDetailsState); // Use the saved payment details
-        doc.save(`receipt_${invoiceNumber}.pdf`);
-    } else {
-        alert("Payment details are not available. Please complete the payment first.");
-    }
-};
+      const doc = generatePDF(paymentDetailsState); // Use the saved payment details
+      doc.save(`receipt_${invoiceNumber}.pdf`);
 
-const printReceipt = () => {
+      // Immediately refresh the page
+      window.location.reload();
+    } else {
+      alert(
+        "Payment details are not available. Please complete the payment first."
+      );
+    }
+  };
+
+  const printReceipt = () => {
     if (paymentDetailsState) {
-        const doc = generatePDF(paymentDetailsState); // Use the saved payment details
-        const pdfBlob = doc.output("blob");
-        const pdfURL = URL.createObjectURL(pdfBlob);
+      const doc = generatePDF(paymentDetailsState); // Use the saved payment details
+      const pdfBlob = doc.output("blob");
+      const pdfURL = URL.createObjectURL(pdfBlob);
 
-        const printWindow = window.open(pdfURL, "_blank");
-        printWindow.onload = () => {
-            printWindow.print();
-        };
+      const printWindow = window.open(pdfURL, "_blank");
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+      window.location.reload();
     } else {
-        alert("Payment details are not available. Please complete the payment first.");
+      alert(
+        "Payment details are not available. Please complete the payment first."
+      );
     }
-};
+  };
 
-
-  const shareReceipt = (paymentDetails) => {
+  const shareReceipt = () => {
     if (!selectedCustomer) return;
 
+    // Generate the PDF content using the paymentDetailsState
+    const pdfDoc = generatePDF(paymentDetailsState);
+    const pdfDataUrl = pdfDoc.output("dataurl"); // Generate the PDF as a Data URL
+
+    // Prepare the text and sharing content
     const formattedDate = new Date().toLocaleDateString();
     const formattedTime = new Date().toLocaleTimeString();
 
-    // Construct the text message for sharing
-    const textMessage = `IDS Printing House\nTransaction Receipt\nInvoice Number: ${invoiceNumber}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${
+    // Use 'let' instead of 'const' because 'textMessage' will be updated later
+    let textMessage = `IDS Printing House\nTransaction Receipt\nInvoice Number: ${invoiceNumber}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${
       selectedCustomer.name
     } ${selectedCustomer.surname}\nContact: ${
       selectedCustomer.phone
@@ -504,25 +547,49 @@ const printReceipt = () => {
       )
       .join("\n")}\n\nTotal: Rs.${transaction.total.toFixed(
       2
-    )}\nPayment Method: ${paymentDetails.paymentMethod}`;
+    )}\nDiscount: Rs.${transaction.discount.toFixed(
+      2
+    )}\nNet Amount: Rs.${transaction.net.toFixed(2)}\n\nPayment Method: ${
+      paymentDetailsState.paymentMethod
+    }`;
 
-    // Construct the WhatsApp and Email URLs with the text message
+    // Handle different payment methods
+    if (paymentDetailsState.paymentMethod === "Cash") {
+      const changeDue = paymentDetailsState.cashGiven - transaction.net;
+      textMessage += `\nCash Given: Rs.${
+        paymentDetailsState.cashGiven
+      }\nChange Due: Rs.${changeDue.toFixed(2)}`;
+    } else if (paymentDetailsState.paymentMethod === "Card") {
+      textMessage += `\nCard Details: ${paymentDetailsState.cardDetails}`;
+    } else if (paymentDetailsState.paymentMethod === "Bank Transfer") {
+      textMessage += `\nBank Transfer Number: ${paymentDetailsState.bankTransferNumber}`;
+    } else if (paymentDetailsState.paymentMethod === "Cheque") {
+      textMessage += `\nCheque Number: ${paymentDetailsState.chequeNumber}`;
+    } else if (paymentDetailsState.paymentMethod === "Credit") {
+      textMessage += `\nCredit Amount Paid: Rs.${paymentDetailsState.creditAmount}`;
+      if (paymentDetailsState.creditBalance > 0) {
+        textMessage += `\nRemaining Balance: Rs.${paymentDetailsState.creditBalance}`;
+      } else {
+        textMessage += `\nFull payment received. No outstanding balance.`;
+      }
+    }
+
+    // Prepare WhatsApp and email sharing URLs
     const whatsappURL = `https://wa.me/+94${
       selectedCustomer.phone
     }?text=${encodeURIComponent(textMessage)}`;
+
+    // Prepare the email content with the PDF URL
     const emailSubject = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}`;
-    const emailBody = textMessage;
+    const emailBody = `${textMessage}\n\nHere is your receipt PDF: ${pdfDataUrl}`;
     const mailtoURL = `mailto:?subject=${encodeURIComponent(
       emailSubject
     )}&body=${encodeURIComponent(emailBody)}`;
 
-    // Open the share options
+    // Open the sharing options
     window.open(whatsappURL, "_blank"); // Open WhatsApp
     window.open(mailtoURL, "_blank"); // Open Email
   };
-
-  const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] =
-    useState(false);
 
   return (
     <div className="sales-page">
@@ -596,7 +663,7 @@ const printReceipt = () => {
                     </p>
                     <div className="customer-metrics">
                       <span>Email: {selectedCustomer.email}</span>
-                      
+
                       <span>Phone: {selectedCustomer.phone}</span>
                     </div>
                   </div>
@@ -692,10 +759,10 @@ const printReceipt = () => {
                     + Add Product
                   </button>
                   <AddProductModal
-        isOpen={isAddProductModalOpen}
-        onClose={() => setIsAddProductModalOpen(false)}
-        onSubmit={handleAddProductSubmit}
-      />
+                    isOpen={isAddProductModalOpen}
+                    onClose={() => setIsAddProductModalOpen(false)}
+                    onSubmit={handleAddProductSubmit}
+                  />
                 </div>
                 <div className="totals">
                   <p>
@@ -724,18 +791,16 @@ const printReceipt = () => {
             </div>
           </div>
 
-
-
           <div className="right-panel">
             {/* Product Search and Filter */}
             <div className="d-flex align-items-center mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder={`Search by ${searchField}`}
-                  value={productSearchQuery}
-                  onChange={(e) => setProductSearchQuery(e.target.value)}
-                />
+              <input
+                type="text"
+                className="form-control"
+                placeholder={`Search by ${searchField}`}
+                value={productSearchQuery}
+                onChange={(e) => setProductSearchQuery(e.target.value)}
+              />
 
               <select
                 className="form-control"
@@ -747,12 +812,9 @@ const printReceipt = () => {
                 <option value="gsm">GSM</option>
                 <option value="color">Color</option>
               </select>
-              <button
-                  className="prevbutton2"
-                  onClick={clearSearch}
-                >
-                  Clear
-                </button>
+              <button className="prevbutton2" onClick={clearSearch}>
+                Clear
+              </button>
             </div>
             <div className="product-grid">
               {filteredProducts.map((product) => (
@@ -768,195 +830,19 @@ const printReceipt = () => {
             </div>
           </div>
         </div>
-
-
-
-
-        {/* Payment Modal */}
-        <Modal
-          open={isPaymentModalOpen}
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
-        >
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Payment</h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsPaymentModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-              <Formik
-  initialValues={{
-    paymentMethod: "",
-    cashGiven: "",
-    cardDetails: "",
-    bankTransferNumber: "",
-    chequeNumber: "",
-    creditAmount: "",
-  }}
-  validationSchema={PaymentSchema}
-  onSubmit={handlePaymentSubmit}
->
-  {({ values, errors, touched }) => (
-    <Form>
-      <div className="mb-3">
-        <label>Payment Method</label>
-        <Field
-          as="select"
-          name="paymentMethod"
-          className="form-control"
-        >
-          <option value="" label="Select" disabled />
-          <option value="Cash">Cash</option>
-          <option value="Card">Card</option>
-          <option value="Bank Transfer">Bank Transfer</option>
-          <option value="Cheque">Cheque</option>
-          <option value="Credit">Credit</option>
-        </Field>
-        {errors.paymentMethod && touched.paymentMethod ? (
-          <div className="text-danger">{errors.paymentMethod}</div>
-        ) : null}
-      </div>
-                      {values.paymentMethod === "Cash" && (
-                        <div className="mb-3">
-                          <label>Cash Given</label>
-                          <Field
-                            name="cashGiven"
-                            type="number"
-                            className="form-control"
-                          />
-                          {errors.cashGiven && touched.cashGiven ? (
-                            <div className="text-danger">
-                              {errors.cashGiven}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Card" && (
-                        <div className="mb-3">
-                          <label>Card Holder's Name or Last 4 Digits</label>
-                          <Field name="cardDetails" className="form-control" />
-                          {errors.cardDetails && touched.cardDetails ? (
-                            <div className="text-danger">
-                              {errors.cardDetails}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Bank Transfer" && (
-                        <div className="mb-3">
-                          <label>Bank Transfer Number</label>
-                          <Field
-                            name="bankTransferNumber"
-                            className="form-control"
-                          />
-                          {errors.bankTransferNumber &&
-                          touched.bankTransferNumber ? (
-                            <div className="text-danger">
-                              {errors.bankTransferNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Cheque" && (
-                        <div className="mb-3">
-                          <label>Cheque Number</label>
-                          <Field name="chequeNumber" className="form-control" />
-                          {errors.chequeNumber && touched.chequeNumber ? (
-                            <div className="text-danger">
-                              {errors.chequeNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Credit" && (
-                        <div className="mb-3">
-                          <label>Paying Amount</label>
-                          <Field
-                            name="creditAmount"
-                            type="number"
-                            className="form-control"
-                          />
-                          {errors.creditAmount && touched.creditAmount ? (
-                            <div className="text-danger">
-                              {errors.creditAmount}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      <div className="modal-footer">
-        <Button variant="secondary" onClick={() => setIsPaymentModalOpen(false)}>
-          Cancel
-        </Button>
-        <Button type="submit" variant="primary">
-          Submit Payment
-        </Button>
-      </div>
-    </Form>
-  )}
-</Formik>
-              </div>
-            </div>
-          </div>
-        </Modal>
-
-        {/* Receipt Options Modal */}
-        <Modal
-          open={isReceiptOptionsModalOpen}
+          handlePaymentSubmit={handlePaymentSubmit}
+        />
+        {/* Use the ReceiptOptionsModal */}
+        <ReceiptOptionsModal
+          isOpen={isReceiptOptionsModalOpen}
           onClose={() => setIsReceiptOptionsModalOpen(false)}
-        >
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Receipt Options</h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsReceiptOptionsModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <p>What would you like to do with the receipt?</p>
-                <div className="d-flex justify-content-end">
-                  <Button
-                    variant="contained"
-                    onClick={downloadReceipt}
-                    className="download-btn me-2"
-                  >
-                    Download PDF
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={printReceipt}
-                    className="print-btn me-2"
-                  >
-                    Print Receipt
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={shareReceipt}
-                    className="share-btn me-2"
-                  >
-                    Share
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={() => setIsReceiptOptionsModalOpen(false)}
-                    className="close-btn"
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Modal>
-
+          downloadReceipt={downloadReceipt}
+          printReceipt={printReceipt}
+          shareReceipt={shareReceipt}
+        />
       </div>
     </div>
   );
