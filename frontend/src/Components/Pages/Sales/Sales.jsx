@@ -532,10 +532,12 @@ const Sales = () => {
     doc.text("Payment Details:", 14, 150);
     doc.text(`Method: ${paymentDetails.paymentMethod}`, 14, 156); // Ensure this prints correctly
 
+    //cash given
     if (paymentDetails.paymentMethod === "Cash") {
-      doc.text(`Cash Given: Rs.${paymentDetails.cashGiven}`, 14, 162);
+      doc.text(`Cash Given: Rs. `, 4.5, lastProductY + 15);
+
       const changeDue = paymentDetails.cashGiven - transaction.net;
-      doc.text(`Change Due: Rs.${changeDue.toFixed(2)}`, 14, 168);
+      doc.text(`Change Due: Rs. `, 4.5, lastProductY + 19);
     } else if (paymentDetails.paymentMethod === "Card") {
       doc.text(`Card Details: ${paymentDetails.cardDetails}`, 14, 162);
     } else if (paymentDetails.paymentMethod === "Bank Transfer") {
@@ -552,7 +554,6 @@ const Sales = () => {
         14,
         162
       );
-
       // Show the credit balance if there's any remaining balance
       if (paymentDetails.creditBalance > 0) {
         doc.text(
@@ -563,6 +564,41 @@ const Sales = () => {
       } else {
         doc.text(`Full payment received. No outstanding balance.`, 14, 168);
       }
+    }
+
+    if (paymentDetails.paymentMethod === "Cash") {
+      // Cash Given
+      const cashGivenText = `Rs.${paymentDetails.cashGiven}`;
+      const cashGivenTextWidth = doc.getTextWidth(cashGivenText); // Get the width of the text
+      const cashGivenX = pageWidth - cashGivenTextWidth - 5.5; // Align to the right
+      doc.text(cashGivenText, cashGivenX, lastProductY + 15);
+
+      // Change Due
+      const changeDue = paymentDetails.cashGiven - transaction.net;
+      const changeDueText = `Rs.${changeDue.toFixed(2)}`;
+      const changeDueTextWidth = doc.getTextWidth(changeDueText);
+      const changeDueX = pageWidth - changeDueTextWidth - 5.5;
+      doc.text(changeDueText, changeDueX, lastProductY + 19);
+    } else if (paymentDetails.paymentMethod === "Card") {
+      const cardDetailsText = `Card Details: ${paymentDetails.cardDetails}`;
+      const cardDetailsTextWidth = doc.getTextWidth(cardDetailsText);
+      const cardDetailsX = pageWidth - cardDetailsTextWidth;
+      doc.text(cardDetailsText, cardDetailsX, 162);
+    } else if (paymentDetails.paymentMethod === "Bank Transfer") {
+      const bankTransferText = `Bank Transfer Number: ${paymentDetails.bankTransferNumber}`;
+      const bankTransferTextWidth = doc.getTextWidth(bankTransferText);
+      const bankTransferX = pageWidth - bankTransferTextWidth;
+      doc.text(bankTransferText, bankTransferX, 162);
+    } else if (paymentDetails.paymentMethod === "Cheque") {
+      const chequeText = `Cheque Number: ${paymentDetails.chequeNumber}`;
+      const chequeTextWidth = doc.getTextWidth(chequeText);
+      const chequeX = pageWidth - chequeTextWidth;
+      doc.text(chequeText, chequeX, 162);
+    } else if (paymentDetails.paymentMethod === "Credit") {
+      const creditAmountText = `Credit Amount Paid: Rs.${paymentDetails.creditAmount}`;
+      const creditAmountTextWidth = doc.getTextWidth(creditAmountText);
+      const creditAmountX = pageWidth - creditAmountTextWidth;
+      doc.text(creditAmountText, creditAmountX, 162);
     }
 
     return doc;
