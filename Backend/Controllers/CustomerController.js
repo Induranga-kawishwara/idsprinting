@@ -85,16 +85,16 @@ export const createCustomer = async (req, res) => {
     // Create a response object
     const newCustomer = { id: docRef.id, ...customer };
 
-    // Send response
-    res
-      .status(201)
-      .send({ message: "Customer created successfully", id: docRef.id });
-
     // Broadcast the change (assuming broadcastCustomerChanges is defined elsewhere)
     broadcastCustomerChanges("customerAdded", newCustomer);
+
+    // Send response
+    return res
+      .status(201)
+      .send({ message: "Customer created successfully", id: docRef.id });
   } catch (error) {
     console.error("Error creating customer:", error); // Log error for debugging
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -113,9 +113,9 @@ export const getAllCustomers = async (req, res) => {
       }))
       .sort((a, b) => b.addedDateAndTime - a.addedDateAndTime);
 
-    res.status(200).send(sortedCustomers);
+    return res.status(200).send(sortedCustomers);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -128,9 +128,9 @@ export const getCustomerById = async (req, res) => {
     if (!doc.exists) {
       return res.status(404).send({ message: "Customer not found" });
     }
-    res.status(200).send({ id: doc.id, ...doc.data() });
+    return res.status(200).send({ id: doc.id, ...doc.data() });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -143,20 +143,20 @@ export const updateCustomer = async (req, res) => {
     // Check if the customer exists
     const doc = await customersCollection.doc(id).get();
     if (!doc.exists) {
-      return res.status(404).json({ message: "Customer not found" });
+      return res.status(404).send({ message: "Customer not found" });
     }
 
     // Update the customer in the database
     await customersCollection.doc(id).update(updatedData);
 
-    // Respond to the API call with success
-    res.status(200).json({ message: "Customer updated successfully" });
-
     // Broadcast the updated customer to all POS systems
     const updatedCustomer = { id, ...updatedData };
     broadcastCustomerChanges("customerUpdated", updatedCustomer);
+
+    // Respond to the API call with success
+    return res.status(200).send({ message: "Customer updated successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -166,15 +166,17 @@ export const deleteCustomer = async (req, res) => {
   try {
     const doc = await customersCollection.doc(id).get();
     if (!doc.exists) {
-      return res.status(404).json({ message: "Customer not found" });
+      return res.status(404).send({ message: "Customer not found" });
     }
 
     await customersCollection.doc(id).delete();
-    res.status(200).json({ message: "Customer deleted successfully" });
+
+    broadcastCustomerChanges("customerDeleted", { id });
+
+    return res.status(200).send({ message: "Customer deleted successfully" });
 
     // Broadcast the deleted customer ID to all POS systems
-    broadcastCustomerChanges("customerDeleted", { id });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };

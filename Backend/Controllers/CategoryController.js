@@ -57,10 +57,11 @@ export const createCategory = async (req, res) => {
     // Create a response object
     const newCategory = { id: docRef.id, ...category };
 
-    res
+    broadcastCustomerChanges("CategoryAdded", newCategory);
+
+    return res
       .status(201)
       .send({ message: "Category created successfully", id: docRef.id });
-    broadcastCustomerChanges("CategoryAdded", newCategory);
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
@@ -74,9 +75,9 @@ export const getAllCategories = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    res.status(200).send(Categories);
+    return res.status(200).send(Categories);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -89,9 +90,9 @@ export const getCategoryById = async (req, res) => {
     if (!doc.exists) {
       return res.status(404).send({ message: "Category not found" });
     }
-    res.status(200).send({ id: doc.id, ...doc.data() });
+    return res.status(200).send({ id: doc.id, ...doc.data() });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -108,13 +109,13 @@ export const updateCategory = async (req, res) => {
 
     // Update the customer in the database
     await CategoriesCollection.doc(id).update(updatedData);
-    res.status(200).send({ message: "Category updated successfully" });
 
     // Broadcast the updated customer to all POS systems
     const updatedCategory = { id, ...updatedData };
     broadcastCustomerChanges("CategoryUpdated", updatedCategory);
+    return res.status(200).send({ message: "Category updated successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -129,11 +130,11 @@ export const deleteCategory = async (req, res) => {
     }
 
     await CategoriesCollection.doc(id).delete();
-    res.status(200).send({ message: "Category deleted successfully" });
 
     // Broadcast the deleted customer ID to all POS systems
     broadcastCustomerChanges("CategoryDeleted", { id });
+    return res.status(200).send({ message: "Category deleted successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };

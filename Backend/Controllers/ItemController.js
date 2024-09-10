@@ -22,7 +22,7 @@ export const createItem = async (req, res) => {
     const categorySnapshot = await categoryDoc.get();
 
     if (!categorySnapshot.exists) {
-      return res.status(404).json({ message: "Category not found." });
+      return res.status(404).send({ message: "Category not found." });
     }
 
     const { items = [] } = categorySnapshot.data();
@@ -41,12 +41,14 @@ export const createItem = async (req, res) => {
     // Update the document with the new item
     await categoryDoc.update({ items: [...items, newItem] });
 
+    broadcastCustomerChanges("customerAdded", newItem);
+
     return res
       .status(200)
-      .json({ message: "Product added to category successfully." });
+      .send({ message: "Product added to category successfully." });
   } catch (error) {
     console.error("Error adding product:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -60,7 +62,7 @@ export const getCategoryAndItemDetails = async (req, res) => {
     const categorySnapshot = await categoryRef.get();
 
     if (!categorySnapshot.exists) {
-      return res.status(404).json({ message: "Category not found." });
+      return res.status(404).send({ message: "Category not found." });
     }
 
     const categoryData = categorySnapshot.data();
@@ -71,7 +73,7 @@ export const getCategoryAndItemDetails = async (req, res) => {
     if (!item) {
       return res
         .status(404)
-        .json({ message: "Item not found in this category." });
+        .send({ message: "Item not found in this category." });
     }
 
     const result = {
@@ -79,10 +81,10 @@ export const getCategoryAndItemDetails = async (req, res) => {
       item,
     };
 
-    res.status(200).json(result);
+    res.status(200).send(result);
   } catch (error) {
     console.error("Error retrieving category and item details:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
   }
 };
 
@@ -104,7 +106,7 @@ export const updateItemByItemId = async (req, res) => {
     const categorySnapshot = await categoryRef.get();
 
     if (!categorySnapshot.exists) {
-      return res.status(404).json({ message: "Category not found." });
+      return res.status(404).send({ message: "Category not found." });
     }
 
     const { items = [] } = categorySnapshot.data();
@@ -127,10 +129,10 @@ export const updateItemByItemId = async (req, res) => {
 
     await updateDoc(categoryRef, { items: updatedItems });
 
-    res.status(200).json({ message: "Item updated successfully." });
+    res.status(200).send({ message: "Item updated successfully." });
   } catch (error) {
     console.error("Error updating item:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
   }
 };
 
@@ -144,7 +146,7 @@ export const deleteItemByItemId = async (req, res) => {
     const categorySnapshot = await categoryRef.get();
 
     if (!categorySnapshot.exists) {
-      return res.status(404).json({ message: "Category not found." });
+      return res.status(404).send({ message: "Category not found." });
     }
 
     const { items = [] } = categorySnapshot.data();
@@ -153,9 +155,9 @@ export const deleteItemByItemId = async (req, res) => {
 
     await updateDoc(categoryRef, { items: updatedItems });
 
-    res.status(200).json({ message: "Item deleted successfully." });
+    res.status(200).send({ message: "Item deleted successfully." });
   } catch (error) {
     console.error("Error deleting item:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).send({ error: error.message });
   }
 };
