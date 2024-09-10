@@ -44,7 +44,9 @@ const Item = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ItemData = await axios.get("http://localhost:8080/categories/");
+        const ItemData = await axios.get(
+          "https://candied-chartreuse-concavenator.glitch.me/categories/"
+        );
 
         console.log(ItemData.data);
 
@@ -176,7 +178,7 @@ const Item = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `http://localhost:8080/items/item/${categoryId}/${itemId}`
+          `https://candied-chartreuse-concavenator.glitch.me/items/item/${categoryId}/${itemId}`
         );
 
         alert(response.data.message);
@@ -200,13 +202,13 @@ const Item = () => {
         // Construct URL based on whether category changed
         const url =
           editingItem.categoryid === selectedCategory.id || !selectedCategory.id
-            ? `http://localhost:8080/items/item/${editingItem.categoryid}/${editingItem.Itemid}`
-            : `http://localhost:8080/items/item/${editingItem.categoryid}/${selectedCategory.id}/${editingItem.Itemid}`;
+            ? `https://candied-chartreuse-concavenator.glitch.me/items/item/${editingItem.categoryid}/${editingItem.Itemid}`
+            : `https://candied-chartreuse-concavenator.glitch.me/items/item/${editingItem.categoryid}/${selectedCategory.id}/${editingItem.Itemid}`;
 
         response = await axios.put(url, data);
       } else {
         response = await axios.post(
-          `http://localhost:8080/items/item/${selectedCategory.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/items/item/${selectedCategory.id}`,
           data
         );
       }
