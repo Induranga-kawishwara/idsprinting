@@ -141,7 +141,7 @@ const Item = () => {
       };
       setItems((prevItems) =>
         prevItems.map((Item) =>
-          Item.itemId === updatedItem.item.itemId ? updatedItemadded : Item
+          Item.Itemid === updatedItem.item.itemId ? updatedItemadded : Item
         )
       );
     });
