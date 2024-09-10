@@ -58,12 +58,13 @@ export const createSupplier = async (req, res) => {
     // Create a response object
     const newSupplier = { id: docRef.id, ...supplier };
 
-    res
+    broadcastCustomerChanges("supplierAdded", newSupplier);
+
+    return res
       .status(201)
       .send({ message: "Supplier created successfully", id: docRef.id });
-    broadcastCustomerChanges("supplierAdded", newSupplier);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -75,9 +76,9 @@ export const getAllSuppliers = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    res.status(200).send(Suppliers);
+    return res.status(200).send(Suppliers);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -90,9 +91,9 @@ export const getSupplierById = async (req, res) => {
     if (!doc.exists) {
       return res.status(404).send({ message: "Supplier not found" });
     }
-    res.status(200).send({ id: doc.id, ...doc.data() });
+    return res.status(200).send({ id: doc.id, ...doc.data() });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -109,13 +110,14 @@ export const updateSupplier = async (req, res) => {
 
     // Update the customer in the database
     await suppliersCollection.doc(id).update(updatedData);
-    res.status(200).send({ message: "Supplier updated successfully" });
 
     // Broadcast the updated customer to all POS systems
     const updatedSupplier = { id, ...updatedData };
     broadcastCustomerChanges("supplierUpdated", updatedSupplier);
+
+    return res.status(200).send({ message: "Supplier updated successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -130,11 +132,11 @@ export const deleteSupplier = async (req, res) => {
     }
 
     await suppliersCollection.doc(id).delete();
-    res.status(200).send({ message: "Supplier deleted successfully" });
 
     // Broadcast the deleted customer ID to all POS systems
     broadcastCustomerChanges("supplierDeleted", { id });
+    return res.status(200).send({ message: "Supplier deleted successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
