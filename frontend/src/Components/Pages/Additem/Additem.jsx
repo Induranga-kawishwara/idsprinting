@@ -36,7 +36,7 @@ const initialItems = [
 const ItemSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item Code is required"),
   itemName: Yup.string().required("Item Name is required"),
-  category: Yup.string().required("Category is required"),
+  category: Yup.string(),
   color: Yup.string().required("Color is required"),
   qty: Yup.string(),
   buyingPrice: Yup.number(),
@@ -514,7 +514,7 @@ const Item = () => {
                           as="select"
                           name="category"
                           className="form-control"
-                          onChange={handleCategoryChange} // Call the handler on change
+                          onChange={handleCategoryChange}
                         >
                           <option
                             className="form-control"
@@ -585,7 +585,11 @@ const Item = () => {
 
                       <div className="mb-3">
                         <label>Wholesale</label>
-                        <Field name="wholesale" className="form-control" />
+                        <Field
+                          name="wholesale"
+                          type="number"
+                          className="form-control"
+                        />
                       </div>
                       <div className="mb-3">
                         <label>Retail Price</label>
