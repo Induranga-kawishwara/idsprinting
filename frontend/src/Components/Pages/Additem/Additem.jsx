@@ -46,6 +46,8 @@ const Item = () => {
       try {
         const ItemData = await axios.get("http://localhost:8080/categories/");
 
+        console.log(ItemData.data);
+
         const categoryDetails = ItemData.data.map((category) => ({
           id: category.id,
           name: category.rawMaterialName,
@@ -80,13 +82,18 @@ const Item = () => {
               addedTime: time,
               addedBy: category.addedBy,
               size: category.size,
+              addedDateTime: item.addedDateTime,
             };
           });
         });
+
         setSizeCategory(sizecategory);
         setCategoryOptions(categoryDetails);
-        setItems(newData);
-        console.log(newData);
+        setItems(
+          newData.sort(
+            (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime)
+          )
+        );
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);

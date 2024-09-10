@@ -75,7 +75,13 @@ export const getAllCategories = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    return res.status(200).send(Categories);
+
+    const sortedCategory = Categories.map((category) => ({
+      ...category,
+      dateAndTime: new Date(category.dateAndTime),
+    })).sort((a, b) => b.dateAndTime - a.dateAndTime);
+
+    return res.status(200).send(sortedCategory);
   } catch (error) {
     return res.status(500).send({ error: error.message });
   }
