@@ -125,7 +125,8 @@ const Item = () => {
     const isSizeMatch = sizeFilter ? item.size === sizeFilter : true;
 
     const isDateMatch =
-      (!dateRange.start || new Date(item.addedDate) >= new Date(dateRange.start)) &&
+      (!dateRange.start ||
+        new Date(item.addedDate) >= new Date(dateRange.start)) &&
       (!dateRange.end || new Date(item.addedDate) <= new Date(dateRange.end));
 
     return isNameMatch && isSizeMatch && isDateMatch;
@@ -209,7 +210,9 @@ const Item = () => {
           />
           <DatePicker
             selected={dateRange.start}
-            onChange={(date) => setDateRange((prev) => ({ ...prev, start: date }))}
+            onChange={(date) =>
+              setDateRange((prev) => ({ ...prev, start: date }))
+            }
             selectsStart
             startDate={dateRange.start}
             endDate={dateRange.end}
@@ -218,7 +221,9 @@ const Item = () => {
           />
           <DatePicker
             selected={dateRange.end}
-            onChange={(date) => setDateRange((prev) => ({ ...prev, end: date }))}
+            onChange={(date) =>
+              setDateRange((prev) => ({ ...prev, end: date }))
+            }
             selectsEnd
             startDate={dateRange.start}
             endDate={dateRange.end}
@@ -255,7 +260,7 @@ const Item = () => {
                 </tr>
               ))}
             </thead>
-            <tbody {...getTableBodyProps()}className="custom-table">
+            <tbody {...getTableBodyProps()} className="custom-table">
               {rows.map((row) => {
                 prepareRow(row);
                 return (
