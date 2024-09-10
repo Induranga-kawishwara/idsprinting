@@ -25,7 +25,7 @@ export const createItem = async (req, res) => {
       return res.status(404).send({ message: "Category not found." });
     }
 
-    const { items = [] } = categorySnapshot.data();
+    const { items = [], ...categoryDetails } = categorySnapshot.data();
 
     const newItem = {
       itemId: uuidv4(),
@@ -41,18 +41,23 @@ export const createItem = async (req, res) => {
     // Update the document with the new item
     await categoryDoc.update({ items: [...items, newItem] });
 
-    broadcastCustomerChanges("customerAdded", newItem);
+    const result = {
+      category: { categoryId, ...categoryDetails },
+      newItem,
+    };
+
+    broadcastCustomerChanges("ItemAdded", result);
 
     return res
       .status(200)
-      .send({ message: "Product added to category successfully." });
+      .send({ message: "Item added to category successfully." });
   } catch (error) {
-    console.error("Error adding product:", error);
+    console.error("Error adding Item:", error);
     return res.status(500).send({ error: error.message });
   }
 };
 
-// Get a product by ID
+// Get a Item by ID
 export const getCategoryAndItemDetails = async (req, res) => {
   const { categoryId, itemId } = req.params;
 
@@ -77,7 +82,7 @@ export const getCategoryAndItemDetails = async (req, res) => {
     }
 
     const result = {
-      category: categoryDetails,
+      category: { categoryId, ...categoryDetails },
       item,
     };
 
@@ -109,7 +114,7 @@ export const updateItemByItemId = async (req, res) => {
       return res.status(404).send({ message: "Category not found." });
     }
 
-    const { items = [] } = categorySnapshot.data();
+    const { items = [], ...categoryDetails } = categorySnapshot.data();
 
     const updatedItems = items.map((item) => {
       if (item.itemId === itemId) {
@@ -127,7 +132,25 @@ export const updateItemByItemId = async (req, res) => {
       return item;
     });
 
-    await updateDoc(categoryRef, { items: updatedItems });
+    await categoryRef.update({ items: updatedItems });
+
+    const result = {
+      category: categoryDetails,
+      item: {
+        itemId,
+        itemCode,
+        itemName,
+        color,
+        wholesale,
+        company,
+        retailPrice,
+        addedDateTime,
+      },
+    };
+
+    broadcastCustomerChanges("ItemUpdated", result);
+
+    // await updateDoc(categoryRef, { items: updatedItems });
 
     res.status(200).send({ message: "Item updated successfully." });
   } catch (error) {
@@ -139,6 +162,7 @@ export const updateItemByItemId = async (req, res) => {
 // Delete a Item's stock detail
 export const deleteItemByItemId = async (req, res) => {
   const { categoryId, itemId } = req.params;
+  console.log(categoryId, itemId);
 
   try {
     const categoryRef = ItemCollection.doc(categoryId);
@@ -153,7 +177,10 @@ export const deleteItemByItemId = async (req, res) => {
 
     const updatedItems = items.filter((item) => item.itemId !== itemId);
 
-    await updateDoc(categoryRef, { items: updatedItems });
+    // await updateDoc(categoryRef, { items: updatedItems });
+    await categoryRef.update({ items: updatedItems });
+
+    broadcastCustomerChanges("ItemDeleted", { itemId });
 
     res.status(200).send({ message: "Item deleted successfully." });
   } catch (error) {

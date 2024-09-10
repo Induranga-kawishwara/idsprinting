@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useTable } from "react-table";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
@@ -8,20 +8,21 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../All.scss";
 import axios from "axios";
+import socket from "../../Utility/SocketConnection.js";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
 const initialItems = [
   {
-    id: 1,
+    Itemid: 1,
     itemCode: "A001",
     itemName: "Item A",
     category: "",
     color: "Red",
     qty: "",
     buyingPrice: "10.00",
-    company: "",
+    company: "ff",
     wholesale: "",
     retailPrice: "15.00",
     addedDate: "2024-08-13",
@@ -35,19 +36,14 @@ const initialItems = [
 const ItemSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item Code is required"),
   itemName: Yup.string().required("Item Name is required"),
-  category: Yup.string(),
+  category: Yup.string().required("Category is required"),
   color: Yup.string().required("Color is required"),
   qty: Yup.string(),
-  buyingPrice: Yup.number().required("Buying Price is required"),
+  buyingPrice: Yup.number(),
   wholesale: Yup.string(),
+  company: Yup.string(),
   retailPrice: Yup.number().required("Retail Price is required"),
 });
-
-const categoryOptions = [
-  { id: 1, name: "category A" },
-  { id: 2, name: "category B" },
-  { id: 3, name: "category C" },
-];
 
 const sizeCategory = [
   { value: "Small", label: "Small" },
@@ -58,25 +54,146 @@ const sizeCategory = [
 const ITEMS_PER_PAGE = 100;
 
 const Item = () => {
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [sizeFilter, setSizeFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const ItemData = await axios.get("http://localhost:8080/categories/");
+
+        const categoryDetails = ItemData.data.map((category) => ({
+          id: category.id,
+          name: category.rawMaterialName,
+        }));
+
+        // Process each object in the dataset
+        const newData = ItemData.data.flatMap((category) => {
+          return category.items.map((item) => {
+            const { date, time } = ConvertToSLT(item.addedDateTime);
+            return {
+              categoryid: category.id,
+              Itemid: item.itemId,
+              itemCode: item.itemCode,
+              itemName: item.itemName,
+              category: category.rawMaterialName, // Using rawMaterialName as category
+              color: item.color,
+              qty: category.qty,
+              buyingPrice: category.buyingPrice,
+              company: category.company,
+              wholesale: item.wholesale,
+              retailPrice: item.retailPrice, // Add retailPrice value here if available
+              addedDate: date,
+              addedTime: time,
+              addedBy: category.addedBy,
+              size: category.size,
+            };
+          });
+        });
+        setCategoryOptions(categoryDetails);
+        setItems(newData);
+        console.log(newData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Listen for real-time Item updates
+    socket.on("ItemAdded", (newItem) => {
+      const { date, time } = ConvertToSLT(newItem.item.DateaddedDateAndTime);
+      const newItemadded = {
+        categoryid: newItem.category.id,
+        Itemid: newItem.item.itemId,
+        itemCode: newItem.item.itemCode,
+        itemName: newItem.item.itemName,
+        category: newItem.category.rawMaterialName, // Using rawMaterialName as category
+        color: newItem.item.color,
+        qty: newItem.category.qty,
+        buyingPrice: newItem.category.buyingPrice,
+        company: newItem.category.company,
+        wholesale: newItem.item.wholesale,
+        retailPrice: newItem.item.retailPrice, // Add retailPrice value here if available
+        addedDate: date,
+        addedTime: time,
+        addedBy: newItem.category.addedBy,
+        size: newItem.category.size,
+      };
+      setItems((prevItems) => [newItemadded, ...prevItems]);
+    });
+
+    socket.on("ItemUpdated", (updatedItem) => {
+      const { date, time } = ConvertToSLT(
+        updatedItem.item.DateaddedDateAndTime
+      );
+      const updatedItemadded = {
+        categoryid: updatedItem.category.id,
+        Itemid: updatedItem.item.itemId,
+        itemCode: updatedItem.item.itemCode,
+        itemName: updatedItem.item.itemName,
+        category: updatedItem.category.rawMaterialName,
+        color: updatedItem.item.color,
+        qty: updatedItem.category.qty,
+        buyingPrice: updatedItem.category.buyingPrice,
+        company: updatedItem.category.company,
+        wholesale: updatedItem.item.wholesale,
+        retailPrice: updatedItem.item.retailPrice,
+        addedDate: date,
+        addedTime: time,
+        addedBy: updatedItem.category.addedBy,
+        size: updatedItem.category.size,
+      };
+      setItems((prevItems) =>
+        prevItems.map((Item) =>
+          Item.itemId === updatedItem.item.itemId ? updatedItemadded : Item
+        )
+      );
+    });
+
+    socket.on("ItemDeleted", ({ id }) => {
+      setItems((prevItems) => prevItems.filter((Item) => Item.ItemId !== id));
+    });
+
+    return () => {
+      socket.off("ItemAdded");
+      socket.off("ItemUpdated");
+      socket.off("ItemDeleted");
+    };
+  }, []);
 
   const handleEdit = (item) => {
     setEditingItem(item);
     setIsModalOpen(true);
   };
 
-  const handleDelete = useCallback(
-    (id) => {
-      setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    },
-    [setItems]
-  );
+  const handleDelete = useCallback(async (categoryId, itemId, name) => {
+    const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
+
+    if (confirmDelete) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:8080/items/item/${categoryId}/${itemId}`
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting details:", error);
+        alert("Failed to delete the details. Please try again.");
+      }
+    }
+  });
 
   const handleSubmit = (values) => {
     const currentDate = new Date();
@@ -146,12 +263,17 @@ const Item = () => {
 
   const columns = useMemo(
     () => [
-      { Header: "ID", accessor: "id" },
+      {
+        Header: "No",
+        accessor: "Itemid",
+        Cell: ({ row }) => row.index + 1,
+      },
       { Header: "Item Code", accessor: "itemCode" },
       { Header: "Item Name", accessor: "itemName" },
       { Header: "Stock Category", accessor: "category" },
       { Header: "Size Category", accessor: "size" },
       { Header: "Color", accessor: "color" },
+      { Header: "company", accessor: "company" },
       { Header: "Buying Price", accessor: "buyingPrice" },
       { Header: "Wholesale", accessor: "wholesale" },
       { Header: "Retail Price", accessor: "retailPrice" },
@@ -175,7 +297,13 @@ const Item = () => {
               variant="contained"
               color="secondary"
               size="small"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() =>
+                handleDelete(
+                  row.original.categoryid,
+                  row.original.Itemid,
+                  row.original.itemName
+                )
+              }
               className="deletebtn"
             >
               Delete
@@ -184,7 +312,7 @@ const Item = () => {
         ),
       },
     ],
-    [handleDelete]
+    []
   );
 
   const tableInstance = useTable({ columns, data: paginatedItems });
@@ -350,6 +478,14 @@ const Item = () => {
                       </div>
 
                       <div className="mb-3">
+                        <label>Color</label>
+                        <Field name="color" className="form-control" />
+                        {errors.color && touched.color ? (
+                          <div className="text-danger">{errors.color}</div>
+                        ) : null}
+                      </div>
+
+                      <div className="mb-3">
                         <label>Stock Category</label>
                         <Field
                           as="select"
@@ -363,11 +499,11 @@ const Item = () => {
                             disabled
                             hidden
                           />
-                          {categoryOptions.map((category) => (
+                          {categoryOptions.map((category, index) => (
                             <option
                               className="form-control"
-                              key={category.id}
-                              value={category.name}
+                              key={index}
+                              value={category.id}
                             >
                               {category.name}
                             </option>
@@ -379,22 +515,26 @@ const Item = () => {
                       </div>
 
                       <div className="mb-3">
-                        <label>Color</label>
-                        <Field name="color" className="form-control" />
-                        {errors.color && touched.color ? (
-                          <div className="text-danger">{errors.color}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
                         <label>Qty</label>
-                        <Field name="qty" className="form-control" />
+                        <Field name="qty" className="form-control" disabled />
                       </div>
+
+                      <div className="mb-3">
+                        <label>Company</label>
+                        <Field
+                          name="company"
+                          className="form-control"
+                          disabled
+                        />
+                      </div>
+
                       <div className="mb-3">
                         <label>Buying Price</label>
                         <Field
                           name="buyingPrice"
                           type="number"
                           className="form-control"
+                          disabled
                         />
                         {errors.buyingPrice && touched.buyingPrice ? (
                           <div className="text-danger">
@@ -403,10 +543,6 @@ const Item = () => {
                         ) : null}
                       </div>
 
-                      <div className="mb-3">
-                        <label>Company</label>
-                        <Field name="company" className="form-control" />
-                      </div>
                       <div className="mb-3">
                         <label>Wholesale</label>
                         <Field name="wholesale" className="form-control" />
