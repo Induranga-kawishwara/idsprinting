@@ -5,6 +5,7 @@ class Categories {
     thickness,
     qty,
     supplier,
+    company,
     buyingPrice,
     addedBy,
     dateAndTime,
@@ -15,6 +16,7 @@ class Categories {
     this.thickness = thickness;
     this.qty = qty;
     this.supplier = supplier;
+    this.company = company;
     this.buyingPrice = buyingPrice;
     this.addedBy = addedBy;
     this.dateAndTime = dateAndTime;
