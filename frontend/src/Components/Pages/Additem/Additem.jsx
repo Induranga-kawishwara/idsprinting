@@ -99,19 +99,19 @@ const Item = () => {
 
     // Listen for real-time Item updates
     socket.on("ItemAdded", (newItem) => {
-      const { date, time } = ConvertToSLT(newItem.item.addedDateTime);
+      const { date, time } = ConvertToSLT(newItem.newItem.addedDateTime);
       const newItemadded = {
         categoryid: newItem.category.id,
-        Itemid: newItem.item.itemId,
-        itemCode: newItem.item.itemCode,
-        itemName: newItem.item.itemName,
+        Itemid: newItem.newItem.itemId,
+        itemCode: newItem.newItem.itemCode,
+        itemName: newItem.newItem.itemName,
         category: newItem.category.rawMaterialName, // Using rawMaterialName as category
-        color: newItem.item.color,
+        color: newItem.newItem.color,
         qty: newItem.category.qty,
         buyingPrice: newItem.category.buyingPrice,
         company: newItem.category.company,
-        wholesale: newItem.item.wholesale,
-        retailPrice: newItem.item.retailPrice, // Add retailPrice value here if available
+        wholesale: newItem.newItem.wholesale,
+        retailPrice: newItem.newItem.retailPrice, // Add retailPrice value here if available
         addedDate: date,
         addedTime: time,
         addedBy: newItem.category.addedBy,
@@ -148,7 +148,7 @@ const Item = () => {
     });
 
     socket.on("ItemDeleted", ({ id }) => {
-      setItems((prevItems) => prevItems.filter((Item) => Item.ItemId !== id));
+      setItems((prevItems) => prevItems.filter((Item) => Item.Itemid !== id));
     });
 
     return () => {
@@ -503,7 +503,7 @@ const Item = () => {
                           <option
                             className="form-control"
                             value={
-                              selectedCategory?.name || editingItem.itemName
+                              selectedCategory?.name || editingItem?.category
                             }
                             label="Select a type of stock"
                             disabled
@@ -529,7 +529,7 @@ const Item = () => {
                         <Field
                           name="qty"
                           className="form-control"
-                          value={selectedCategory?.qty || editingItem.qty}
+                          value={selectedCategory?.qty || editingItem?.qty}
                           disabled
                         />
                       </div>
@@ -538,7 +538,7 @@ const Item = () => {
                         <Field
                           name="size"
                           className="form-control"
-                          value={selectedCategory.size || editingItem.size}
+                          value={selectedCategory?.size || editingItem?.size}
                           disabled
                         />
                       </div>
@@ -549,7 +549,7 @@ const Item = () => {
                           name="company"
                           className="form-control"
                           value={
-                            selectedCategory.company || editingItem.company
+                            selectedCategory?.company || editingItem?.company
                           }
                           disabled
                         />
@@ -563,7 +563,7 @@ const Item = () => {
                           className="form-control"
                           value={
                             selectedCategory?.buyingPrice ||
-                            editingItem.buyingPrice
+                            editingItem?.buyingPrice
                           }
                           disabled
                         />
