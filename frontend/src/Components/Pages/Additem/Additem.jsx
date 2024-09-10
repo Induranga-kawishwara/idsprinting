@@ -35,7 +35,6 @@ const ItemSchema = Yup.object().shape({
   color: Yup.string().required("Color is required"),
   qty: Yup.string(),
   buyingPrice: Yup.number().required("Buying Price is required"),
-  company: Yup.string(),
   wholesale: Yup.string(),
   retailPrice: Yup.number().required("Retail Price is required"),
 });

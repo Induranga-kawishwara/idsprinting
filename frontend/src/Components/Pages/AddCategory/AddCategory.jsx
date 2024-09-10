@@ -18,6 +18,7 @@ const CategorySchema = Yup.object().shape({
   size: Yup.string().required("Size is required"),
   thickness: Yup.string().required("Thickness is required"),
   qty: Yup.number().required("Quantity is required"),
+  company: Yup.string(),
   supplier: Yup.string().required("Supplier is required"),
   buyingPrice: Yup.number().required("Buying Price is required"),
   addedBy: Yup.string().required("Added By is required"),
@@ -261,6 +262,7 @@ const Category = () => {
       { Header: "Thickness (Gsm Or mm)", accessor: "thickness" },
       { Header: "QTY", accessor: "qty" },
       { Header: "Supplier", accessor: "supplier" },
+      { Header: "Company", accessor: "company" },
       { Header: "Buying Price", accessor: "buyingPrice" },
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
@@ -425,6 +427,7 @@ const Category = () => {
                     thickness: editingCategory?.thickness || "",
                     qty: editingCategory?.qty || "",
                     supplier: editingCategory?.supplier || "",
+                    company: editingCategory?.company || "",
                     buyingPrice: editingCategory?.buyingPrice || "",
                     addedBy: editingCategory?.addedBy || "",
                   }}
@@ -490,6 +493,15 @@ const Category = () => {
                           <div className="text-danger">{errors.supplier}</div>
                         ) : null}
                       </div>
+
+                      <div className="mb-3">
+                        <label>Company</label>
+                        <Field name="company" className="form-control" />
+                        {errors.company && touched.company ? (
+                          <div className="text-danger">{errors.company}</div>
+                        ) : null}
+                      </div>
+
                       <div className="mb-3">
                         <label>Buying Price</label>
                         <Field name="buyingPrice" className="form-control" />

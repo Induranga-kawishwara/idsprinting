@@ -12,6 +12,7 @@ export const createCategory = async (req, res) => {
     thickness,
     qty,
     supplier,
+    company,
     buyingPrice,
     addedBy,
     dateAndTime,
@@ -45,6 +46,7 @@ export const createCategory = async (req, res) => {
       thickness,
       qty,
       supplier,
+      company,
       buyingPrice,
       addedBy,
       dateAndTime
