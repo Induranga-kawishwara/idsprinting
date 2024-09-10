@@ -25,16 +25,11 @@ const ItemSchema = Yup.object().shape({
   retailPrice: Yup.number().required("Retail Price is required"),
 });
 
-const sizeCategory = [
-  { value: "Small", label: "Small" },
-  { value: "Medium", label: "Medium" },
-  { value: "Large", label: "Large" },
-];
-
 const ITEMS_PER_PAGE = 100;
 
 const Item = () => {
   const [items, setItems] = useState([]);
+  const [sizeCategory, setSizeCategory] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -42,7 +37,7 @@ const Item = () => {
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [sizeFilter, setSizeFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -58,6 +53,11 @@ const Item = () => {
           size: category.size,
           qty: category.qty,
           company: category.company,
+        }));
+
+        const sizecategory = ItemData.data.map((category) => ({
+          value: category.size,
+          label: category.size,
         }));
 
         // Process each object in the dataset
@@ -83,6 +83,7 @@ const Item = () => {
             };
           });
         });
+        setSizeCategory(sizecategory);
         setCategoryOptions(categoryDetails);
         setItems(newData);
         console.log(newData);
@@ -180,47 +181,40 @@ const Item = () => {
   });
 
   const handleSubmit = async (values) => {
-    console.log(values);
     const currentDate = new Date();
-
     const data = {
       ...values,
       addedDateTime: currentDate.toISOString(),
     };
 
-    if (editingItem) {
-      try {
-        const response = await axios.put(
-          `http://localhost:8080/items/item/${editingItem.categoryid}/${editingItem.Itemid}`,
-          data
-        );
+    try {
+      let response;
+      if (editingItem) {
+        // Construct URL based on whether category changed
+        const url =
+          editingItem.categoryid === selectedCategory.id || !selectedCategory.id
+            ? `http://localhost:8080/items/item/${editingItem.categoryid}/${editingItem.Itemid}`
+            : `http://localhost:8080/items/item/${editingItem.categoryid}/${selectedCategory.id}/${editingItem.Itemid}`;
 
-        alert(response.data.message);
-      } catch (error) {
-        console.error("Error updating Item:", error);
-        alert("Failed to update the Item. Please try again.");
-      }
-    } else {
-      try {
-        const response = await axios.post(
+        response = await axios.put(url, data);
+      } else {
+        response = await axios.post(
           `http://localhost:8080/items/item/${selectedCategory.id}`,
           data
         );
-        alert(response.data.message);
-      } catch (error) {
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.message
-        ) {
-          alert(`Error: ${error.response.data.message}`);
-        } else {
-          // Show a generic error message
-          alert("Failed to add the Category. Please try again.");
-        }
       }
+
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Error processing item:", error);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to process the request. Please try again.";
+      alert(`Error: ${errorMessage}`);
     }
 
+    // Close modal and reset editing state
     setIsModalOpen(false);
     setEditingItem(null);
   };
@@ -504,7 +498,9 @@ const Item = () => {
                         >
                           <option
                             className="form-control"
-                            value={selectedCategory.name}
+                            value={
+                              selectedCategory?.name || editingItem.itemName
+                            }
                             label="Select a type of stock"
                             disabled
                             hidden
@@ -529,7 +525,7 @@ const Item = () => {
                         <Field
                           name="qty"
                           className="form-control"
-                          value={selectedCategory.qty}
+                          value={selectedCategory?.qty || editingItem.qty}
                           disabled
                         />
                       </div>
@@ -538,7 +534,7 @@ const Item = () => {
                         <Field
                           name="size"
                           className="form-control"
-                          value={selectedCategory.size}
+                          value={selectedCategory.size || editingItem.size}
                           disabled
                         />
                       </div>
@@ -548,7 +544,9 @@ const Item = () => {
                         <Field
                           name="company"
                           className="form-control"
-                          value={selectedCategory.company}
+                          value={
+                            selectedCategory.company || editingItem.company
+                          }
                           disabled
                         />
                       </div>
@@ -559,7 +557,10 @@ const Item = () => {
                           name="buyingPrice"
                           type="number"
                           className="form-control"
-                          value={selectedCategory.buyingPrice}
+                          value={
+                            selectedCategory?.buyingPrice ||
+                            editingItem.buyingPrice
+                          }
                           disabled
                         />
                         {errors.buyingPrice && touched.buyingPrice ? (

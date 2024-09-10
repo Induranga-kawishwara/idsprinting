@@ -86,10 +86,10 @@ export const getCategoryAndItemDetails = async (req, res) => {
       item,
     };
 
-    res.status(200).send(result);
+    return res.status(200).send(result);
   } catch (error) {
     console.error("Error retrieving category and item details:", error);
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -152,17 +152,95 @@ export const updateItemByItemId = async (req, res) => {
 
     // await updateDoc(categoryRef, { items: updatedItems });
 
-    res.status(200).send({ message: "Item updated successfully." });
+    return res.status(200).send({ message: "Item updated successfully." });
   } catch (error) {
     console.error("Error updating item:", error);
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
+  }
+};
+
+export const deleteAndUpdate = async (req, res) => {
+  const { prevCategoryId, newCategoryId, itemId } = req.params;
+  const {
+    itemCode,
+    itemName,
+    color,
+    wholesale,
+    company,
+    retailPrice,
+    addedDateTime,
+  } = req.body;
+
+  try {
+    // Get both previous and new category snapshots in parallel
+    const [prevCategorySnapshot, newCategorySnapshot] = await Promise.all([
+      ItemCollection.doc(prevCategoryId).get(),
+      ItemCollection.doc(newCategoryId).get(),
+    ]);
+
+    // Check if new category exists
+    if (!newCategorySnapshot.exists) {
+      return res.status(404).send({ message: "New category not found." });
+    }
+
+    // Check if previous category exists
+    if (!prevCategorySnapshot.exists) {
+      return res.status(404).send({ message: "Previous category not found." });
+    }
+
+    // Extract items from the new category and prepare the new item object
+    const newCategoryData = newCategorySnapshot.data();
+    const { items: newCategoryItems = [], ...categoryDetails } =
+      newCategoryData;
+
+    const newItem = {
+      itemId,
+      itemCode,
+      itemName,
+      color,
+      wholesale,
+      company,
+      retailPrice,
+      addedDateTime,
+    };
+
+    // Update the new category by adding the new item
+    await ItemCollection.doc(newCategoryId).update({
+      items: [...newCategoryItems, newItem],
+    });
+
+    const result = {
+      category: { newCategoryId, ...categoryDetails },
+      newItem,
+    };
+
+    // Extract items from the previous category and filter out the deleted item
+    const { items: prevCategoryItems = [] } = prevCategorySnapshot.data();
+    const updatedPrevItems = prevCategoryItems.filter(
+      (item) => item.itemId !== itemId
+    );
+
+    // Update the previous category by removing the item
+    await ItemCollection.doc(prevCategoryId).update({
+      items: updatedPrevItems,
+    });
+
+    broadcastCustomerChanges("ItemUpdated", result);
+
+    return res.status(200).send({
+      message: "Item moved and updated successfully.",
+      newCategory: { id: newCategoryId, ...newCategoryData },
+      newItem,
+    });
+  } catch (error) {
+    console.error("Error updating and deleting item:", error);
+    return res.status(500).send({ error: error.message });
   }
 };
 
 // Delete a Item's stock detail
 export const deleteItemByItemId = async (req, res) => {
   const { categoryId, itemId } = req.params;
-  console.log(categoryId, itemId);
 
   try {
     const categoryRef = ItemCollection.doc(categoryId);
@@ -182,9 +260,9 @@ export const deleteItemByItemId = async (req, res) => {
 
     broadcastCustomerChanges("ItemDeleted", { itemId });
 
-    res.status(200).send({ message: "Item deleted successfully." });
+    return res.status(200).send({ message: "Item deleted successfully." });
   } catch (error) {
     console.error("Error deleting item:", error);
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
