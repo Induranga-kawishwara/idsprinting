@@ -42,7 +42,7 @@ export const createItem = async (req, res) => {
     await categoryDoc.update({ items: [...items, newItem] });
 
     const result = {
-      category: { categoryId, ...categoryDetails },
+      category: { id: categoryId, ...categoryDetails },
       newItem,
     };
 
@@ -82,7 +82,7 @@ export const getCategoryAndItemDetails = async (req, res) => {
     }
 
     const result = {
-      category: { categoryId, ...categoryDetails },
+      category: { id: categoryId, ...categoryDetails },
       item,
     };
 
@@ -135,7 +135,7 @@ export const updateItemByItemId = async (req, res) => {
     await categoryRef.update({ items: updatedItems });
 
     const result = {
-      category: categoryDetails,
+      category: { id: categoryId, ...categoryDetails },
       item: {
         itemId,
         itemCode,
@@ -210,7 +210,7 @@ export const deleteAndUpdate = async (req, res) => {
     });
 
     const result = {
-      category: { newCategoryId, ...categoryDetails },
+      category: { id: newCategoryId, ...categoryDetails },
       newItem,
     };
 
