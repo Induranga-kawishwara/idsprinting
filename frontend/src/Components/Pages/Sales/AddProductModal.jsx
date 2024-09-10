@@ -11,6 +11,10 @@ const ProductSchema = Yup.object().shape({
   qty: Yup.number()
     .required("Quantity is required")
     .min(1, "Quantity must be at least 1"),
+  discount: Yup.number()
+    .required("Discount is required")
+    .min(0, "Discount must be a positive number")
+    .max(100, "Discount can't exceed 100%"),
 });
 
 const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
@@ -24,7 +28,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
           </div>
           <div className="modal-body">
             <Formik
-              initialValues={{ name: "", price: "", qty: "" }}
+              initialValues={{ name: "", price: "", qty: "", discount: "" }}
               validationSchema={ProductSchema}
               onSubmit={onSubmit}
             >
@@ -53,6 +57,17 @@ const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
                     <Field name="qty" type="number" className="form-control" />
                     {errors.qty && touched.qty ? (
                       <div className="text-danger">{errors.qty}</div>
+                    ) : null}
+                  </div>
+                  <div className="mb-3">
+                    <label>Discount (%)</label>
+                    <Field
+                      name="discount"
+                      type="number"
+                      className="form-control"
+                    />
+                    {errors.discount && touched.discount ? (
+                      <div className="text-danger">{errors.discount}</div>
                     ) : null}
                   </div>
                   <div className="modal-footer">

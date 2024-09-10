@@ -1,360 +1,155 @@
-// SalesHistory.jsx
-import React, { useState } from 'react';
-import { Button, Modal, TextField } from '@mui/material';
-import jsPDF from 'jspdf'; // Import jsPDF for PDF generation
-import './SalesHistory.scss';
+// Get current date and time
+const currentDate = new Date();
+const formattedDate = currentDate.toLocaleDateString();
+const formattedTime = currentDate.toLocaleTimeString();
 
-const SalesHistory = () => {
-  const [salesHistory, setSalesHistory] = useState([
-    // Example data; this should be fetched from a database or global state
-    {
-      date: '2024-08-29',
-      customerName: 'John Doe',
-      contactNumber: '0778178584',
-      total: 1000,
-      paymentDetails: { paymentMethod: 'Cash' },
-      invoiceNumber: 'INV-12345',
-      products: [
-        { name: 'Shirts', qty: 2, price: 200 },
-        { name: 'Pants', qty: 1, price: 300 },
-      ],
-    },
-    // Add more sales records as needed
-  ]);
+// Add header image
+const headerImg = "";
 
-  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedSale, setSelectedSale] = useState(null);
-  const [adminEmail, setAdminEmail] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
-  const [deleteError, setDeleteError] = useState('');
+doc.addImage(headerImg, "PNG", 0, 0, 76.2, 65.53); // Adjust x, y, width, height as needed
 
-  // Function to generate a PDF receipt
-  const generatePDFReceipt = (sale) => {
-    const doc = new jsPDF();
-    const formattedDate = new Date(sale.date).toLocaleDateString();
-    const formattedTime = new Date(sale.date).toLocaleTimeString();
+//doc.setFontSize(18);
+//doc.text("Transaction Receipt", 48.8, 21.2);
+doc.setFontSize(4.5);
+doc.text(`${invoiceNumber}`, 21.2, 53.5);
+doc.text(`${formattedDate}   ${formattedTime}`, 21.2, 55.8);
+//doc.text(`Time: ${formattedTime}`, 14, 42);
+doc.setFontSize(4.5);
+//doc.text("Customer:", 21.2, 48.8);
+if (selectedCustomer) {
+  doc.text(`${selectedCustomer.name} ${selectedCustomer.surname}`, 21.2, 48.8);
+  //doc.text(`Email: ${selectedCustomer.email}`, 14, 62);
+  doc.text(`${selectedCustomer.phone}`, 21.2, 51.1);
+}
 
-    doc.setFontSize(18);
-    doc.text('Transaction Receipt', 14, 22);
-    doc.setFontSize(12);
-    doc.text(`Invoice Number: ${sale.invoiceNumber}`, 14, 30);
-    doc.text(`Date: ${formattedDate}`, 14, 36);
-    doc.text(`Time: ${formattedTime}`, 14, 42);
+//doc.text("Products:", 14, 80);
+doc.setFontSize(5.5);
+transaction.products.forEach((product, index) => {
+  const y = 67 + index * 6; // Adjust y position for each product
 
-    doc.text('Customer:', 14, 50);
-    doc.text(`Name: ${sale.customerName}`, 14, 56);
-    doc.text(`Contact: ${sale.contactNumber}`, 14, 62);
+  // Define x positions for the different parts of the text
+  const productNameX = 4.8; // X position for product name
+  const qtyX = 40; // X position for quantity
+  const priceX = 22.8; // X position for price
+  const totalX = 62.5; // X position for total price (qty * price)
 
-    doc.text('Products:', 14, 74);
-    sale.products.forEach((product, index) => {
-      const y = 80 + index * 6;
-      doc.text(
-        `${product.name} - ${product.qty} x Rs.${product.price.toFixed(2)} = Rs.${(
-          product.qty * product.price
-        ).toFixed(2)}`,
-        14,
-        y
-      );
-    });
+  // Draw each part of the text at different x positions
+  doc.text(product.name, productNameX, y); // Product Name
+  doc.text(`${product.qty}`, qtyX, y); // Quantity
+  doc.text(`Rs.${product.price.toFixed(2)}`, priceX, y); // Unit Price
+  doc.text(`Rs.${(product.qty * product.price).toFixed(2)}`, totalX, y); // Total Price
+  doc.line(4.5, 72 + index * 6, 71.8, 72 + index * 6);
+  doc.text("Products", margin, yPosition);
+  yPosition += 5;
+  transaction.products.forEach((product, index) => {
+    const productTotal = (
+      product.qty *
+      (product.price - product.discount)
+    ).toFixed(2); // Total after applying discount
+    doc.text(
+      `${product.name} | Qty: ${
+        product.qty
+      } | Price: Rs. ${product.price.toFixed(2)} | Discount: Rs. ${
+        product.discount
+      } | Total: Rs. ${productTotal}`,
+      margin,
+      yPosition
+    );
+    yPosition += 10;
+  });
+});
 
-    doc.text(`Total: Rs.${sale.total.toFixed(2)}`, 14, 100);
-    doc.text(`Payment Method: ${sale.paymentDetails.paymentMethod}`, 14, 106);
+doc.text(`Total: Rs.${transaction.total.toFixed(2)}`, 14, 120);
+doc.text(`Discount: Rs.${transaction.discount.toFixed(2)}`, 14, 126);
+doc.text(`Net: Rs.${transaction.net.toFixed(2)}`, 14, 132);
 
-    return doc;
-  };
+doc.text("Payment Details:", 14, 150);
+doc.text(`Method: ${paymentDetails.paymentMethod}`, 14, 156); // Ensure this prints correctly
 
-  // Function to handle opening the receipt modal
-  const handleOpenReceiptModal = (sale) => {
-    setSelectedSale(sale);
-    setIsReceiptModalOpen(true);
-  };
-
-  // Function to handle closing the receipt modal
-  const handleCloseReceiptModal = () => {
-    setIsReceiptModalOpen(false);
-    setSelectedSale(null);
-  };
-
-  // Function to download the receipt
-  const downloadReceipt = () => {
-    if (!selectedSale) return;
-    const doc = generatePDFReceipt(selectedSale);
-    doc.save(`receipt_${selectedSale.invoiceNumber}.pdf`);
-  };
-
-  // Function to print the receipt
-  const printReceipt = () => {
-    if (!selectedSale) return;
-    const doc = generatePDFReceipt(selectedSale);
-    const pdfBlob = doc.output('blob');
-    const pdfURL = URL.createObjectURL(pdfBlob);
-
-    const printWindow = window.open(pdfURL, '_blank');
-    printWindow.onload = () => {
-      printWindow.print();
-    };
-  };
-
-  // Function to share the receipt via WhatsApp and email
-  const shareReceipt = () => {
-    if (!selectedSale) return;
-  
-    const formattedDate = new Date(selectedSale.date).toLocaleDateString();
-    const formattedTime = new Date(selectedSale.date).toLocaleTimeString();
-  
-    // Construct the text message for sharing
-    const textMessage = `IDS Printing House\nTransaction Receipt\nInvoice Number: ${selectedSale.invoiceNumber}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${selectedSale.customerName}\nContact: ${selectedSale.contactNumber}\n\nProducts:\n${selectedSale.products
-      .map(
-        (product) =>
-          `${product.name} - ${product.qty} x Rs.${product.price.toFixed(2)} = Rs.${(
-            product.qty * product.price
-          ).toFixed(2)}`
-      )
-      .join('\n')}\n\nTotal: Rs.${selectedSale.total.toFixed(2)}\nPayment Method: ${selectedSale.paymentDetails.paymentMethod}`;
-  
-    // Construct the WhatsApp and Email URLs with the text message
-    const whatsappURL = `https://wa.me/+94${selectedSale.contactNumber}?text=${encodeURIComponent(textMessage)}`;
-    const emailSubject = `Receipt for ${selectedSale.customerName}`;
-    const emailBody = textMessage;
-    const mailtoURL = `mailto:?subject=${encodeURIComponent(
-      emailSubject
-    )}&body=${encodeURIComponent(emailBody)}`;
-  
-    // Open the share options
-    window.open(whatsappURL, '_blank'); // Open WhatsApp
-    window.open(mailtoURL, '_blank'); // Open Email
-  };
-  
-  
-  // Function to prompt the user for receipt options after generating
-  const promptReceiptOptions = () => {
-    if (!selectedSale) return;
-    const choice = window.confirm("Payment completed. Would you like to download the PDF, print the receipt, or share it?");
-
-    if (choice) {
-      setIsReceiptModalOpen(true); // Open the receipt modal
-    }
-  };
-
-  // Function to handle opening the delete modal
-  const handleOpenDeleteModal = (sale) => {
-    setSelectedSale(sale);
-    setIsDeleteModalOpen(true);
-  };
-
-  // Function to handle closing the delete modal
-  const handleCloseDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setAdminEmail('');
-    setAdminPassword('');
-    setDeleteError('');
-  };
-
-  // Function to handle delete sale after admin authentication
-  const handleDeleteSale = () => {
-    // Example admin credentials; replace with actual authentication logic
-    const adminCredentials = {
-      email: 'admin@example.com',
-      password: 'password123',
-    };
-
-    if (adminEmail === adminCredentials.email && adminPassword === adminCredentials.password) {
-      setSalesHistory((prevSales) =>
-        prevSales.filter((sale) => sale.invoiceNumber !== selectedSale.invoiceNumber)
-      );
-      handleCloseDeleteModal();
-    } else {
-      setDeleteError('Invalid email or password.');
-    }
-  };
-
-  return (
-    <div className="sales-history-page">
-      <br /><br /><br /><br /><br />
-      <h2>Sales History</h2>
-      <table className="table table-striped">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer</th>
-            <th>Contact Number</th>
-            <th>Total Amount (Rs.)</th>
-            <th>Payment Method</th>
-            <th>Invoice Number</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {salesHistory.map((sale, index) => (
-            <tr key={index}>
-              <td>{new Date(sale.date).toLocaleDateString()}</td>
-              <td>{sale.customerName}</td>
-              <td>{sale.contactNumber}</td>
-              <td>{sale.total.toFixed(2)}</td>
-              <td>{sale.paymentDetails.paymentMethod}</td>
-              <td>{sale.invoiceNumber}</td>
-              <td>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleOpenReceiptModal(sale)}
-                >
-                  View Receipt
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  color="secondary"
-                  onClick={() => handleOpenDeleteModal(sale)}
-                  style={{ marginLeft: '8px' }}
-                >
-                  Delete
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Button variant="contained" onClick={() => window.history.back()}>
-        Back to Sales
-      </Button>
-
-      {/* Receipt Modal */}
-      <Modal
-        open={isReceiptModalOpen}
-        onClose={handleCloseReceiptModal}
-        aria-labelledby="receipt-modal-title"
-        aria-describedby="receipt-modal-description"
-      >
-        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-          <div className="modal-content custom-modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="receipt-modal-title">
-                Transaction Receipt
-              </h5>
-              <Button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={handleCloseReceiptModal}
-              />
-            </div>
-            {selectedSale && (
-              <div className="modal-body" id="receipt-modal-description">
-                <p><strong>Invoice Number:</strong> {selectedSale.invoiceNumber}</p>
-                <p><strong>Date:</strong> {new Date(selectedSale.date).toLocaleDateString()}</p>
-                <p><strong>Time:</strong> {new Date(selectedSale.date).toLocaleTimeString()}</p>
-                <p><strong>Customer:</strong> {selectedSale.customerName}</p>
-                <p><strong>Contact:</strong> {selectedSale.contactNumber}</p>
-                <p><strong>Products:</strong></p>
-                <ul>
-                  {selectedSale.products.map((product, index) => (
-                    <li key={index}>
-                      {product.name} - {product.qty} x Rs.{product.price.toFixed(2)} = Rs.{(product.qty * product.price).toFixed(2)}
-                    </li>
-                  ))}
-                </ul>
-                <p><strong>Total:</strong> Rs.{selectedSale.total.toFixed(2)}</p>
-                <p><strong>Payment Method:</strong> {selectedSale.paymentDetails.paymentMethod}</p>
-                <div className="d-flex justify-content-end">
-                  <Button
-                    variant="contained"
-                    onClick={downloadReceipt}
-                    className="download-btn me-2"
-                  >
-                    Download PDF
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={printReceipt}
-                    className="print-btn me-2"
-                  >
-                    Print Receipt
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={shareReceipt}
-                    className="share-btn me-2"
-                  >
-                    Share
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={handleCloseReceiptModal}
-                    className="close-btn"
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        open={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        aria-labelledby="delete-modal-title"
-        aria-describedby="delete-modal-description"
-      >
-        <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-          <div className="modal-content custom-modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="delete-modal-title">
-                Admin Authentication Required
-              </h5>
-              <Button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={handleCloseDeleteModal}
-              />
-            </div>
-            <div className="modal-body" id="delete-modal-description">
-              <TextField
-                label="Admin Email"
-                type="email"
-                fullWidth
-                value={adminEmail}
-                onChange={(e) => setAdminEmail(e.target.value)}
-                margin="normal"
-              />
-              <TextField
-                label="Admin Password"
-                type="password"
-                fullWidth
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                margin="normal"
-              />
-              {deleteError && (
-                <p className="text-danger">{deleteError}</p>
-              )}
-              <div className="d-flex justify-content-end mt-3">
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={handleDeleteSale}
-                >
-                  Delete Sale
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleCloseDeleteModal}
-                  className="ms-2"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
-    </div>
+if (paymentDetails.paymentMethod === "Cash") {
+  doc.text(`Cash Given: Rs.${paymentDetails.cashGiven}`, 14, 162);
+  const changeDue = paymentDetails.cashGiven - transaction.net;
+  doc.text(`Change Due: Rs.${changeDue.toFixed(2)}`, 14, 168);
+} else if (paymentDetails.paymentMethod === "Card") {
+  doc.text(`Card Details: ${paymentDetails.cardDetails}`, 14, 162);
+} else if (paymentDetails.paymentMethod === "Bank Transfer") {
+  doc.text(
+    `Bank Transfer Number: ${paymentDetails.bankTransferNumber}`,
+    14,
+    162
   );
-};
+} else if (paymentDetails.paymentMethod === "Cheque") {
+  doc.text(`Cheque Number: ${paymentDetails.chequeNumber}`, 14, 162);
+} else if (paymentDetails.paymentMethod === "Credit") {
+  doc.text(`Credit Amount Paid: Rs.${paymentDetails.creditAmount}`, 14, 162);
 
-export default SalesHistory;
+  // Show the credit balance if there's any remaining balance
+  if (paymentDetails.creditBalance > 0) {
+    doc.text(`Remaining Balance: Rs.${paymentDetails.creditBalance}`, 14, 168);
+  } else {
+    doc.text(`Full payment received. No outstanding balance.`, 14, 168);
+  }
+}
+
+return doc;
+
+const generatePDF = (paymentDetails) => {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: [76.2, 297], // Custom size
+  });
+
+  let yPosition = 20; // Start y-position for content
+
+  // Add header and customer details
+  doc.setFontSize(10);
+  doc.text(`Invoice Number: ${invoiceNumber}`, 10, yPosition);
+  yPosition += 10;
+
+  if (selectedCustomer) {
+    doc.text(
+      `Customer: ${selectedCustomer.name} ${selectedCustomer.surname}`,
+      10,
+      yPosition
+    );
+    yPosition += 10;
+  }
+
+  // Add Products section
+  doc.text("Products:", 10, yPosition);
+  yPosition += 5;
+
+  transaction.products.forEach((product) => {
+    const productTotal = (
+      product.qty *
+      (product.price - product.discount)
+    ).toFixed(2); // Reflect discount in total
+    doc.text(
+      `${product.name} | Qty: ${
+        product.qty
+      } | Price: Rs. ${product.price.toFixed(
+        2
+      )} | Discount: Rs. ${product.discount.toFixed(
+        2
+      )} | Total: Rs. ${productTotal}`,
+      10,
+      yPosition
+    );
+    yPosition += 10;
+  });
+
+  // Add final total, discount, and net amount
+  doc.text(`Subtotal: Rs. ${transaction.total.toFixed(2)}`, 10, yPosition);
+  yPosition += 5;
+  doc.text(`Discount: Rs. ${transaction.discount.toFixed(2)}`, 10, yPosition);
+  yPosition += 5;
+  doc.text(`Net Amount: Rs. ${transaction.net.toFixed(2)}`, 10, yPosition);
+
+  // Add Payment Details
+  if (paymentDetails.paymentMethod === "Cash") {
+    doc.text(`Cash Given: Rs. ${paymentDetails.cashGiven}`, 10, yPosition + 10);
+  }
+
+  return doc;
+};
