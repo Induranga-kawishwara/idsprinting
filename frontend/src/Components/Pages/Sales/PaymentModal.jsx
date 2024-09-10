@@ -30,6 +30,17 @@ const PaymentSchema = Yup.object().shape({
     then: (schema) => schema.required("Credit amount is required").min(0),
     otherwise: (schema) => schema.notRequired(),
   }),
+  paymentMethod: Yup.string().required("Payment method is required"),
+  cashGiven: Yup.number().when("paymentMethod", {
+    is: (value) => value === "Cash" || value === "Card and Cash",
+    then: (schema) => schema.required("Cash given is required").min(0),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  cardDetails: Yup.string().when("paymentMethod", {
+    is: (value) => value === "Card" || value === "Card and Cash",
+    then: (schema) => schema.required("Card details or amount are required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
 });
 
 const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
@@ -74,12 +85,15 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
                       <option value="Bank Transfer">Bank Transfer</option>
                       <option value="Cheque">Cheque</option>
                       <option value="Credit">Credit</option>
+                      <option value="Card and Cash">Card and Cash</option>
                     </Field>
                     {errors.paymentMethod && touched.paymentMethod ? (
                       <div className="text-danger">{errors.paymentMethod}</div>
                     ) : null}
                   </div>
-                  {values.paymentMethod === "Cash" && (
+
+                  {values.paymentMethod === "Cash" ||
+                  values.paymentMethod === "Card and Cash" ? (
                     <div className="mb-3">
                       <label>Cash Given</label>
                       <Field
@@ -91,16 +105,23 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
                         <div className="text-danger">{errors.cashGiven}</div>
                       ) : null}
                     </div>
-                  )}
-                  {values.paymentMethod === "Card" && (
+                  ) : null}
+
+                  {values.paymentMethod === "Card" ||
+                  values.paymentMethod === "Card and Cash" ? (
                     <div className="mb-3">
-                      <label>Card Holder's Name or Last 4 Digits</label>
-                      <Field name="cardDetails" className="form-control" />
+                      <label>Card Details</label>
+                      <Field
+                        name="cardDetails"
+                        className="form-control"
+                        placeholder="Card Holder's Name or Last 4 Digits"
+                      />
                       {errors.cardDetails && touched.cardDetails ? (
                         <div className="text-danger">{errors.cardDetails}</div>
                       ) : null}
                     </div>
-                  )}
+                  ) : null}
+
                   {values.paymentMethod === "Bank Transfer" && (
                     <div className="mb-3">
                       <label>Bank Transfer Number</label>
