@@ -60,6 +60,7 @@ const Item = () => {
         }));
 
         const sizecategory = ItemData.data.map((category) => ({
+          id: category.id,
           value: category.size,
           label: category.size,
         }));
@@ -160,10 +161,73 @@ const Item = () => {
       setItems((prevItems) => prevItems.filter((Item) => Item.Itemid !== id));
     });
 
+    // Listen for real-time Category updates
+    socket.on("CategoryAdded", (newCategory) => {
+      const newDetails = {
+        id: newCategory.id,
+        name: newCategory.rawMaterialName,
+        buyingPrice: newCategory.buyingPrice,
+        size: newCategory.size,
+        qty: newCategory.qty,
+        company: newCategory.company,
+      };
+
+      const newSizecategory = {
+        id: newCategory.id,
+        value: newCategory.size,
+        label: newCategory.size,
+      };
+      setCategoryOptions((prevCategory) => [newDetails, ...prevCategory]);
+      setSizeCategory((prevCategory) => [newSizecategory, ...prevCategory]);
+    });
+
+    socket.on("CategoryUpdated", (updatedCategory) => {
+      const newUpdatedCategory = {
+        id: updatedCategory.id,
+        name: updatedCategory.rawMaterialName,
+        buyingPrice: updatedCategory.buyingPrice,
+        size: updatedCategory.size,
+        qty: updatedCategory.qty,
+        company: updatedCategory.company,
+      };
+
+      const newUpdatedSizecategory = {
+        id: updatedCategory.id,
+        value: updatedCategory.size,
+        label: updatedCategory.size,
+      };
+
+      setCategoryOptions((prevCategory) =>
+        prevCategory.map((Category) =>
+          Category.id === updatedCategory.id ? newUpdatedCategory : Category
+        )
+      );
+
+      setSizeCategory((prevCategory) =>
+        prevCategory.map((Category) =>
+          Category.id === updatedCategory.id ? newUpdatedSizecategory : Category
+        )
+      );
+    });
+
+    socket.on("CategoryDeleted", ({ id }) => {
+      setCategoryOptions((prevCategory) =>
+        prevCategory.filter((Category) => Category.id !== id)
+      );
+
+      setSizeCategory((prevCategory) =>
+        prevCategory.filter((Category) => Category.id !== id)
+      );
+    });
+
     return () => {
       socket.off("ItemAdded");
       socket.off("ItemUpdated");
       socket.off("ItemDeleted");
+
+      socket.off("CategoryAdded");
+      socket.off("CategoryUpdated");
+      socket.off("CategoryDeleted");
     };
   }, []);
 
