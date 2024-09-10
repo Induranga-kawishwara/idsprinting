@@ -42,6 +42,42 @@ const Item = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const mapCategoryData = (category) => ({
+      id: category.id,
+      name: category.rawMaterialName,
+      buyingPrice: category.buyingPrice,
+      size: category.size,
+      qty: category.qty,
+      company: category.company,
+    });
+
+    const mapSizeCategoryData = (category) => ({
+      id: category.id,
+      value: category.size,
+      label: category.size,
+    });
+
+    const mapItemData = (category, item) => {
+      const { date, time } = ConvertToSLT(item.addedDateTime);
+      return {
+        categoryid: category.id,
+        Itemid: item.itemId,
+        itemCode: item.itemCode,
+        itemName: item.itemName,
+        category: category.rawMaterialName,
+        color: item.color,
+        qty: category.qty,
+        buyingPrice: category.buyingPrice,
+        company: category.company,
+        wholesale: item.wholesale,
+        retailPrice: item.retailPrice,
+        addedDate: date,
+        addedTime: time,
+        addedBy: category.addedBy,
+        size: category.size,
+        addedDateTime: item.addedDateTime,
+      };
+    };
     const fetchData = async () => {
       try {
         const ItemData = await axios.get(
@@ -50,44 +86,17 @@ const Item = () => {
 
         console.log(ItemData.data);
 
-        const categoryDetails = ItemData.data.map((category) => ({
-          id: category.id,
-          name: category.rawMaterialName,
-          buyingPrice: category.buyingPrice,
-          size: category.size,
-          qty: category.qty,
-          company: category.company,
-        }));
+        const categoryDetails = ItemData.data.map((category) =>
+          mapCategoryData(category)
+        );
 
-        const sizecategory = ItemData.data.map((category) => ({
-          id: category.id,
-          value: category.size,
-          label: category.size,
-        }));
+        const sizecategory = ItemData.data.map((category) =>
+          mapSizeCategoryData(category)
+        );
 
         // Process each object in the dataset
         const newData = ItemData.data.flatMap((category) => {
-          return category.items.map((item) => {
-            const { date, time } = ConvertToSLT(item.addedDateTime);
-            return {
-              categoryid: category.id,
-              Itemid: item.itemId,
-              itemCode: item.itemCode,
-              itemName: item.itemName,
-              category: category.rawMaterialName, // Using rawMaterialName as category
-              color: item.color,
-              qty: category.qty,
-              buyingPrice: category.buyingPrice,
-              company: category.company,
-              wholesale: item.wholesale,
-              retailPrice: item.retailPrice, // Add retailPrice value here if available
-              addedDate: date,
-              addedTime: time,
-              addedBy: category.addedBy,
-              size: category.size,
-              addedDateTime: item.addedDateTime,
-            };
-          });
+          return category.items.map((item) => mapItemData(category, item));
         });
 
         setSizeCategory(sizecategory);
@@ -109,103 +118,55 @@ const Item = () => {
 
     // Listen for real-time Item updates
     socket.on("ItemAdded", (newItem) => {
-      const { date, time } = ConvertToSLT(newItem.newItem.addedDateTime);
-      const newItemadded = {
-        categoryid: newItem.category.id,
-        Itemid: newItem.newItem.itemId,
-        itemCode: newItem.newItem.itemCode,
-        itemName: newItem.newItem.itemName,
-        category: newItem.category.rawMaterialName, // Using rawMaterialName as category
-        color: newItem.newItem.color,
-        qty: newItem.category.qty,
-        buyingPrice: newItem.category.buyingPrice,
-        company: newItem.category.company,
-        wholesale: newItem.newItem.wholesale,
-        retailPrice: newItem.newItem.retailPrice, // Add retailPrice value here if available
-        addedDate: date,
-        addedTime: time,
-        addedBy: newItem.category.addedBy,
-        size: newItem.category.size,
-      };
-      setItems((prevItems) => [newItemadded, ...prevItems]);
+      setItems((prevItems) => [
+        mapItemData(newItem.category, newItem.newItem),
+        ...prevItems,
+      ]);
     });
 
     socket.on("ItemUpdated", (updatedItem) => {
-      console.log(updatedItem);
-      const { date, time } = ConvertToSLT(updatedItem.item.addedDateTime);
-      const updatedItemadded = {
-        categoryid: updatedItem.category.id,
-        Itemid: updatedItem.item.itemId,
-        itemCode: updatedItem.item.itemCode,
-        itemName: updatedItem.item.itemName,
-        category: updatedItem.category.rawMaterialName,
-        color: updatedItem.item.color,
-        qty: updatedItem.category.qty,
-        buyingPrice: updatedItem.category.buyingPrice,
-        company: updatedItem.category.company,
-        wholesale: updatedItem.item.wholesale,
-        retailPrice: updatedItem.item.retailPrice,
-        addedDate: date,
-        addedTime: time,
-        addedBy: updatedItem.category.addedBy,
-        size: updatedItem.category.size,
-      };
       setItems((prevItems) =>
         prevItems.map((Item) =>
-          Item.Itemid === updatedItem.item.itemId ? updatedItemadded : Item
+          Item.Itemid === updatedItem.item.itemId
+            ? mapItemData(updatedItem.category, updatedItem.item)
+            : Item
         )
       );
     });
 
-    socket.on("ItemDeleted", ({ id }) => {
-      setItems((prevItems) => prevItems.filter((Item) => Item.Itemid !== id));
+    socket.on("ItemDeleted", ({ itemId }) => {
+      console.log(itemId);
+      setItems((prevItems) =>
+        prevItems.filter((Item) => Item.Itemid !== itemId)
+      );
     });
 
     // Listen for real-time Category updates
     socket.on("CategoryAdded", (newCategory) => {
-      const newDetails = {
-        id: newCategory.id,
-        name: newCategory.rawMaterialName,
-        buyingPrice: newCategory.buyingPrice,
-        size: newCategory.size,
-        qty: newCategory.qty,
-        company: newCategory.company,
-      };
-
-      const newSizecategory = {
-        id: newCategory.id,
-        value: newCategory.size,
-        label: newCategory.size,
-      };
-      setCategoryOptions((prevCategory) => [newDetails, ...prevCategory]);
-      setSizeCategory((prevCategory) => [newSizecategory, ...prevCategory]);
+      setCategoryOptions((prevCategory) => [
+        mapCategoryData(newCategory),
+        ...prevCategory,
+      ]);
+      setSizeCategory((prevCategory) => [
+        mapSizeCategoryData(newCategory),
+        ...prevCategory,
+      ]);
     });
 
     socket.on("CategoryUpdated", (updatedCategory) => {
-      const newUpdatedCategory = {
-        id: updatedCategory.id,
-        name: updatedCategory.rawMaterialName,
-        buyingPrice: updatedCategory.buyingPrice,
-        size: updatedCategory.size,
-        qty: updatedCategory.qty,
-        company: updatedCategory.company,
-      };
-
-      const newUpdatedSizecategory = {
-        id: updatedCategory.id,
-        value: updatedCategory.size,
-        label: updatedCategory.size,
-      };
-
       setCategoryOptions((prevCategory) =>
         prevCategory.map((Category) =>
-          Category.id === updatedCategory.id ? newUpdatedCategory : Category
+          Category.id === updatedCategory.id
+            ? mapCategoryData(updatedCategory)
+            : Category
         )
       );
 
       setSizeCategory((prevCategory) =>
         prevCategory.map((Category) =>
-          Category.id === updatedCategory.id ? newUpdatedSizecategory : Category
+          Category.id === updatedCategory.id
+            ? mapSizeCategoryData(updatedCategory)
+            : Category
         )
       );
     });
@@ -238,6 +199,7 @@ const Item = () => {
 
   const handleDelete = useCallback(async (categoryId, itemId, name) => {
     const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
+    console.log(categoryId);
 
     if (confirmDelete) {
       try {
