@@ -22,13 +22,13 @@ export const createCashup = async (req, res) => {
 
     const newCashup = { id: docRef.id, ...cashup };
 
-    res
+    broadcastCustomerChanges("CashupAdded", newCashup);
+
+    return res
       .status(201)
       .send({ message: "Cashup created successfully", id: docRef.id });
-
-    broadcastCustomerChanges("CashupAdded", newCashup);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -40,9 +40,9 @@ export const getAllCashups = async (req, res) => {
       id: doc.id,
       ...doc.data(),
     }));
-    res.status(200).send(Cashups);
+    return res.status(200).send(Cashups);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -55,9 +55,9 @@ export const getCashupById = async (req, res) => {
     if (!doc.exists) {
       return res.status(404).send({ message: "Cashup not found" });
     }
-    res.status(200).send({ id: doc.id, ...doc.data() });
+    return res.status(200).send({ id: doc.id, ...doc.data() });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -77,11 +77,11 @@ export const updateCashup = async (req, res) => {
     // Broadcast the updated customer to all POS systems
     const updatedCashup = { id, ...updatedData };
 
-    res.status(200).send({ message: "Cashup updated successfully" });
-
     broadcastCustomerChanges("CashupUpdated", updatedCashup);
+
+    return res.status(200).send({ message: "Cashup updated successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -96,10 +96,10 @@ export const deleteCashup = async (req, res) => {
     }
 
     await CashupsCollection.doc(id).delete();
-    res.status(200).send({ message: "Cashup deleted successfully" });
-
     broadcastCustomerChanges("CashupDeleted", { id });
+
+    return res.status(200).send({ message: "Cashup deleted successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };

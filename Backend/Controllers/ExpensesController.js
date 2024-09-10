@@ -40,13 +40,13 @@ export const createExpenses = async (req, res) => {
     const docRef = await ExpensessCollection.add({ ...expenses });
     const newExpenses = { id: docRef.id, ...expenses };
 
-    res
+    broadcastCustomerChanges("expensesAdded", newExpenses);
+
+    return res
       .status(201)
       .send({ message: "Expenses created successfully", id: docRef.id });
-
-    broadcastCustomerChanges("expensesAdded", newExpenses);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -65,9 +65,9 @@ export const getAllExpensess = async (req, res) => {
         dateAndTime: new Date(expense.dateAndTime),
       }))
       .sort((a, b) => b.dateAndTime - a.dateAndTime);
-    res.status(200).send(sortedExpenses);
+    return res.status(200).send(sortedExpenses);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -80,9 +80,9 @@ export const getExpensesById = async (req, res) => {
     if (!doc.exists) {
       return res.status(404).send({ message: "Expenses not found" });
     }
-    res.status(200).send({ id: doc.id, ...doc.data() });
+    return res.status(200).send({ id: doc.id, ...doc.data() });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -99,12 +99,13 @@ export const updateExpenses = async (req, res) => {
     }
 
     await ExpensessCollection.doc(id).update(updatedData);
-    res.status(200).send({ message: "Expenses updated successfully" });
 
     const updatedExpensess = { id, ...updatedData };
     broadcastCustomerChanges("expensessUpdated", updatedExpensess);
+
+    return res.status(200).send({ message: "Expenses updated successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
 
@@ -120,10 +121,11 @@ export const deleteExpenses = async (req, res) => {
     }
 
     await ExpensessCollection.doc(id).delete();
-    res.status(200).send({ message: "Expenses deleted successfully" });
 
     broadcastCustomerChanges("expensesDeleted", { id });
+
+    return res.status(200).send({ message: "Expenses deleted successfully" });
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 };
