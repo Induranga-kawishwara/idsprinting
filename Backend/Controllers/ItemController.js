@@ -82,7 +82,7 @@ export const getCategoryAndItemDetails = async (req, res) => {
     }
 
     const result = {
-      category: { categoryId, ...categoryDetails },
+      category: { id: categoryId, ...categoryDetails },
       item,
     };
 
@@ -135,7 +135,7 @@ export const updateItemByItemId = async (req, res) => {
     await categoryRef.update({ items: updatedItems });
 
     const result = {
-      category: categoryDetails,
+      category: { id: categoryId, ...categoryDetails },
       item: {
         itemId,
         itemCode,
@@ -210,7 +210,7 @@ export const deleteAndUpdate = async (req, res) => {
     });
 
     const result = {
-      category: { newCategoryId, ...categoryDetails },
+      category: { id: newCategoryId, ...categoryDetails },
       newItem,
     };
 
@@ -257,7 +257,6 @@ export const deleteItemByItemId = async (req, res) => {
 
     // await updateDoc(categoryRef, { items: updatedItems });
     await categoryRef.update({ items: updatedItems });
-    console.log(itemId);
 
     broadcastCustomerChanges("ItemDeleted", { itemId });
 
