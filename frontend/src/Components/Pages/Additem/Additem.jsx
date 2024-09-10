@@ -62,6 +62,7 @@ const Item = () => {
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [sizeFilter, setSizeFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -73,6 +74,10 @@ const Item = () => {
         const categoryDetails = ItemData.data.map((category) => ({
           id: category.id,
           name: category.rawMaterialName,
+          buyingPrice: category.buyingPrice,
+          size: category.size,
+          qty: category.qty,
+          company: category.company,
         }));
 
         // Process each object in the dataset
@@ -195,37 +200,48 @@ const Item = () => {
     }
   });
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
+    console.log(values);
     const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD
-    const formattedTime = currentDate.toTimeString().split(" ")[0]; // HH:MM:SS
+
+    const data = {
+      ...values,
+      addedDateTime: currentDate.toISOString(),
+    };
 
     if (editingItem) {
-      setItems(
-        items.map((item) =>
-          item.id === editingItem.id
-            ? {
-                ...values,
-                id: editingItem.id,
-                addedDate: item.addedDate,
-                addedTime: item.addedTime,
-                addedBy: item.addedBy,
-              }
-            : item
-        )
-      );
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/items/item/${editingItem.categoryid}/${editingItem.Itemid}`,
+          data
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error updating Item:", error);
+        alert("Failed to update the Item. Please try again.");
+      }
     } else {
-      setItems([
-        ...items,
-        {
-          ...values,
-          id: items.length + 1,
-          addedDate: formattedDate,
-          addedTime: formattedTime,
-          addedBy: "John Doe", // Replace with actual user info
-        },
-      ]);
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/items/item",
+          data
+        );
+        alert(response.data.message);
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the Category. Please try again.");
+        }
+      }
     }
+
     setIsModalOpen(false);
     setEditingItem(null);
   };
@@ -314,6 +330,13 @@ const Item = () => {
     ],
     []
   );
+
+  const handleCategoryChange = (event) => {
+    const selectedId = event.target.value;
+    const category = categoryOptions.find((cat) => cat.id === selectedId);
+
+    setSelectedCategory(category);
+  };
 
   const tableInstance = useTable({ columns, data: paginatedItems });
 
@@ -491,10 +514,11 @@ const Item = () => {
                           as="select"
                           name="category"
                           className="form-control"
+                          onChange={handleCategoryChange} // Call the handler on change
                         >
                           <option
                             className="form-control"
-                            value=""
+                            value={selectedCategory.name}
                             label="Select a type of stock"
                             disabled
                             hidden
@@ -516,7 +540,21 @@ const Item = () => {
 
                       <div className="mb-3">
                         <label>Qty</label>
-                        <Field name="qty" className="form-control" disabled />
+                        <Field
+                          name="qty"
+                          className="form-control"
+                          value={selectedCategory.qty}
+                          disabled
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label>Size</label>
+                        <Field
+                          name="size"
+                          className="form-control"
+                          value={selectedCategory.size}
+                          disabled
+                        />
                       </div>
 
                       <div className="mb-3">
@@ -524,6 +562,7 @@ const Item = () => {
                         <Field
                           name="company"
                           className="form-control"
+                          value={selectedCategory.company}
                           disabled
                         />
                       </div>
@@ -534,6 +573,7 @@ const Item = () => {
                           name="buyingPrice"
                           type="number"
                           className="form-control"
+                          value={selectedCategory.buyingPrice}
                           disabled
                         />
                         {errors.buyingPrice && touched.buyingPrice ? (
