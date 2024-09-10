@@ -13,26 +13,6 @@ import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
-const initialItems = [
-  {
-    Itemid: 1,
-    itemCode: "A001",
-    itemName: "Item A",
-    category: "",
-    color: "Red",
-    qty: "",
-    buyingPrice: "10.00",
-    company: "ff",
-    wholesale: "",
-    retailPrice: "15.00",
-    addedDate: "2024-08-13",
-    addedTime: "14:30",
-    addedBy: "John Doe",
-    size: "Medium",
-  },
-  // Add more items if needed
-];
-
 const ItemSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item Code is required"),
   itemName: Yup.string().required("Item Name is required"),
@@ -118,7 +98,7 @@ const Item = () => {
 
     // Listen for real-time Item updates
     socket.on("ItemAdded", (newItem) => {
-      const { date, time } = ConvertToSLT(newItem.item.DateaddedDateAndTime);
+      const { date, time } = ConvertToSLT(newItem.item.addedDateTime);
       const newItemadded = {
         categoryid: newItem.category.id,
         Itemid: newItem.item.itemId,
@@ -140,9 +120,8 @@ const Item = () => {
     });
 
     socket.on("ItemUpdated", (updatedItem) => {
-      const { date, time } = ConvertToSLT(
-        updatedItem.item.DateaddedDateAndTime
-      );
+      console.log(updatedItem);
+      const { date, time } = ConvertToSLT(updatedItem.item.addedDateTime);
       const updatedItemadded = {
         categoryid: updatedItem.category.id,
         Itemid: updatedItem.item.itemId,
@@ -224,7 +203,7 @@ const Item = () => {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:8080/items/item",
+          `http://localhost:8080/items/item/${selectedCategory.id}`,
           data
         );
         alert(response.data.message);
@@ -470,11 +449,17 @@ const Item = () => {
                   initialValues={{
                     itemCode: editingItem?.itemCode || "",
                     itemName: editingItem?.itemName || "",
-                    category: editingItem?.category || "",
+                    category:
+                      editingItem?.category || selectedCategory?.name || "",
                     color: editingItem?.color || "",
-                    qty: editingItem?.qty || "",
-                    buyingPrice: editingItem?.buyingPrice || "",
-                    company: editingItem?.company || "",
+                    qty: editingItem?.qty || selectedCategory?.qty || "",
+                    buyingPrice:
+                      editingItem?.buyingPrice ||
+                      selectedCategory?.buyingPrice ||
+                      "",
+                    size: editingItem?.size || selectedCategory?.size || "",
+                    company:
+                      editingItem?.company || selectedCategory?.company || "",
                     wholesale: editingItem?.wholesale || "",
                     retailPrice: editingItem?.retailPrice || "",
                     supplier: editingItem?.supplier || "",
@@ -514,6 +499,7 @@ const Item = () => {
                           as="select"
                           name="category"
                           className="form-control"
+                          value=""
                           onChange={handleCategoryChange}
                         >
                           <option
