@@ -713,7 +713,7 @@ const Sales = () => {
       doc.save(`receipt_${invoiceNumber}.pdf`);
 
       // Immediately refresh the page
-      // window.location.reload();
+      window.location.reload();
     } else {
       alert(
         "Payment details are not available. Please complete the payment first."
