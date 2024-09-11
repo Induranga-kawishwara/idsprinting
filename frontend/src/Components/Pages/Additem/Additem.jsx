@@ -16,7 +16,6 @@ import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 const ItemSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item Code is required"),
   itemName: Yup.string().required("Item Name is required"),
-  category: Yup.string(),
   color: Yup.string().required("Color is required"),
   qty: Yup.string(),
   buyingPrice: Yup.number(),
@@ -172,6 +171,10 @@ const Item = () => {
     });
 
     socket.on("CategoryDeleted", ({ id }) => {
+      setItems((prevItems) =>
+        prevItems.filter((Item) => Item.categoryid !== id)
+      );
+
       setCategoryOptions((prevCategory) =>
         prevCategory.filter((Category) => Category.id !== id)
       );
@@ -357,7 +360,11 @@ const Item = () => {
         <button
           variant="contained"
           color="primary"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsModalOpen(true);
+            setEditingItem(null);
+            setSelectedCategory(null);
+          }}
           className="addnewbtntop"
         >
           New Item
@@ -497,7 +504,12 @@ const Item = () => {
                     retailPrice: editingItem?.retailPrice || "",
                     supplier: editingItem?.supplier || "",
                   }}
-                  validationSchema={ItemSchema}
+                  validationSchema={Yup.object().shape({
+                    ...ItemSchema.fields,
+                    category: Yup.string()
+                      .required("Category is required")
+                      .default(editingItem?.category || selectedCategory?.name),
+                  })}
                   onSubmit={handleSubmit}
                 >
                   {({ errors, touched }) => (
