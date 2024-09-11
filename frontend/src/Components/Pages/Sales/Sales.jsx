@@ -682,12 +682,13 @@ const Sales = () => {
       name: values.name,
       price: Number(values.price),
       qty: Number(values.qty),
+      discount: Number(values.discount) || 0, // Include discount
     };
 
     setTransaction((prevTransaction) => {
       const updatedProducts = [...prevTransaction.products, newProduct];
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.price,
+        (sum, p) => sum + p.qty * (p.price - p.discount), // Subtract discount from price
         0
       );
       const net = total - prevTransaction.discount;
