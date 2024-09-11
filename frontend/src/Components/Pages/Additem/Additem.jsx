@@ -172,6 +172,10 @@ const Item = () => {
     });
 
     socket.on("CategoryDeleted", ({ id }) => {
+      setItems((prevItems) =>
+        prevItems.filter((Item) => Item.categoryid !== id)
+      );
+
       setCategoryOptions((prevCategory) =>
         prevCategory.filter((Category) => Category.id !== id)
       );
