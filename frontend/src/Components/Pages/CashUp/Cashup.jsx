@@ -221,7 +221,10 @@ const Cashup = () => {
         <button
           variant="contained"
           color="primary"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsModalOpen(true);
+            setEditingCashup(null);
+          }}
           className="addnewbtntop"
         >
           New Cashup
