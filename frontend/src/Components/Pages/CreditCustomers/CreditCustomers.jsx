@@ -30,7 +30,9 @@ const initialCreditCustomers = [
 const ITEMS_PER_PAGE = 100;
 
 const CreditCustomers = () => {
-  const [creditCustomers, setCreditCustomers] = useState(initialCreditCustomers);
+  const [creditCustomers, setCreditCustomers] = useState(
+    initialCreditCustomers
+  );
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -165,13 +167,17 @@ const CreditCustomers = () => {
     const formattedDate = new Date().toLocaleDateString();
     const formattedTime = new Date().toLocaleTimeString();
 
-    const textMessage = `IDS Printing House\nPayment Receipt\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${selectedCustomer.name} ${selectedCustomer.surname}\nContact: ${selectedCustomer.phone}\n\nCredit Balance: Rs. ${(
-      receiptData.remainingBalance ?? 0
-    ).toFixed(2)}\nAdded By: ${selectedCustomer.addedBy}`;
+    const textMessage = `IDS Printing House\nPayment Receipt\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${
+      selectedCustomer.name
+    } ${selectedCustomer.surname}\nContact: ${
+      selectedCustomer.phone
+    }\n\nCredit Balance: Rs. ${(receiptData.remainingBalance ?? 0).toFixed(
+      2
+    )}\nAdded By: ${selectedCustomer.addedBy}`;
 
-    const whatsappURL = `https://wa.me/+94${selectedCustomer.phone}?text=${encodeURIComponent(
-      textMessage
-    )}`;
+    const whatsappURL = `https://wa.me/+94${
+      selectedCustomer.phone
+    }?text=${encodeURIComponent(textMessage)}`;
     const emailSubject = `Receipt for ${selectedCustomer.name} ${selectedCustomer.surname}`;
     const emailBody = textMessage;
     const mailtoURL = `mailto:?subject=${encodeURIComponent(
@@ -246,10 +252,11 @@ const CreditCustomers = () => {
             className="searchfunctionsdate"
             placeholderText="End Date"
           />
-          <button variant="contained"
-          className="prevbutton" 
-          onClick={handleClearFilters
-          }>
+          <button
+            variant="contained"
+            className="prevbutton"
+            onClick={handleClearFilters}
+          >
             Clear
           </button>
         </div>
@@ -284,15 +291,15 @@ const CreditCustomers = () => {
                       variant="contained"
                       size="small"
                       onClick={() => handleEditCredit(customer)}
-              className="editbtn"
+                      className="editbtn"
                     >
-                      Edit
+                      Pay
                     </button>{" "}
                     <button
                       variant="contained"
                       size="small"
                       onClick={() => handleOpenReceiptModal(customer)}
-              className="sharebutton"
+                      className="sharebutton"
                     >
                       View Receipt
                     </button>{" "}
@@ -300,7 +307,7 @@ const CreditCustomers = () => {
                       variant="contained"
                       size="small"
                       onClick={() => handleDeleteCredit(customer.id)}
-              className="deletebtn"
+                      className="deletebtn"
                     >
                       Delete
                     </button>
@@ -366,9 +373,7 @@ const CreditCustomers = () => {
                           className="form-control"
                         />
                         {errors.paidAmount && touched.paidAmount ? (
-                          <div className="text-danger">
-                            {errors.paidAmount}
-                          </div>
+                          <div className="text-danger">{errors.paidAmount}</div>
                         ) : null}
                       </div>
                       <div className="d-flex justify-content-end">
@@ -376,7 +381,7 @@ const CreditCustomers = () => {
                           variant="contained"
                           type="submit"
                           className="savechangesbutton"
-                          >
+                        >
                           Submit Payment
                         </button>
                         <button
@@ -452,14 +457,14 @@ const CreditCustomers = () => {
                     <button
                       variant="contained"
                       onClick={shareReceipt}
-                          className="sharebutton"
+                      className="sharebutton"
                     >
                       Share
                     </button>
                     <button
                       variant="contained"
                       onClick={handleCloseReceiptModal}
-                          className="closebutton"
+                      className="closebutton"
                     >
                       Close
                     </button>

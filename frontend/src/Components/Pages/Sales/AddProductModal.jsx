@@ -60,7 +60,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
                     ) : null}
                   </div>
                   <div className="mb-3">
-                    <label>Discount (%)</label>
+                    <label>Discount</label>
                     <Field
                       name="discount"
                       type="number"

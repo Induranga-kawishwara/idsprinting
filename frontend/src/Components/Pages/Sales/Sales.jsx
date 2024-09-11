@@ -160,7 +160,7 @@ const generateUniqueInvoiceNumber = () => {
   const milliseconds = String(now.getMilliseconds()).padStart(3, "0"); // Leading zeros for milliseconds
 
   // Combine them into the desired format
-  const invoiceNumber = `${year}${month}${day}-${hours}${minutes}${seconds}-${milliseconds}`;
+  const invoiceNumber = `INV-${year}${month}${day}-${hours}${minutes}${seconds}-${milliseconds}`;
 
   return invoiceNumber;
 };
