@@ -311,7 +311,10 @@ const Category = () => {
         <button
           variant="contained"
           color="primary"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setIsModalOpen(true);
+            setEditingCategory(null);
+          }}
           className="addnewbtntop"
         >
           New Category
