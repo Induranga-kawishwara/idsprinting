@@ -59,7 +59,17 @@ const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
                       <div className="text-danger">{errors.qty}</div>
                     ) : null}
                   </div>
-
+                  <div className="mb-3">
+                    <label>Discount (%)</label>
+                    <Field
+                      name="discount"
+                      type="number"
+                      className="form-control"
+                    />
+                    {errors.discount && touched.discount ? (
+                      <div className="text-danger">{errors.discount}</div>
+                    ) : null}
+                  </div>
                   <div className="modal-footer">
                     <button
                       type="submit"
