@@ -265,7 +265,7 @@ const SalesHistory = () => {
             Clear
           </button>
         </div>
-        <div className="table-responsive">
+        <div>
           <button
             className="addnewbtntop"
             variant="contained"
@@ -273,52 +273,54 @@ const SalesHistory = () => {
           >
             Back to Sales
           </button>
-          <table className="table mt-3 custom-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Contact Number</th>
-                <th>Total Amount (Rs.)</th>
-                <th>Payment Method</th>
-                <th>Invoice Number</th>
-                <th>Who Added</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody className="custom-table">
-              {filteredSales.map((sale, index) => (
-                <tr key={index}>
-                  <td>{new Date(sale.date).toLocaleDateString()}</td>
-                  <td>{sale.customerName}</td>
-                  <td>{sale.contactNumber}</td>
-                  <td>{sale.total.toFixed(2)}</td>
-                  <td>{sale.paymentDetails.paymentMethod}</td>
-                  <td>{sale.invoiceNumber}</td>
-                  <td>{sale.addedBy}</td> {/* New Field */}
-                  <td>
-                    <button
-                      variant="contained"
-                      size="small"
-                      className="editbtn"
-                      onClick={() => handleOpenReceiptModal(sale)}
-                    >
-                      View Receipt
-                    </button>
-                    <button
-                      variant="contained"
-                      size="small"
-                      color="secondary"
-                      className="deletebtn"
-                      onClick={() => handleOpenDeleteModal(sale)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="table-responsive">
+            <table className="table mt-3 custom-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Contact Number</th>
+                  <th>Total Amount (Rs.)</th>
+                  <th>Payment Method</th>
+                  <th>Invoice Number</th>
+                  <th>Who Added</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="custom-table">
+                {filteredSales.map((sale, index) => (
+                  <tr key={index}>
+                    <td>{new Date(sale.date).toLocaleDateString()}</td>
+                    <td>{sale.customerName}</td>
+                    <td>{sale.contactNumber}</td>
+                    <td>{sale.total.toFixed(2)}</td>
+                    <td>{sale.paymentDetails.paymentMethod}</td>
+                    <td>{sale.invoiceNumber}</td>
+                    <td>{sale.addedBy}</td> {/* New Field */}
+                    <td>
+                      <button
+                        variant="contained"
+                        size="small"
+                        className="editbtn"
+                        onClick={() => handleOpenReceiptModal(sale)}
+                      >
+                        View Receipt
+                      </button>
+                      <button
+                        variant="contained"
+                        size="small"
+                        color="secondary"
+                        className="deletebtn"
+                        onClick={() => handleOpenDeleteModal(sale)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Pagination Controls */}
