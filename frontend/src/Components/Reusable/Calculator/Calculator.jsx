@@ -1,5 +1,6 @@
 import "./Calculator.scss";
 import { useState, useEffect } from "react";
+import { evaluate } from "mathjs";
 
 const Calculator = ({ onClose }) => {
   const [result, setResult] = useState("");
@@ -18,7 +19,7 @@ const Calculator = ({ onClose }) => {
 
   const calculate = () => {
     try {
-      setResult(eval(result).toString());
+      setResult(evaluate(result).toString());
     } catch {
       setResult("Error");
     }
@@ -48,7 +49,7 @@ const Calculator = ({ onClose }) => {
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [result]);
+  }, [handleKeyPress]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
