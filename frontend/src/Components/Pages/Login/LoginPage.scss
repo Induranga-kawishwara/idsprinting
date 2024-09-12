@@ -97,18 +97,6 @@ $s: hsl(233deg 36% 38%);
       flex-direction: column;
       align-items: stretch;
     }
-
-    .footer {
-      display: flex;
-      font-size: 0.7em;
-      color: hsl(0deg 0% 37%);
-      gap: 14em;
-      padding-bottom: 1em;
-
-      span {
-        cursor: pointer;
-      }
-    }
   }
 }
 
