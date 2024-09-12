@@ -33,6 +33,7 @@ const Calculator = ({ onClose }) => {
     ) {
       setResult(result.concat(key));
     } else if (key === "Enter") {
+      e.preventDefault(); // Prevent form submission
       calculate();
     } else if (key === "Backspace") {
       handleDelete();
@@ -49,6 +50,10 @@ const Calculator = ({ onClose }) => {
     };
   }, [result]);
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="Calculator">
       <div className="Calculator-header">
@@ -58,7 +63,7 @@ const Calculator = ({ onClose }) => {
         </button>
       </div>
       <div className="container">
-        <form>
+        <form onSubmit={handleSubmit}>
           <input type="text" value={result} readOnly />
         </form>
 
