@@ -61,10 +61,6 @@ const Login = () => {
           </button>
           {error && <div className="error-message">{error}</div>}
         </form>
-        <div className="footer">
-          <span>Forgot Password?</span>
-          <span>Sign Up</span>
-        </div>
         <div className="form-check form-switch">
           <input
             className="form-check-input"
