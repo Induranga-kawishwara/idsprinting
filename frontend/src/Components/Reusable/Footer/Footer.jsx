@@ -17,7 +17,7 @@ const Footer = () => {
           <LuCalculator />
         </button>
 
-        {showCalculator && <Calculator />}
+        {showCalculator && <Calculator onClose={handleClick} />}
 
         <p>© 2024 Your Company. All rights reserved.</p>
 

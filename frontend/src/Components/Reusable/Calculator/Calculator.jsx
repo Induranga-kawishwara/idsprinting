@@ -1,7 +1,7 @@
 import "./Calculator.scss";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const Calculator = () => {
+const Calculator = ({ onClose }) => {
   const [result, setResult] = useState("");
 
   const handleClick = (e) => {
@@ -24,13 +24,47 @@ const Calculator = () => {
     }
   };
 
+  const handleKeyPress = (e) => {
+    const { key } = e;
+
+    if (
+      (/\d/.test(key) || ["+", "-", "*", "/", ".", "(", ")"].includes(key)) &&
+      result !== "Error"
+    ) {
+      setResult(result.concat(key));
+    } else if (key === "Enter") {
+      e.preventDefault(); // Prevent form submission
+      calculate();
+    } else if (key === "Backspace") {
+      handleDelete();
+    } else if (key === "Escape") {
+      clear();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [result]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="Calculator">
-      <h1>Calculator</h1>
-
+      <div className="Calculator-header">
+        <h1>Calculator</h1>
+        <button className="close-button" onClick={onClose}>
+          ×
+        </button>
+      </div>
       <div className="container">
-        <form>
-          <input type="text" value={result} />
+        <form onSubmit={handleSubmit}>
+          <input type="text" value={result} readOnly />
         </form>
 
         <div className="keypad">
@@ -40,20 +74,25 @@ const Calculator = () => {
           <button onClick={handleDelete} className="highlight">
             DEL
           </button>
-          <button name="/" onClick={handleClick} className="highlight">
-            &divide;
+          <button name="(" onClick={handleClick} className="highlight">
+            (
           </button>
+          <button name=")" onClick={handleClick} className="highlight">
+            )
+          </button>
+
           <button name="7" onClick={handleClick}>
             7
           </button>
           <button name="8" onClick={handleClick}>
             8
           </button>
+
           <button name="9" onClick={handleClick}>
             9
           </button>
-          <button name="*" onClick={handleClick} className="highlight">
-            &times;
+          <button name="/" onClick={handleClick} className="highlight">
+            &divide;
           </button>
           <button name="4" onClick={handleClick}>
             4
@@ -64,9 +103,10 @@ const Calculator = () => {
           <button name="6" onClick={handleClick}>
             6
           </button>
-          <button name="-" onClick={handleClick} className="highlight">
-            -
+          <button name="*" onClick={handleClick} className="highlight">
+            &times;
           </button>
+
           <button name="1" onClick={handleClick}>
             1
           </button>
@@ -76,14 +116,19 @@ const Calculator = () => {
           <button name="3" onClick={handleClick}>
             3
           </button>
-          <button name="+" onClick={handleClick} className="highlight">
-            +
+          <button name="-" onClick={handleClick} className="highlight">
+            -
           </button>
+
           <button name="0" onClick={handleClick}>
             0
           </button>
           <button name="." onClick={handleClick}>
             .
+          </button>
+          <button></button>
+          <button name="+" onClick={handleClick} className="highlight">
+            +
           </button>
           <button onClick={calculate} id="equal" className="highlight">
             =
