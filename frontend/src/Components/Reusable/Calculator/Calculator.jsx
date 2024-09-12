@@ -60,7 +60,7 @@ const Calculator = ({ onClose }) => {
   };
 
   return (
-    <Draggable>
+    <Draggable cancel=".Calculator-button, .close-button">
       <div className="Calculator">
         <div className="Calculator-header">
           <h1>Calculator</h1>
@@ -74,69 +74,148 @@ const Calculator = ({ onClose }) => {
           </form>
 
           <div className="keypad">
-            <button onClick={clear} id="clear" className="highlight">
+            <button
+              onClick={clear}
+              id="clear"
+              className="highlight Calculator-button"
+            >
               AC
             </button>
-            <button onClick={handleDelete} className="highlight">
+            <button
+              onClick={handleDelete}
+              className="highlight Calculator-button"
+            >
               DEL
             </button>
-            <button name="(" onClick={handleClick} className="highlight">
+            <button
+              name="("
+              onClick={handleClick}
+              className="highlight Calculator-button"
+            >
               (
             </button>
-            <button name=")" onClick={handleClick} className="highlight">
+            <button
+              name=")"
+              onClick={handleClick}
+              className="highlight Calculator-button"
+            >
               )
             </button>
 
-            <button name="7" onClick={handleClick}>
+            <button
+              name="7"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               7
             </button>
-            <button name="8" onClick={handleClick}>
+            <button
+              name="8"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               8
             </button>
 
-            <button name="9" onClick={handleClick}>
+            <button
+              name="9"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               9
             </button>
-            <button name="/" onClick={handleClick} className="highlight">
+            <button
+              name="/"
+              onClick={handleClick}
+              className="highlight Calculator-button"
+            >
               &divide;
             </button>
-            <button name="4" onClick={handleClick}>
+            <button
+              name="4"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               4
             </button>
-            <button name="5" onClick={handleClick}>
+            <button
+              name="5"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               5
             </button>
-            <button name="6" onClick={handleClick}>
+            <button
+              name="6"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               6
             </button>
-            <button name="*" onClick={handleClick} className="highlight">
+            <button
+              name="*"
+              onClick={handleClick}
+              className="highlight Calculator-button"
+            >
               &times;
             </button>
 
-            <button name="1" onClick={handleClick}>
+            <button
+              name="1"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               1
             </button>
-            <button name="2" onClick={handleClick}>
+            <button
+              name="2"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               2
             </button>
-            <button name="3" onClick={handleClick}>
+            <button
+              name="3"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               3
             </button>
-            <button name="-" onClick={handleClick} className="highlight">
+            <button
+              name="-"
+              onClick={handleClick}
+              className="highlight Calculator-button"
+            >
               -
             </button>
 
-            <button name="0" onClick={handleClick}>
+            <button
+              name="0"
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               0
             </button>
-            <button name="." onClick={handleClick}>
+            <button
+              name="."
+              onClick={handleClick}
+              className="Calculator-button"
+            >
               .
             </button>
             <button></button>
-            <button name="+" onClick={handleClick} className="highlight">
+            <button
+              name="+"
+              onClick={handleClick}
+              className="highlight Calculator-button"
+            >
               +
             </button>
-            <button onClick={calculate} id="equal" className="highlight">
+            <button
+              onClick={calculate}
+              id="equal"
+              className="highlight Calculator-button"
+            >
               =
             </button>
           </div>
