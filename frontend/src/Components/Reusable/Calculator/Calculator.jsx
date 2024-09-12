@@ -83,6 +83,7 @@ const Calculator = ({ onClose }) => {
             </button>
             <button
               onClick={handleDelete}
+              id="ac"
               className="highlight Calculator-button"
             >
               DEL
