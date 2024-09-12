@@ -70,20 +70,21 @@
     color: white;
   }
 
+  #equal {
+    background-color: #4caf50;
+    color: white;
+    grid-column: span 4;
+  }
+  #del,
+  #clear {
+    background-color: #e42f2f;
+  }
+
   button:hover {
     background-color: #ddd;
   }
 
   button:active {
     background-color: #ccc;
-  }
-
-  #equal {
-    background-color: #4caf50;
-    color: white;
-    grid-column: span 4;
-  }
-  #del #clear {
-    background-color: #e42f2f;
   }
 }
