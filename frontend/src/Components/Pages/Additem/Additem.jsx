@@ -19,8 +19,11 @@ const ItemSchema = Yup.object().shape({
   color: Yup.string().required("Color is required"),
   qty: Yup.string(),
   buyingPrice: Yup.number(),
-  wholesale: Yup.string(),
+  wholesale: Yup.number(),
   company: Yup.string(),
+  discount: Yup.number()
+    .min(0, "Discount must be at least 0")
+    .max(100, "Discount cannot be more than 100"),
   retailPrice: Yup.number().required("Retail Price is required"),
 });
 
@@ -74,6 +77,11 @@ const Item = () => {
         addedTime: time,
         addedBy: category.addedBy,
         size: category.size,
+        discount: item.discount || 0,
+        sellingPrice: calculateSellingPrice(
+          item.retailPrice,
+          item.discount || 0
+        ),
         addedDateTime: item.addedDateTime,
       };
     };
@@ -195,6 +203,12 @@ const Item = () => {
     };
   }, []);
 
+  const calculateSellingPrice = (originalPrice, discountPercentage) => {
+    let discount = discountPercentage / 100; // Convert percentage to decimal
+    let sellingPrice = originalPrice * (1 - discount); // Apply discount
+    return sellingPrice;
+  };
+
   const handleEdit = (item) => {
     setEditingItem(item);
     setIsModalOpen(true);
@@ -295,6 +309,7 @@ const Item = () => {
         accessor: "Itemid",
         Cell: ({ row }) => row.index + 1,
       },
+
       { Header: "Item Code", accessor: "itemCode" },
       { Header: "Item Name", accessor: "itemName" },
       { Header: "Stock Category", accessor: "category" },
@@ -304,6 +319,8 @@ const Item = () => {
       { Header: "Buying Price", accessor: "buyingPrice" },
       { Header: "Wholesale", accessor: "wholesale" },
       { Header: "Retail Price", accessor: "retailPrice" },
+      { Header: "Discount", accessor: "discount" },
+      { Header: "Selling Price", accessor: "sellingPrice" },
       { Header: "Added Date", accessor: "addedDate" },
       { Header: "Added Time", accessor: "addedTime" },
       { Header: "Added By", accessor: "addedBy" },
@@ -501,8 +518,15 @@ const Item = () => {
                     company:
                       editingItem?.company || selectedCategory?.company || "",
                     wholesale: editingItem?.wholesale || "",
+                    discount: editingItem?.discount || "",
                     retailPrice: editingItem?.retailPrice || "",
                     supplier: editingItem?.supplier || "",
+                    selling: editingItem
+                      ? calculateSellingPrice(
+                          editingItem.retailPrice,
+                          editingItem.discount
+                        )
+                      : 0,
                   }}
                   validationSchema={Yup.object().shape({
                     ...ItemSchema.fields,
@@ -512,157 +536,198 @@ const Item = () => {
                   })}
                   onSubmit={handleSubmit}
                 >
-                  {({ errors, touched }) => (
-                    <Form>
-                      {/* Form Fields */}
-                      <div className="mb-3">
-                        <label>Item Code</label>
-                        <Field name="itemCode" className="form-control" />
-                        {errors.itemCode && touched.itemCode ? (
-                          <div className="text-danger">{errors.itemCode}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Item Name</label>
-                        <Field name="itemName" className="form-control" />
-                        {errors.itemName && touched.itemName ? (
-                          <div className="text-danger">{errors.itemName}</div>
-                        ) : null}
-                      </div>
+                  {({
+                    values,
+                    errors,
+                    touched,
+                    setFieldValue,
+                    handleChange,
+                  }) => {
+                    const handlePriceChange = (e) => {
+                      const { name, value } = e.target;
 
-                      <div className="mb-3">
-                        <label>Color</label>
-                        <Field name="color" className="form-control" />
-                        {errors.color && touched.color ? (
-                          <div className="text-danger">{errors.color}</div>
-                        ) : null}
-                      </div>
+                      handleChange(e);
 
-                      <div className="mb-3">
-                        <label>Stock Category</label>
-                        <Field
-                          as="select"
-                          name="category"
-                          className="form-control"
-                          value=""
-                          onChange={handleCategoryChange}
-                        >
-                          <option
+                      const updatedValues = {
+                        ...values,
+                        [name]: value,
+                      };
+
+                      const sellingPrice = calculateSellingPrice(
+                        updatedValues.retailPrice || 0,
+                        updatedValues.discount || 0
+                      );
+
+                      // Update the selling price in Formik state
+                      setFieldValue("selling", sellingPrice.toFixed(2));
+                    };
+
+                    return (
+                      <Form>
+                        {/* Form Fields */}
+                        <div className="mb-3">
+                          <label>Item Code</label>
+                          <Field name="itemCode" className="form-control" />
+                          {errors.itemCode && touched.itemCode && (
+                            <div className="text-danger">{errors.itemCode}</div>
+                          )}
+                        </div>
+
+                        <div className="mb-3">
+                          <label>Item Name</label>
+                          <Field name="itemName" className="form-control" />
+                          {errors.itemName && touched.itemName && (
+                            <div className="text-danger">{errors.itemName}</div>
+                          )}
+                        </div>
+
+                        <div className="mb-3">
+                          <label>Color</label>
+                          <Field name="color" className="form-control" />
+                          {errors.color && touched.color && (
+                            <div className="text-danger">{errors.color}</div>
+                          )}
+                        </div>
+
+                        <div className="mb-3">
+                          <label>Stock Category</label>
+                          <Field
+                            as="select"
+                            name="category"
                             className="form-control"
-                            value={
-                              selectedCategory?.name || editingItem?.category
-                            }
-                            label="Select a type of stock"
-                            disabled
-                            hidden
-                          />
-                          {categoryOptions.map((category, index) => (
+                            onChange={handleCategoryChange}
+                          >
                             <option
                               className="form-control"
-                              key={index}
-                              value={category.id}
-                            >
-                              {category.name}
-                            </option>
-                          ))}
-                        </Field>
-                        {errors.category && touched.category ? (
-                          <div className="text-danger">{errors.category}</div>
-                        ) : null}
-                      </div>
+                              label={
+                                selectedCategory?.name ||
+                                editingItem?.category ||
+                                "Select a type of stock"
+                              }
+                              hidden
+                            />
+                            {categoryOptions.map((category, index) => (
+                              <option
+                                className="form-control"
+                                key={index}
+                                value={category.id}
+                              >
+                                {category.name}
+                              </option>
+                            ))}
+                          </Field>
+                          {errors.category && touched.category && (
+                            <div className="text-danger">{errors.category}</div>
+                          )}
+                        </div>
 
-                      <div className="mb-3">
-                        <label>Qty</label>
-                        <Field
-                          name="qty"
-                          className="form-control"
-                          value={selectedCategory?.qty || editingItem?.qty}
-                          disabled
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label>Size</label>
-                        <Field
-                          name="size"
-                          className="form-control"
-                          value={selectedCategory?.size || editingItem?.size}
-                          disabled
-                        />
-                      </div>
+                        <div className="mb-3">
+                          <label>Qty</label>
+                          <Field
+                            name="qty"
+                            className="form-control"
+                            value={selectedCategory?.qty || editingItem?.qty}
+                            disabled
+                          />
+                        </div>
 
-                      <div className="mb-3">
-                        <label>Company</label>
-                        <Field
-                          name="company"
-                          className="form-control"
-                          value={
-                            selectedCategory?.company || editingItem?.company
-                          }
-                          disabled
-                        />
-                      </div>
+                        <div className="mb-3">
+                          <label>Size</label>
+                          <Field
+                            name="size"
+                            className="form-control"
+                            value={selectedCategory?.size || editingItem?.size}
+                            disabled
+                          />
+                        </div>
 
-                      <div className="mb-3">
-                        <label>Buying Price</label>
-                        <Field
-                          name="buyingPrice"
-                          type="number"
-                          className="form-control"
-                          value={
-                            selectedCategory?.buyingPrice ||
-                            editingItem?.buyingPrice
-                          }
-                          disabled
-                        />
-                        {errors.buyingPrice && touched.buyingPrice ? (
-                          <div className="text-danger">
-                            {errors.buyingPrice}
-                          </div>
-                        ) : null}
-                      </div>
+                        <div className="mb-3">
+                          <label>Company</label>
+                          <Field
+                            name="company"
+                            className="form-control"
+                            value={
+                              selectedCategory?.company || editingItem?.company
+                            }
+                            disabled
+                          />
+                        </div>
 
-                      <div className="mb-3">
-                        <label>Wholesale</label>
-                        <Field
-                          name="wholesale"
-                          type="number"
-                          className="form-control"
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label>Retail Price</label>
-                        <Field
-                          name="retailPrice"
-                          type="number"
-                          className="form-control"
-                        />
-                        {errors.retailPrice && touched.retailPrice ? (
-                          <div className="text-danger">
-                            {errors.retailPrice}
-                          </div>
-                        ) : null}
-                      </div>
+                        <div className="mb-3">
+                          <label>Buying Price</label>
+                          <Field
+                            name="buyingPrice"
+                            type="number"
+                            className="form-control"
+                            value={
+                              selectedCategory?.buyingPrice ||
+                              editingItem?.buyingPrice
+                            }
+                            disabled
+                          />
+                          {errors.buyingPrice && touched.buyingPrice && (
+                            <div className="text-danger">
+                              {errors.buyingPrice}
+                            </div>
+                          )}
+                        </div>
 
-                      <div className="d-flex justify-content-end">
-                        <button
-                          variant="contained"
-                          color="primary"
-                          type="submit"
-                          className="savechangesbutton"
-                        >
-                          {editingItem ? "Update" : "Add"}
-                        </button>
-                        <button
-                          variant="contained"
-                          color="secondary"
-                          onClick={() => setIsModalOpen(false)}
-                          className="closebutton"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </Form>
-                  )}
+                        <div className="mb-3">
+                          <label>Wholesale</label>
+                          <Field
+                            name="wholesale"
+                            type="number"
+                            className="form-control"
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label>Retail Price</label>
+                          <Field
+                            name="retailPrice"
+                            type="number"
+                            className="form-control"
+                            onChange={handlePriceChange} // Call custom handler
+                          />
+                          {errors.retailPrice && touched.retailPrice && (
+                            <div className="text-danger">
+                              {errors.retailPrice}
+                            </div>
+                          )}
+                        </div>
+                        <div className="mb-3">
+                          <label>Discount</label>
+                          <Field
+                            name="discount"
+                            type="number"
+                            className="form-control"
+                            onChange={handlePriceChange} // Call custom handler
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label>Selling Price</label>
+                          <Field
+                            name="selling"
+                            type="number"
+                            className="form-control"
+                            disabled
+                          />
+                        </div>
+
+                        <div className="d-flex justify-content-end">
+                          <button type="submit" className="savechangesbutton">
+                            {editingItem ? "Update" : "Add"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
+                            className="closebutton"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </Form>
+                    );
+                  }}
                 </Formik>
               </div>
             </div>

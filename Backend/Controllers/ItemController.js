@@ -218,7 +218,7 @@ export const deleteAndUpdate = async (req, res) => {
 
     const result = {
       category: { id: newCategoryId, ...categoryDetails },
-      newItem,
+      item: newItem,
     };
 
     // Extract items from the previous category and filter out the deleted item
