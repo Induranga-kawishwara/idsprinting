@@ -1,10 +1,5 @@
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { initializeApp } from "firebase/app";
-import firebaseConfig from "../../../config/firebaseConfig.js";
-
-initializeApp(firebaseConfig);
-
-const storage = getStorage();
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../../config/firebaseConfig.js"; // Import from the correct path
 
 function isFirebaseURL(url) {
   return url.startsWith("https://firebasestorage.googleapis.com/");
@@ -13,18 +8,24 @@ function isFirebaseURL(url) {
 export const ImageUploader = async (name, date, collectionName, file) => {
   if (!file) return null;
 
+  // Check if the file is already a Firebase URL
   if (typeof file === "string" && isFirebaseURL(file)) {
     console.log("File is already a Firebase URL:", file);
     return file;
   }
 
+  // Create a reference to the file location in Firebase Storage
   const storageRef = ref(storage, `${collectionName}/${name + "+" + date}`);
 
   try {
+    // Upload the file to Firebase Storage
     await uploadBytes(storageRef, file);
     console.log("Image uploaded successfully!");
+
+    // Get the download URL of the uploaded file
     const downloadURL = await getDownloadURL(storageRef);
     console.log("Download URL:", downloadURL);
+
     return downloadURL;
   } catch (error) {
     console.error("Error uploading image:", error);
