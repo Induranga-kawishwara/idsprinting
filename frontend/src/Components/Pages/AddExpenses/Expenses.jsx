@@ -122,7 +122,7 @@ const Expenses = () => {
       setExpenses((prevExpenses) => [newExpenses, ...prevExpenses]);
     });
 
-    socket.on("expensesUpdated", (updatedExpenses) => {
+    socket.on("expensessUpdated", (updatedExpenses) => {
       const { date, time } = ConvertToSLT(updatedExpenses.dateAndTime);
 
       const newUpdatedExpenses = {
@@ -171,7 +171,7 @@ const Expenses = () => {
 
     return () => {
       socket.off("expensesAdded");
-      socket.off("expensesUpdated");
+      socket.off("expensessUpdated");
       socket.off("expensesDeleted");
 
       //////
