@@ -68,7 +68,28 @@ const RegEmp = () => {
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
 
+  const handleToggleAdmin = (id) => {
+    const updatedEmployees = employees.map((emp) =>
+      emp.id === id ? { ...emp, isAdmin: !emp.isAdmin } : emp
+    );
+
+    setEmployees(updatedEmployees);
+
+    console.log(updatedEmployees.find((emp) => emp.id === id));
+  };
+
+  const handleToggleEmployee = (id) => {
+    const updatedEmployees = employees.map((emp) =>
+      emp.id === id ? { ...emp, isEmployee: !emp.isEmployee } : emp
+    );
+
+    setEmployees(updatedEmployees);
+
+    console.log(updatedEmployees.find((emp) => emp.id === id));
+  };
+
   const handleEdit = (employee) => {
+    console.log(employee);
     setEditingEmployee(employee);
     setIsModalOpen(true);
   };
@@ -78,6 +99,7 @@ const RegEmp = () => {
   };
 
   const handleSubmit = (values) => {
+    console.log(editingEmployee);
     const currentDate = new Date();
     const formattedDate = currentDate.toISOString().split("T")[0];
     const formattedTime = currentDate.toTimeString().split(" ")[0];
@@ -114,7 +136,7 @@ const RegEmp = () => {
     <div>
       <div className="reg-emp">
         <SecondaryNavbar />
-        <  br/>
+        <br />
         <div className="">
           <div className="container">
             <button
@@ -164,29 +186,13 @@ const RegEmp = () => {
                       <td>
                         <Switch
                           checked={employee.isAdmin}
-                          onChange={() =>
-                            setEmployees(
-                              employees.map((emp) =>
-                                emp.id === employee.id
-                                  ? { ...emp, isAdmin: !emp.isAdmin }
-                                  : emp
-                              )
-                            )
-                          }
+                          onChange={() => handleToggleAdmin(employee.id)}
                         />
                       </td>
                       <td>
                         <Switch
                           checked={employee.isEmployee}
-                          onChange={() =>
-                            setEmployees(
-                              employees.map((emp) =>
-                                emp.id === employee.id
-                                  ? { ...emp, isEmployee: !emp.isEmployee }
-                                  : emp
-                              )
-                            )
-                          }
+                          onChange={() => handleToggleEmployee(employee.id)}
                         />
                       </td>
                       <td>{employee.updatedDate}</td>
@@ -286,7 +292,8 @@ const RegEmp = () => {
                             ) : null}
                           </div>
                           <div className="mb-3">
-                            <label>Birth Date</label> {/* Birth Date Field in Form */}
+                            <label>Birth Date</label>{" "}
+                            {/* Birth Date Field in Form */}
                             <Field
                               name="birthDate"
                               type="date"
@@ -352,7 +359,9 @@ const RegEmp = () => {
                             <label>Zip Code</label>
                             <Field name="zipCode" className="form-control" />
                             {errors.zipCode && touched.zipCode ? (
-                              <div className="text-danger">{errors.zipCode}</div>
+                              <div className="text-danger">
+                                {errors.zipCode}
+                              </div>
                             ) : null}
                           </div>
                           <div className="mb-3">
@@ -390,10 +399,7 @@ const RegEmp = () => {
                           </div>
                           <div className="mb-3">
                             <label>EPF Number</label>
-                            <Field
-                              name="epfNumber"
-                              className="form-control"
-                            />
+                            <Field name="epfNumber" className="form-control" />
                             {errors.epfNumber && touched.epfNumber ? (
                               <div className="text-danger">
                                 {errors.epfNumber}
@@ -402,10 +408,7 @@ const RegEmp = () => {
                           </div>
                           <div className="mb-3">
                             <label>ETF Number</label>
-                            <Field
-                              name="EtfNumber"
-                              className="form-control"
-                            />
+                            <Field name="EtfNumber" className="form-control" />
                             {errors.EtfNumber && touched.EtfNumber ? (
                               <div className="text-danger">
                                 {errors.EtfNumber}
