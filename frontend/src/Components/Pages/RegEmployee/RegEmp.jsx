@@ -186,13 +186,29 @@ const RegEmp = () => {
                       <td>
                         <Switch
                           checked={employee.isAdmin}
-                          onChange={() => handleToggleAdmin(employee.id)}
+                          onChange={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to toggle Admin rights?"
+                              )
+                            ) {
+                              handleToggleAdmin(employee.id);
+                            }
+                          }}
                         />
                       </td>
                       <td>
                         <Switch
                           checked={employee.isEmployee}
-                          onChange={() => handleToggleEmployee(employee.id)}
+                          onChange={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to toggle Employee status?"
+                              )
+                            ) {
+                              handleToggleEmployee(employee.id);
+                            }
+                          }}
                         />
                       </td>
                       <td>{employee.updatedDate}</td>
