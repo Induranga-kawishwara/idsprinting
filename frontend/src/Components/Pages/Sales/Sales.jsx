@@ -1,8 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Formik, Form, Field } from "formik";
-import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Button, Modal } from "@mui/material";
 import "./Sales.scss";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
@@ -109,45 +106,6 @@ const initialCustomers = [
   },
   // Add more customers if needed
 ];
-
-const PaymentSchema = Yup.object().shape({
-  paymentMethod: Yup.string().required("Payment method is required"),
-  cashGiven: Yup.number().when("paymentMethod", {
-    is: "Cash",
-    then: (schema) => schema.required("Cash given is required").min(0),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  cardDetails: Yup.string().when("paymentMethod", {
-    is: "Card",
-    then: (schema) => schema.required("Card details are required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  bankTransferNumber: Yup.string().when("paymentMethod", {
-    is: "Bank Transfer",
-    then: (schema) => schema.required("Bank transfer number is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  chequeNumber: Yup.string().when("paymentMethod", {
-    is: "Cheque",
-    then: (schema) => schema.required("Cheque number is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  creditAmount: Yup.number().when("paymentMethod", {
-    is: "Credit",
-    then: (schema) => schema.required("Credit amount is required").min(0),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-});
-
-const ProductSchema = Yup.object().shape({
-  name: Yup.string().required("Product name is required"),
-  price: Yup.number()
-    .required("Price is required")
-    .min(0, "Price must be a positive number"),
-  qty: Yup.number()
-    .required("Quantity is required")
-    .min(1, "Quantity must be at least 1"),
-});
 
 const generateUniqueInvoiceNumber = () => {
   const now = new Date();
@@ -534,16 +492,6 @@ const Sales = () => {
     const discountXPosition = pageWidth - discountTextWidth - 4.5; // Align it to the right by subtracting from the total width
 
     doc.text(discountText, discountXPosition, lastProductY + 11); // Set the text at the right position
-
-    //
-    // doc.text(`Net: Rs.${transaction.net.toFixed(2)}`, 14, 132);
-
-    // // doc.text("Payment Details:", 14, 150);
-    // // doc.text(`Method: ${paymentDetails.paymentMethod}`, 14, 156); // Ensure this prints correctly
-    // const methodText = `${paymentDetails.paymentMethod}`;
-    // const methodTextWidth = doc.getTextWidth(methodText); // Get the width of the text
-    // const methodTextX = pageWidth - methodTextWidth - 12.5; // Align to the right
-    // doc.text(methodText, methodTextX, 52.6); // Render the text aligned to the right
 
     const methodText = `${paymentDetails.paymentMethod}`;
     const methodTextWidth = doc.getTextWidth(methodText); // Get the width of the text
