@@ -13,6 +13,7 @@ export const createItem = async (req, res) => {
     wholesale,
     company,
     retailPrice,
+    discount,
     addedDateTime,
   } = req.body;
 
@@ -35,6 +36,7 @@ export const createItem = async (req, res) => {
       wholesale,
       company,
       retailPrice,
+      discount,
       addedDateTime,
     };
 
@@ -102,6 +104,7 @@ export const updateItemByItemId = async (req, res) => {
     wholesale,
     company,
     retailPrice,
+    discount,
     addedDateTime,
   } = req.body;
 
@@ -126,6 +129,7 @@ export const updateItemByItemId = async (req, res) => {
           wholesale,
           company,
           retailPrice,
+          discount,
           addedDateTime,
         };
       }
@@ -144,6 +148,7 @@ export const updateItemByItemId = async (req, res) => {
         wholesale,
         company,
         retailPrice,
+        discount,
         addedDateTime,
       },
     };
@@ -168,6 +173,7 @@ export const deleteAndUpdate = async (req, res) => {
     wholesale,
     company,
     retailPrice,
+    discount,
     addedDateTime,
   } = req.body;
 
@@ -201,6 +207,7 @@ export const deleteAndUpdate = async (req, res) => {
       wholesale,
       company,
       retailPrice,
+      discount,
       addedDateTime,
     };
 
@@ -211,7 +218,7 @@ export const deleteAndUpdate = async (req, res) => {
 
     const result = {
       category: { id: newCategoryId, ...categoryDetails },
-      newItem,
+      item: newItem,
     };
 
     // Extract items from the previous category and filter out the deleted item

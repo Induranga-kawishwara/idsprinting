@@ -79,6 +79,10 @@
   #clear {
     background-color: #e42f2f;
   }
+  #del:hover,
+  #clear:hover {
+    background-color: rgb(233, 99, 38);
+  }
 
   button:hover {
     background-color: #ddd;
