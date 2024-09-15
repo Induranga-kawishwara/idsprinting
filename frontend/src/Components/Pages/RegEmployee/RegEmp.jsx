@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -13,6 +13,9 @@ import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar"
 import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
 import { auth } from "../../../config/firebaseConfig.js";
 import axios from "axios";
+import _ from "lodash";
+import socket from "../../Utility/SocketConnection.js";
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
 // Initial employee data with birthDate field
 const initialEmployees = [
@@ -69,23 +72,102 @@ const RegEmpSchema = Yup.object().shape({
 });
 
 const RegEmp = () => {
-  const [employees, setEmployees] = useState(initialEmployees);
+  const [employees, setEmployees] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   // const [showPassword, setShowPassword] = useState(false);
 
   // const toggleShowPassword = () => setShowPassword(!showPassword);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userData = await axios.get("http://localhost:8080/users");
+
+        const formattedusers = userData.data.map((user) => {
+          const { date, time } = ConvertToSLT(user.dateAndTime);
+          return {
+            ...user,
+            id: user.id,
+            surname: user.surName,
+            birthDate: user.birthDay,
+            nicPhoto: user.nicFront,
+            nicBackPhoto: user.nicBack,
+            employeePhoto: user.employeePic,
+            contactNumber: user.contactNum,
+            refContactNumber: user.referenceConNum,
+            EtfNumber: user.etfNUmber,
+            accessibility: user?.accessibility || [
+              { isAdmin: false, isEmployee: false },
+            ],
+            updatedDate: date,
+            updatedTime: time,
+          };
+        });
+
+        setEmployees(formattedusers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // // Listen for real-time user updates
+    // socket.on("userAdded", (newuser) => {
+    //   const { date, time } = ConvertToSLT(newuser.addedDateAndTime);
+    //   const newuseradded = {
+    //     ...newuser,
+    //     surname: newuser.surName,
+    //     phone: newuser.contactNumber,
+    //     postalCode: newuser.postalcode,
+    //     addedDate: date,
+    //     addedTime: time,
+    //     totalSpent: "500", // Example data; replace with real data if needed
+    //   };
+    //   setusers((prevusers) => [newuseradded, ...prevusers]);
+    // });
+
+    // socket.on("userUpdated", (updateduser) => {
+    //   const { date, time } = ConvertToSLT(updateduser.addedDateAndTime);
+
+    //   const newupdateduser = {
+    //     ...updateduser,
+    //     surname: updateduser.surName,
+    //     postalCode: updateduser.postalcode,
+    //     addedDate: date,
+    //     addedTime: time,
+    //     totalSpent: "600", // Example data; replace with real data if needed
+    //   };
+    //   setusers((prevusers) =>
+    //     prevusers.map((user) =>
+    //       user.id === updateduser.id ? newupdateduser : user
+    //     )
+    //   );
+    // });
+
+    // socket.on("userDeleted", ({ id }) => {
+    //   setusers((prevusers) => prevusers.filter((user) => user.id !== id));
+    // });
+
+    // return () => {
+    //   socket.off("userAdded");
+    //   socket.off("userUpdated");
+    //   socket.off("userDeleted");
+    // };
+  }, []);
 
   const handleToggleAdmin = (id) => {
     const updatedEmployees = employees.map((emp) =>
       emp.id === id ? { ...emp, isAdmin: !emp.isAdmin } : emp
     );
 
-    setEmployees(updatedEmployees);
-
-    setEditingEmployee(updatedEmployees.find((emp) => emp.id === id));
-
-    console.log(editingEmployee);
+    console.log(updatedEmployees.find((emp) => emp.id === id));
   };
 
   const handleToggleEmployee = (id) => {
@@ -93,13 +175,10 @@ const RegEmp = () => {
       emp.id === id ? { ...emp, isEmployee: !emp.isEmployee } : emp
     );
 
-    setEmployees(updatedEmployees);
-
     console.log(updatedEmployees.find((emp) => emp.id === id));
   };
 
   const handleEdit = (employee) => {
-    console.log(employee);
     setEditingEmployee(employee);
     setIsModalOpen(true);
   };
@@ -147,7 +226,7 @@ const RegEmp = () => {
 
     // Helper function for uploading images
     const uploadImage = async (fileName, folder, imageFile) => {
-      if (!imageFile) return null; // Skip upload if no image file is provided
+      if (!imageFile) return null;
       return ImageUploader(
         `${values.name}-${values.surname}-${fileName}`,
         currentDate,
@@ -249,7 +328,7 @@ const RegEmp = () => {
               <table className="table mt-3 custom-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
+                    <th>No</th>
                     <th>Name</th>
                     <th>Surname</th>
                     <th>NIC Number</th>
@@ -268,9 +347,9 @@ const RegEmp = () => {
                   </tr>
                 </thead>
                 <tbody className="custom-table">
-                  {employees.map((employee) => (
+                  {employees.map((employee, index) => (
                     <tr key={employee.id}>
-                      <td>{employee.id}</td>
+                      <td value={employee.id}>{index + 1}</td>
                       <td>{employee.name}</td>
                       <td>{employee.surname}</td>
                       <td>{employee.nicNumber}</td>
@@ -283,7 +362,7 @@ const RegEmp = () => {
                       <td>{employee.sex}</td>
                       <td>
                         <Switch
-                          checked={employee.isAdmin}
+                          checked={employee.accessibility.isAdmin}
                           onChange={() => {
                             if (
                               window.confirm(
@@ -297,7 +376,7 @@ const RegEmp = () => {
                       </td>
                       <td>
                         <Switch
-                          checked={employee.isEmployee}
+                          checked={employee.accessibility.isEmployee}
                           onChange={() => {
                             if (
                               window.confirm(
