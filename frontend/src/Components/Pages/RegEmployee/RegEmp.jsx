@@ -271,49 +271,57 @@ const RegEmp = () => {
       );
     };
 
+    // Helper function to construct user data object
+    const constructUserData = (employURL, nicBackPhotoURL, nicPhotoURL) => ({
+      name: values.name,
+      surName: values.surname,
+      birthDay: values.birthDate,
+      email: values.email,
+      nicNumber: values.nicNumber,
+      nicFront: nicPhotoURL,
+      nicBack: nicBackPhotoURL,
+      houseNo: values.houseNo,
+      street: values.street,
+      city: values.city,
+      zipCode: values.zipCode,
+      employeePic: employURL,
+      contactNum: values.contactNumber,
+      referenceConNum: values.refContactNumber,
+      epfNumber: values.epfNumber,
+      etfNUmber: values.EtfNumber,
+      sex: values.sex,
+      isAdmin: false,
+      isEmployee: false,
+      dateAndTime: currentDate.toISOString(),
+    });
+
+    let userCredential = null;
+
     try {
-      // Use Promise.all to upload images concurrently, handling any missing files
+      // Upload images concurrently
       const [employURL, nicBackPhotoURL, nicPhotoURL] = await Promise.all([
         uploadImage("", "EmployeePhotos", values.employeePhoto),
         uploadImage("nicBackPhoto", "NIC", values.nicBackPhoto),
         uploadImage("nicPhoto", "NIC", values.nicPhoto),
       ]);
 
-      // Construct the data object
-      const userData = {
-        name: values.name,
-        surName: values.surname,
-        birthDay: values.birthDate,
-        email: values.email,
-        nicNumber: values.nicNumber,
-        nicFront: nicPhotoURL,
-        nicBack: nicBackPhotoURL,
-        houseNo: values.houseNo,
-        street: values.street,
-        city: values.city,
-        zipCode: values.zipCode,
-        employeePic: employURL,
-        contactNum: values.contactNumber,
-        referenceConNum: values.refContactNumber,
-        epfNumber: values.epfNumber,
-        etfNUmber: values.EtfNumber,
-        sex: values.sex,
-        isAdmin: false,
-        isEmployee: false,
-        dateAndTime: currentDate.toISOString(),
-      };
+      // Construct user data
+      const userData = constructUserData(
+        employURL,
+        nicBackPhotoURL,
+        nicPhotoURL
+      );
 
-      let responseMessage = "";
       if (editingEmployee) {
         // Update existing user
         const response = await axios.put(
           `http://localhost:8080/users/user/${editingEmployee.id}`,
           userData
         );
-        responseMessage = response.data.message;
+        alert(`${response.data.message}`);
       } else {
         // Create new user
-        const userCredential = await createUserWithEmailAndPassword(
+        userCredential = await createUserWithEmailAndPassword(
           auth,
           values.email,
           "emp@123"
@@ -324,21 +332,28 @@ const RegEmp = () => {
           uid: user.uid,
           ...userData,
         });
-        responseMessage = response.data.message;
+        alert(`${response.data.message} \nDefault Password: emp@123`);
 
         // Send password reset email
         await sendPasswordResetEmail(getAuth(), values.email);
         console.log("Password reset email sent.");
       }
-
-      // Success message
-      alert(`${responseMessage} \nDefault Password: emp@123`);
     } catch (error) {
-      // Improved error handling
+      console.error("Error:", error);
+
+      // Delete created user if there's an error
+      if (userCredential) {
+        try {
+          await userCredential.user.delete();
+          console.log("Created user deleted due to error in data submission.");
+        } catch (deleteError) {
+          console.error("Error deleting user:", deleteError);
+        }
+      }
+
       const errorMessage =
         error.response?.data?.message ||
         "Failed to add or update the user. Please try again.";
-      console.error("Error:", error);
       alert(`Error: ${errorMessage}`);
     } finally {
       // Close modal and reset editing state
