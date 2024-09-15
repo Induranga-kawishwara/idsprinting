@@ -341,6 +341,9 @@ const RegEmp = () => {
                     <th>Sex</th>
                     <th>Admin Access</th>
                     <th>Employee Access</th>
+                    <th>Employee Photo</th>
+                    <th>NIC Front Photo</th>
+                    <th>NIC Back Photo</th>
                     <th>Updated Date</th>
                     <th>Updated Time</th>
                     <th>Actions</th>
@@ -387,6 +390,51 @@ const RegEmp = () => {
                             }
                           }}
                         />
+                      </td>
+                      <td>
+                        {employee.employeePic ? (
+                          <div>
+                            <Button
+                              onClick={() =>
+                                window.open(employee.employeePic, "_blank")
+                              }
+                            >
+                              View
+                            </Button>
+                          </div>
+                        ) : (
+                          <span>No File</span>
+                        )}
+                      </td>
+                      <td>
+                        {employee.nicFront ? (
+                          <div>
+                            <Button
+                              onClick={() =>
+                                window.open(employee.nicFront, "_blank")
+                              }
+                            >
+                              View
+                            </Button>
+                          </div>
+                        ) : (
+                          <span>No File</span>
+                        )}
+                      </td>
+                      <td>
+                        {employee.nicBack ? (
+                          <div>
+                            <Button
+                              onClick={() =>
+                                window.open(employee.nicBack, "_blank")
+                              }
+                            >
+                              View
+                            </Button>
+                          </div>
+                        ) : (
+                          <span>No File</span>
+                        )}
                       </td>
                       <td>{employee.updatedDate}</td>
                       <td>{employee.updatedTime}</td>
