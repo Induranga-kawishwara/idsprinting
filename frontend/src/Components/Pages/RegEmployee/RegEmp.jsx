@@ -3,8 +3,16 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal, Switch } from "@mui/material";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import "./RegEmp.scss";
 import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar";
+import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
+import { auth } from "../../../config/firebaseConfig.js";
+import axios from "axios";
 
 // Initial employee data with birthDate field
 const initialEmployees = [
@@ -24,7 +32,7 @@ const initialEmployees = [
     refContactNumber: "0777654321",
     epfNumber: "EPF001",
     EtfNumber: "ETF001",
-    email: "john.doe@example.com",
+    email: "indurangakawishwara2003@gmail.com",
     password: "password123",
     birthDate: "1985-06-15", // Birth Date field
     updatedDate: "2024-08-13",
@@ -53,10 +61,10 @@ const RegEmpSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")
     .required("Email is required"),
-  password: Yup.string().required("Password is required"),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-    .required("Re-entering the password is required"),
+  // password: Yup.string().required("Password is required"),
+  // confirmPassword: Yup.string()
+  //   .oneOf([Yup.ref("password"), null], "Passwords must match")
+  //   .required("Re-entering the password is required"),
   sex: Yup.string().required("Sex is required"),
 });
 
@@ -64,9 +72,9 @@ const RegEmp = () => {
   const [employees, setEmployees] = useState(initialEmployees);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
 
-  const toggleShowPassword = () => setShowPassword(!showPassword);
+  // const toggleShowPassword = () => setShowPassword(!showPassword);
 
   const handleToggleAdmin = (id) => {
     const updatedEmployees = employees.map((emp) =>
@@ -75,7 +83,9 @@ const RegEmp = () => {
 
     setEmployees(updatedEmployees);
 
-    console.log(updatedEmployees.find((emp) => emp.id === id));
+    setEditingEmployee(updatedEmployees.find((emp) => emp.id === id));
+
+    console.log(editingEmployee);
   };
 
   const handleToggleEmployee = (id) => {
@@ -98,38 +108,113 @@ const RegEmp = () => {
     setEmployees(employees.filter((employee) => employee.id !== id));
   };
 
-  const handleSubmit = (values) => {
-    console.log(editingEmployee);
-    const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0];
-    const formattedTime = currentDate.toTimeString().split(" ")[0];
+  const handleReset = (id) => {
+    const employee = employees.find((emp) => emp.id === id);
 
-    if (editingEmployee) {
-      setEmployees(
-        employees.map((employee) =>
-          employee.id === editingEmployee.id
-            ? {
-                ...values,
-                id: editingEmployee.id,
-                updatedDate: formattedDate,
-                updatedTime: formattedTime,
-              }
-            : employee
-        )
-      );
-    } else {
-      setEmployees([
-        ...employees,
-        {
-          ...values,
-          id: employees.length + 1,
-          updatedDate: formattedDate,
-          updatedTime: formattedTime,
-        },
-      ]);
+    if (!employee) {
+      alert("Employee not found.");
+      return;
     }
-    setIsModalOpen(false);
-    setEditingEmployee(null);
+
+    const { email } = employee;
+
+    sendPasswordResetEmail(getAuth(), email)
+      .then(() => {
+        alert(`Password reset email sent to: ${email}`);
+      })
+      .catch((error) => {
+        alert(
+          `Error sending password reset email: ${error.code} - ${error.message}`
+        );
+      });
+  };
+
+  const handleSubmit = async (values) => {
+    const currentDate = new Date();
+
+    // Helper function for uploading images
+    const uploadImage = async (fileName, folder, imageFile) => {
+      if (!imageFile) return null; // Skip upload if no image file is provided
+      return ImageUploader(
+        `${values.name}-${values.surname}-${fileName}`,
+        currentDate,
+        folder,
+        imageFile
+      );
+    };
+
+    try {
+      // Use Promise.all to upload images concurrently, handling any missing files
+      const [employURL, nicBackPhotoURL, nicPhotoURL] = await Promise.all([
+        uploadImage("", "EmployeePhotos", values.employeePhoto),
+        uploadImage("nicBackPhoto", "NIC", values.nicBackPhoto),
+        uploadImage("nicPhoto", "NIC", values.nicPhoto),
+      ]);
+
+      // Construct the data object
+      const userData = {
+        name: values.name,
+        surName: values.surname,
+        birthDay: values.birthDate,
+        email: values.email,
+        nicNumber: values.nicNumber,
+        nicFront: nicPhotoURL,
+        nicBack: nicBackPhotoURL,
+        houseNo: values.houseNo,
+        street: values.street,
+        city: values.city,
+        zipCode: values.zipCode,
+        employeePic: employURL,
+        contactNum: values.contactNumber,
+        referenceConNum: values.refContactNumber,
+        epfNumber: values.epfNumber,
+        etfNUmber: values.EtfNumber,
+        sex: values.sex,
+        dateAndTime: currentDate.toISOString(),
+      };
+
+      let responseMessage = "";
+      if (editingEmployee) {
+        // Update existing user
+        const response = await axios.put(
+          `http://localhost:8080/users/user/${editingEmployee.id}`,
+          userData
+        );
+        responseMessage = response.data.message;
+      } else {
+        // Create new user
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          values.email,
+          "emp@123"
+        );
+        const user = userCredential.user;
+
+        const response = await axios.post("http://localhost:8080/users/user", {
+          uid: user.uid,
+          ...userData,
+        });
+        responseMessage = response.data.message;
+
+        // Send password reset email
+        await sendPasswordResetEmail(getAuth(), values.email);
+        console.log("Password reset email sent.");
+      }
+
+      // Success message
+      alert(`${responseMessage} \nDefault Password: emp@123`);
+    } catch (error) {
+      // Improved error handling
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to add or update the user. Please try again.";
+      console.error("Error:", error);
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      // Close modal and reset editing state
+      setIsModalOpen(false);
+      setEditingEmployee(null);
+    }
   };
 
   return (
@@ -186,18 +271,42 @@ const RegEmp = () => {
                       <td>
                         <Switch
                           checked={employee.isAdmin}
-                          onChange={() => handleToggleAdmin(employee.id)}
+                          onChange={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to toggle Admin rights?"
+                              )
+                            ) {
+                              handleToggleAdmin(employee.id);
+                            }
+                          }}
                         />
                       </td>
                       <td>
                         <Switch
                           checked={employee.isEmployee}
-                          onChange={() => handleToggleEmployee(employee.id)}
+                          onChange={() => {
+                            if (
+                              window.confirm(
+                                "Are you sure you want to toggle Employee status?"
+                              )
+                            ) {
+                              handleToggleEmployee(employee.id);
+                            }
+                          }}
                         />
                       </td>
                       <td>{employee.updatedDate}</td>
                       <td>{employee.updatedTime}</td>
                       <td>
+                        <button
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleReset(employee.id)}
+                          className="resetbtn"
+                        >
+                          Reset password
+                        </button>
                         <button
                           variant="contained"
                           color="primary"
@@ -243,13 +352,13 @@ const RegEmp = () => {
                         name: editingEmployee?.name || "",
                         surname: editingEmployee?.surname || "",
                         nicNumber: editingEmployee?.nicNumber || "",
-                        nicPhoto: editingEmployee?.nicPhoto || "",
-                        nicBackPhoto: editingEmployee?.nicBackPhoto || "",
+                        nicPhoto: editingEmployee?.nicPhoto || null,
+                        nicBackPhoto: editingEmployee?.nicBackPhoto || null,
                         houseNo: editingEmployee?.houseNo || "",
                         street: editingEmployee?.street || "",
                         city: editingEmployee?.city || "",
                         zipCode: editingEmployee?.zipCode || "",
-                        employeePhoto: editingEmployee?.employeePhoto || "",
+                        employeePhoto: editingEmployee?.employeePhoto || null,
                         contactNumber: editingEmployee?.contactNumber || "",
                         refContactNumber:
                           editingEmployee?.refContactNumber || "",
@@ -257,14 +366,14 @@ const RegEmp = () => {
                         EtfNumber: editingEmployee?.EtfNumber || "",
                         birthDate: editingEmployee?.birthDate || "", // Birth Date Field
                         email: editingEmployee?.email || "",
-                        password: "",
-                        confirmPassword: "",
+                        // password: "",
+                        // confirmPassword: "",
                         sex: editingEmployee?.sex || "Male",
                       }}
                       validationSchema={RegEmpSchema}
                       onSubmit={handleSubmit}
                     >
-                      {({ errors, touched }) => (
+                      {({ setFieldValue, errors, touched }) => (
                         <Form>
                           <div className="mb-3">
                             <label>Name</label>
@@ -317,18 +426,27 @@ const RegEmp = () => {
                             ) : null}
                           </div>
                           <div className="mb-3">
-                            <label>NIC Photo</label>
-                            <Field
+                            <label htmlFor="photo">NIC Photo</label>
+                            <input
                               name="nicPhoto"
                               type="file"
+                              onChange={(event) =>
+                                setFieldValue("nicPhoto", event.target.files[0])
+                              }
                               className="form-control"
                             />
                           </div>
                           <div className="mb-3">
-                            <label>NIC Back Photo</label>
-                            <Field
+                            <label htmlFor="photo">NIC Back Photo</label>
+                            <input
                               name="nicBackPhoto"
                               type="file"
+                              onChange={(event) =>
+                                setFieldValue(
+                                  "nicBackPhoto",
+                                  event.target.files[0]
+                                )
+                              }
                               className="form-control"
                             />
                           </div>
@@ -365,11 +483,17 @@ const RegEmp = () => {
                             ) : null}
                           </div>
                           <div className="mb-3">
-                            <label>Employee Photo</label>
-                            <Field
+                            <label htmlFor="photo">Employee Photo</label>
+                            <input
                               name="employeePhoto"
                               type="file"
                               className="form-control"
+                              onChange={(event) =>
+                                setFieldValue(
+                                  "employeePhoto",
+                                  event.target.files[0]
+                                )
+                              }
                             />
                           </div>
                           <div className="mb-3">
@@ -429,7 +553,7 @@ const RegEmp = () => {
                               <div className="text-danger">{errors.sex}</div>
                             ) : null}
                           </div>
-                          <div className="mb-3">
+                          {/* <div className="mb-3">
                             <label>Password</label>
                             <div className="input-group">
                               <Field
@@ -471,7 +595,7 @@ const RegEmp = () => {
                                 {errors.confirmPassword}
                               </div>
                             ) : null}
-                          </div>
+                          </div> */}
                           <div className="text-end">
                             <button
                               variant="contained"
