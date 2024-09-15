@@ -30,8 +30,6 @@ export const createUser = async (req, res) => {
       dateAndTime,
     } = req.body;
 
-    console.log(req.body);
-
     const user = new User(
       uid,
       name,
@@ -53,8 +51,6 @@ export const createUser = async (req, res) => {
       sex,
       dateAndTime
     );
-
-    console.log(user);
 
     const docRef = await UsersCollection.add({ ...user });
 

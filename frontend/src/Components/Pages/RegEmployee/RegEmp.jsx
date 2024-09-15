@@ -104,8 +104,21 @@ const RegEmp = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setEmployees(employees.filter((employee) => employee.id !== id));
+  const handleDelete = async (name, id) => {
+    const confirmDelete = window.confirm(`Do you want to delete: ${name}?`);
+
+    if (confirmDelete) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:8080/users/user/${id}`
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error deleting details:", error);
+        alert("Failed to delete the details. Please try again.");
+      }
+    }
   };
 
   const handleReset = (id) => {
@@ -320,7 +333,12 @@ const RegEmp = () => {
                           variant="contained"
                           color="secondary"
                           size="small"
-                          onClick={() => handleDelete(employee.id)}
+                          onClick={() =>
+                            handleDelete(
+                              `${employee.name}, ${employee.surname}`,
+                              employee.id
+                            )
+                          }
                           className="deletebtn"
                         >
                           Delete
