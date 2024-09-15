@@ -7,15 +7,17 @@ const UsersCollection = db.collection("Users");
 // Create a new User
 export const createUser = async (req, res) => {
   const {
-    uID,
+    usID,
     name,
     surName,
     birthDay,
     email,
+    nicNumber,
     nicFront,
     nicBack,
     houseNo,
     street,
+    city,
     zipCode,
     employeePic,
     contactNum,
@@ -28,15 +30,17 @@ export const createUser = async (req, res) => {
 
   try {
     const user = new User(
-      uID,
+      usID,
       name,
       surName,
       birthDay,
       email,
+      nicNumber,
       nicFront,
       nicBack,
       houseNo,
       street,
+      city,
       zipCode,
       employeePic,
       contactNum,
@@ -48,8 +52,8 @@ export const createUser = async (req, res) => {
     );
 
     const docRef = await UsersCollection.add({ ...user });
-    const { uID, ...userWithoutUID } = user;
-    const newUser = { id: docRef.id, ...userWithoutUID };
+    const { usID, ...userWithoutusID } = user;
+    const newUser = { id: docRef.id, ...userWithoutusID };
     broadcastCustomerChanges("UserAdded", newUser);
 
     return res

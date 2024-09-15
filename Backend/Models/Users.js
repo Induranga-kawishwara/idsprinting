@@ -1,14 +1,16 @@
 class Users {
   constructor(
-    uID,
+    usID,
     name,
     surName,
     birthDay,
     email,
+    nicNumber,
     nicFront,
     nicBack,
     houseNo,
     street,
+    city,
     zipCode,
     employeePic,
     contactNum,
@@ -19,15 +21,17 @@ class Users {
     accessibility = [],
     dateAndTime
   ) {
-    this.uID = uID;
+    this.usID = usID;
     this.name = name;
     this.surName = surName;
     this.birthDay = birthDay;
     this.email = email;
+    this.nicNumber = nicNumber;
     this.nicFront = nicFront;
     this.nicBack = nicBack;
     this.houseNo = houseNo;
     this.street = street;
+    this.city = city;
     this.zipCode = zipCode;
     this.employeePic = employeePic;
     this.contactNum = contactNum;

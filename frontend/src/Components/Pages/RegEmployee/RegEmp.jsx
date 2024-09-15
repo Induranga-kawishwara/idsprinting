@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal, Switch } from "@mui/material";
 import "./RegEmp.scss";
 import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar";
+import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
 
 // Initial employee data with birthDate field
 const initialEmployees = [
@@ -100,35 +101,42 @@ const RegEmp = () => {
     setEmployees(employees.filter((employee) => employee.id !== id));
   };
 
-  const handleSubmit = (values) => {
-    console.log(editingEmployee);
+  const handleSubmit = async (values) => {
     const currentDate = new Date();
-    const formattedDate = currentDate.toISOString().split("T")[0];
-    const formattedTime = currentDate.toTimeString().split(" ")[0];
+
+    // Helper function for uploading images
+    const uploadImage = (_fileName, folder, imageFile) =>
+      ImageUploader(
+        `${values.name}-${values.surname}-${values.fileName}`,
+        currentDate,
+        folder,
+        imageFile
+      );
+
+    // Use Promise.all to perform image uploads concurrently
+    const [employURL, nicBackPhotoURL, nicPhotoURL] = await Promise.all([
+      uploadImage("", "EmployeePhotos", values.employeePhoto),
+      uploadImage("nicBackPhoto", "NIC", values.nicBackPhoto),
+      uploadImage("nicPhoto", "NIC", values.nicPhoto),
+    ]);
+
+    // Construct the data object with standardized field names
+    const data = {
+      ...values,
+      // uID,
+      surName: values.surname,
+      birthDay: values.birthDate,
+      nicFront: nicPhotoURL,
+      nicBack: nicBackPhotoURL,
+      employeePic: employURL,
+      contactNum: values.contactNumber,
+      referenceConNum: values.refContactNumber,
+      etfNUmber: values.EtfNumber,
+      dateAndTime: currentDate.toISOString(),
+    };
 
     if (editingEmployee) {
-      setEmployees(
-        employees.map((employee) =>
-          employee.id === editingEmployee.id
-            ? {
-                ...values,
-                id: editingEmployee.id,
-                updatedDate: formattedDate,
-                updatedTime: formattedTime,
-              }
-            : employee
-        )
-      );
     } else {
-      setEmployees([
-        ...employees,
-        {
-          ...values,
-          id: employees.length + 1,
-          updatedDate: formattedDate,
-          updatedTime: formattedTime,
-        },
-      ]);
     }
     setIsModalOpen(false);
     setEditingEmployee(null);
