@@ -10,7 +10,10 @@ import {
 } from "firebase/auth";
 import "./RegEmp.scss";
 import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar";
-import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
+import {
+  ImageUploader,
+  deleteImage,
+} from "../../Reusable/ImageUploder/ImageManager.js";
 import { auth } from "../../../config/firebaseConfig.js";
 import axios from "axios";
 import _ from "lodash";
@@ -64,10 +67,6 @@ const RegEmpSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")
     .required("Email is required"),
-  // password: Yup.string().required("Password is required"),
-  // confirmPassword: Yup.string()
-  //   .oneOf([Yup.ref("password"), null], "Passwords must match")
-  //   .required("Re-entering the password is required"),
   sex: Yup.string().required("Sex is required"),
 });
 
@@ -77,9 +76,6 @@ const RegEmp = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // const [showPassword, setShowPassword] = useState(false);
-
-  // const toggleShowPassword = () => setShowPassword(!showPassword);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -271,49 +267,60 @@ const RegEmp = () => {
       );
     };
 
+    // Helper function to construct user data object
+    const constructUserData = (employURL, nicBackPhotoURL, nicPhotoURL) => ({
+      name: values.name,
+      surName: values.surname,
+      birthDay: values.birthDate,
+      email: values.email,
+      nicNumber: values.nicNumber,
+      nicFront: nicPhotoURL,
+      nicBack: nicBackPhotoURL,
+      houseNo: values.houseNo,
+      street: values.street,
+      city: values.city,
+      zipCode: values.zipCode,
+      employeePic: employURL,
+      contactNum: values.contactNumber,
+      referenceConNum: values.refContactNumber,
+      epfNumber: values.epfNumber,
+      etfNUmber: values.EtfNumber,
+      sex: values.sex,
+      isAdmin: false,
+      isEmployee: false,
+      dateAndTime: currentDate.toISOString(),
+    });
+
+    let userCredential = null;
+    let uploadedImages = [];
+
     try {
-      // Use Promise.all to upload images concurrently, handling any missing files
+      // Upload images concurrently
       const [employURL, nicBackPhotoURL, nicPhotoURL] = await Promise.all([
         uploadImage("", "EmployeePhotos", values.employeePhoto),
         uploadImage("nicBackPhoto", "NIC", values.nicBackPhoto),
         uploadImage("nicPhoto", "NIC", values.nicPhoto),
       ]);
 
-      // Construct the data object
-      const userData = {
-        name: values.name,
-        surName: values.surname,
-        birthDay: values.birthDate,
-        email: values.email,
-        nicNumber: values.nicNumber,
-        nicFront: nicPhotoURL,
-        nicBack: nicBackPhotoURL,
-        houseNo: values.houseNo,
-        street: values.street,
-        city: values.city,
-        zipCode: values.zipCode,
-        employeePic: employURL,
-        contactNum: values.contactNumber,
-        referenceConNum: values.refContactNumber,
-        epfNumber: values.epfNumber,
-        etfNUmber: values.EtfNumber,
-        sex: values.sex,
-        isAdmin: false,
-        isEmployee: false,
-        dateAndTime: currentDate.toISOString(),
-      };
+      uploadedImages = [employURL, nicBackPhotoURL, nicPhotoURL];
 
-      let responseMessage = "";
+      // Construct user data object
+      const userData = constructUserData(
+        employURL,
+        nicBackPhotoURL,
+        nicPhotoURL
+      );
+
       if (editingEmployee) {
         // Update existing user
         const response = await axios.put(
           `http://localhost:8080/users/user/${editingEmployee.id}`,
           userData
         );
-        responseMessage = response.data.message;
+        alert(`${response.data.message}`);
       } else {
         // Create new user
-        const userCredential = await createUserWithEmailAndPassword(
+        userCredential = await createUserWithEmailAndPassword(
           auth,
           values.email,
           "emp@123"
@@ -324,21 +331,35 @@ const RegEmp = () => {
           uid: user.uid,
           ...userData,
         });
-        responseMessage = response.data.message;
+
+        alert(`${response.data.message} \nDefault Password: emp@123`);
 
         // Send password reset email
         await sendPasswordResetEmail(getAuth(), values.email);
         console.log("Password reset email sent.");
       }
-
-      // Success message
-      alert(`${responseMessage} \nDefault Password: emp@123`);
     } catch (error) {
-      // Improved error handling
+      console.error("Error:", error);
+
+      // Delete created user if there's an error during submission
+      if (userCredential) {
+        try {
+          await userCredential.user.delete();
+          console.log("Created user deleted due to error in data submission.");
+        } catch (deleteError) {
+          console.error("Error deleting user:", deleteError);
+        }
+      }
+
+      // Delete uploaded images if submission fails
+      if (uploadedImages.length) {
+        await Promise.all(uploadedImages.map((img) => deleteImage(img)));
+        console.log("Uploaded images deleted due to error in data submission.");
+      }
+
       const errorMessage =
         error.response?.data?.message ||
         "Failed to add or update the user. Please try again.";
-      console.error("Error:", error);
       alert(`Error: ${errorMessage}`);
     } finally {
       // Close modal and reset editing state
@@ -703,49 +724,6 @@ const RegEmp = () => {
                               <div className="text-danger">{errors.sex}</div>
                             ) : null}
                           </div>
-                          {/* <div className="mb-3">
-                            <label>Password</label>
-                            <div className="input-group">
-                              <Field
-                                name="password"
-                                type={showPassword ? "text" : "password"}
-                                className="form-control"
-                              />
-                              <Button
-                                onClick={toggleShowPassword}
-                                className="btn btn-outline-secondary"
-                              >
-                                {showPassword ? "Hide" : "Show"}
-                              </Button>
-                            </div>
-                            {errors.password && touched.password ? (
-                              <div className="text-danger">
-                                {errors.password}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Re-enter Password</label>
-                            <div className="input-group">
-                              <Field
-                                name="confirmPassword"
-                                type={showPassword ? "text" : "password"}
-                                className="form-control"
-                              />
-                              <Button
-                                onClick={toggleShowPassword}
-                                className="btn btn-outline-secondary"
-                              >
-                                {showPassword ? "Hide" : "Show"}
-                              </Button>
-                            </div>
-                            {errors.confirmPassword &&
-                            touched.confirmPassword ? (
-                              <div className="text-danger">
-                                {errors.confirmPassword}
-                              </div>
-                            ) : null}
-                          </div> */}
                           <div className="text-end">
                             <button
                               variant="contained"

@@ -1,4 +1,10 @@
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+  getStorage,
+} from "firebase/storage";
 import { storage } from "../../../config/firebaseConfig.js"; // Import from the correct path
 
 function isFirebaseURL(url) {
@@ -29,6 +35,20 @@ export const ImageUploader = async (name, date, collectionName, file) => {
     return downloadURL;
   } catch (error) {
     console.error("Error uploading image:", error);
+    throw error;
+  }
+};
+
+export const deleteImage = async (imageURL) => {
+  try {
+    if (!imageURL) return;
+
+    const storage = getStorage();
+    const storageRef = ref(storage, imageURL);
+    await deleteObject(storageRef);
+    console.log("Image deleted successfully.");
+  } catch (error) {
+    console.error("Error deleting image:", error);
     throw error;
   }
 };
