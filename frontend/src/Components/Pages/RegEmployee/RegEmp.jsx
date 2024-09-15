@@ -6,6 +6,7 @@ import { Button, Modal, Switch } from "@mui/material";
 import "./RegEmp.scss";
 import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar";
 import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
+import axios from "axios";
 
 // Initial employee data with birthDate field
 const initialEmployees = [
@@ -102,12 +103,13 @@ const RegEmp = () => {
   };
 
   const handleSubmit = async (values) => {
+    console.log(values);
     const currentDate = new Date();
 
     // Helper function for uploading images
-    const uploadImage = (_fileName, folder, imageFile) =>
+    const uploadImage = (fileName, folder, imageFile) =>
       ImageUploader(
-        `${values.name}-${values.surname}-${values.fileName}`,
+        `${values.name}-${values.surname}-${fileName}`,
         currentDate,
         folder,
         imageFile
@@ -122,21 +124,58 @@ const RegEmp = () => {
 
     // Construct the data object with standardized field names
     const data = {
-      ...values,
-      // uID,
+      uid: "1234",
+      name: values.name,
       surName: values.surname,
       birthDay: values.birthDate,
+      email: values.email,
+      nicNumber: values.nicNumber,
       nicFront: nicPhotoURL,
       nicBack: nicBackPhotoURL,
+      houseNo: values.houseNo,
+      street: values.street,
+      city: values.city,
+      zipCode: values.zipCode,
       employeePic: employURL,
       contactNum: values.contactNumber,
       referenceConNum: values.refContactNumber,
+      epfNumber: values.epfNumber,
       etfNUmber: values.EtfNumber,
+      sex: values.sex,
       dateAndTime: currentDate.toISOString(),
     };
 
     if (editingEmployee) {
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/users/user/${editingEmployee.id}`,
+          data
+        );
+
+        alert(response.data.message);
+      } catch (error) {
+        console.error("Error updating user:", error);
+        alert("Failed to update the user. Please try again.");
+      }
     } else {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/users/user",
+          data
+        );
+        alert(response.data.message);
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          alert(`Error: ${error.response.data.message}`);
+        } else {
+          // Show a generic error message
+          alert("Failed to add the user. Please try again.");
+        }
+      }
     }
     setIsModalOpen(false);
     setEditingEmployee(null);
@@ -277,13 +316,13 @@ const RegEmp = () => {
                         name: editingEmployee?.name || "",
                         surname: editingEmployee?.surname || "",
                         nicNumber: editingEmployee?.nicNumber || "",
-                        nicPhoto: editingEmployee?.nicPhoto || "",
-                        nicBackPhoto: editingEmployee?.nicBackPhoto || "",
+                        nicPhoto: editingEmployee?.nicPhoto || null,
+                        nicBackPhoto: editingEmployee?.nicBackPhoto || null,
                         houseNo: editingEmployee?.houseNo || "",
                         street: editingEmployee?.street || "",
                         city: editingEmployee?.city || "",
                         zipCode: editingEmployee?.zipCode || "",
-                        employeePhoto: editingEmployee?.employeePhoto || "",
+                        employeePhoto: editingEmployee?.employeePhoto || null,
                         contactNumber: editingEmployee?.contactNumber || "",
                         refContactNumber:
                           editingEmployee?.refContactNumber || "",
@@ -298,7 +337,7 @@ const RegEmp = () => {
                       validationSchema={RegEmpSchema}
                       onSubmit={handleSubmit}
                     >
-                      {({ errors, touched }) => (
+                      {({ setFieldValue, errors, touched }) => (
                         <Form>
                           <div className="mb-3">
                             <label>Name</label>
@@ -351,18 +390,27 @@ const RegEmp = () => {
                             ) : null}
                           </div>
                           <div className="mb-3">
-                            <label>NIC Photo</label>
-                            <Field
+                            <label htmlFor="photo">NIC Photo</label>
+                            <input
                               name="nicPhoto"
                               type="file"
+                              onChange={(event) =>
+                                setFieldValue("nicPhoto", event.target.files[0])
+                              }
                               className="form-control"
                             />
                           </div>
                           <div className="mb-3">
-                            <label>NIC Back Photo</label>
-                            <Field
+                            <label htmlFor="photo">NIC Back Photo</label>
+                            <input
                               name="nicBackPhoto"
                               type="file"
+                              onChange={(event) =>
+                                setFieldValue(
+                                  "nicBackPhoto",
+                                  event.target.files[0]
+                                )
+                              }
                               className="form-control"
                             />
                           </div>
@@ -399,11 +447,17 @@ const RegEmp = () => {
                             ) : null}
                           </div>
                           <div className="mb-3">
-                            <label>Employee Photo</label>
-                            <Field
+                            <label htmlFor="photo">Employee Photo</label>
+                            <input
                               name="employeePhoto"
                               type="file"
                               className="form-control"
+                              onChange={(event) =>
+                                setFieldValue(
+                                  "employeePhoto",
+                                  event.target.files[0]
+                                )
+                              }
                             />
                           </div>
                           <div className="mb-3">

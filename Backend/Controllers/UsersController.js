@@ -6,31 +6,34 @@ const UsersCollection = db.collection("Users");
 
 // Create a new User
 export const createUser = async (req, res) => {
-  const {
-    usID,
-    name,
-    surName,
-    birthDay,
-    email,
-    nicNumber,
-    nicFront,
-    nicBack,
-    houseNo,
-    street,
-    city,
-    zipCode,
-    employeePic,
-    contactNum,
-    referenceConNum,
-    epfNumber,
-    etfNUmber,
-    sex,
-    dateAndTime,
-  } = req.body;
-
   try {
+    // Destructure values from req.body
+    const {
+      uid,
+      name,
+      surName,
+      birthDay,
+      email,
+      nicNumber,
+      nicFront,
+      nicBack,
+      houseNo,
+      street,
+      city,
+      zipCode,
+      employeePic,
+      contactNum,
+      referenceConNum,
+      epfNumber,
+      etfNUmber,
+      sex,
+      dateAndTime,
+    } = req.body;
+
+    console.log(req.body);
+
     const user = new User(
-      usID,
+      uid,
       name,
       surName,
       birthDay,
@@ -51,15 +54,21 @@ export const createUser = async (req, res) => {
       dateAndTime
     );
 
+    console.log(user);
+
     const docRef = await UsersCollection.add({ ...user });
-    const { usID, ...userWithoutusID } = user;
-    const newUser = { id: docRef.id, ...userWithoutusID };
+
+    // Remove tesid from the new user object before broadcasting
+    const { tesid: unused, ...userWithouttesid } = user;
+    const newUser = { id: docRef.id, ...userWithouttesid };
+
     broadcastCustomerChanges("UserAdded", newUser);
 
     return res
       .status(201)
       .send({ message: "User created successfully", id: docRef.id });
   } catch (error) {
+    console.log(error.message);
     return res.status(500).send({ error: error.message });
   }
 };

@@ -216,14 +216,18 @@ const Expenses = () => {
     );
 
     const data = {
-      ...values,
       expensesname: values.name,
       expensesType: values.type,
+      supplier: values.supplier,
+      other: values.other,
+      description: values.description,
+      amount: values.amount,
+      paymentMethod: values.paymentMethod,
+      invoiceNumber: values.invoiceNumber,
       bankTranferNum: values.bankTransferNumber,
       chequeNum: values.chequeNumber,
       image: downloadURL,
     };
-
     if (editingExpense) {
       try {
         const dateObject = new Date(

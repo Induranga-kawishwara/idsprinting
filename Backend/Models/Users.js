@@ -1,6 +1,6 @@
 class Users {
   constructor(
-    usID,
+    uid,
     name,
     surName,
     birthDay,
@@ -18,10 +18,10 @@ class Users {
     epfNumber,
     etfNUmber,
     sex,
-    accessibility = [],
-    dateAndTime
+    dateAndTime,
+    accessibility = []
   ) {
-    this.usID = usID;
+    this.uid = uid;
     this.name = name;
     this.surName = surName;
     this.birthDay = birthDay;
@@ -39,8 +39,8 @@ class Users {
     this.epfNumber = epfNumber;
     this.etfNUmber = etfNUmber;
     this.sex = sex;
-    this.accessibility = accessibility;
     this.dateAndTime = dateAndTime;
+    this.accessibility = accessibility;
   }
 }
 
