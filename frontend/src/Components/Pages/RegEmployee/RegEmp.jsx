@@ -81,11 +81,7 @@ const RegEmp = () => {
       emp.id === id ? { ...emp, isAdmin: !emp.isAdmin } : emp
     );
 
-    setEmployees(updatedEmployees);
-
-    setEditingEmployee(updatedEmployees.find((emp) => emp.id === id));
-
-    console.log(editingEmployee);
+    console.log(updatedEmployees.find((emp) => emp.id === id));
   };
 
   const handleToggleEmployee = (id) => {
@@ -93,13 +89,10 @@ const RegEmp = () => {
       emp.id === id ? { ...emp, isEmployee: !emp.isEmployee } : emp
     );
 
-    setEmployees(updatedEmployees);
-
     console.log(updatedEmployees.find((emp) => emp.id === id));
   };
 
   const handleEdit = (employee) => {
-    console.log(employee);
     setEditingEmployee(employee);
     setIsModalOpen(true);
   };
