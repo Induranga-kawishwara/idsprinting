@@ -84,7 +84,7 @@ const RegEmp = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = await axios.get("http://localhost:8080/users/user/");
+        const userData = await axios.get("http://localhost:8080/users");
 
         const formattedusers = userData.data.map((user) => {
           const { date, time } = ConvertToSLT(user.dateAndTime);
@@ -92,32 +92,18 @@ const RegEmp = () => {
             ...user,
             id: user.id,
             surname: user.surName,
-
-            nicNumber: "123456789V",
-            nicPhoto: "",
-            nicBackPhoto: "",
-            houseNo: "123",
-            street: "Main St",
-            city: "Colombo",
-            zipCode: "00100",
-            employeePhoto: "",
-            contactNumber: "0771234567",
-            refContactNumber: "0777654321",
-            epfNumber: "EPF001",
-            EtfNumber: "ETF001",
-            email: "indurangakawishwara2003@gmail.com",
-            password: "password123",
-            birthDate: "1985-06-15", // Birth Date field
-            updatedDate: "2024-08-13",
-            updatedTime: "15:00",
-            sex: "Male",
-            isAdmin: true,
-            isEmployee: true,
-
-            phone: user.contactNumber,
-            totalSpent: "100", // Example data; replace with real data if needed
-            addedDate: date,
-            addedTime: time,
+            birthDate: user.birthDay,
+            nicPhoto: user.nicFront,
+            nicBackPhoto: user.nicBack,
+            employeePhoto: user.employeePic,
+            contactNumber: user.contactNum,
+            refContactNumber: user.referenceConNum,
+            EtfNumber: user.etfNUmber,
+            accessibility: user?.accessibility || [
+              { isAdmin: false, isEmployee: false },
+            ],
+            updatedDate: date,
+            updatedTime: time,
           };
         });
 
@@ -132,48 +118,48 @@ const RegEmp = () => {
 
     fetchData();
 
-    // Listen for real-time user updates
-    socket.on("userAdded", (newuser) => {
-      const { date, time } = ConvertToSLT(newuser.addedDateAndTime);
-      const newuseradded = {
-        ...newuser,
-        surname: newuser.surName,
-        phone: newuser.contactNumber,
-        postalCode: newuser.postalcode,
-        addedDate: date,
-        addedTime: time,
-        totalSpent: "500", // Example data; replace with real data if needed
-      };
-      setusers((prevusers) => [newuseradded, ...prevusers]);
-    });
+    // // Listen for real-time user updates
+    // socket.on("userAdded", (newuser) => {
+    //   const { date, time } = ConvertToSLT(newuser.addedDateAndTime);
+    //   const newuseradded = {
+    //     ...newuser,
+    //     surname: newuser.surName,
+    //     phone: newuser.contactNumber,
+    //     postalCode: newuser.postalcode,
+    //     addedDate: date,
+    //     addedTime: time,
+    //     totalSpent: "500", // Example data; replace with real data if needed
+    //   };
+    //   setusers((prevusers) => [newuseradded, ...prevusers]);
+    // });
 
-    socket.on("userUpdated", (updateduser) => {
-      const { date, time } = ConvertToSLT(updateduser.addedDateAndTime);
+    // socket.on("userUpdated", (updateduser) => {
+    //   const { date, time } = ConvertToSLT(updateduser.addedDateAndTime);
 
-      const newupdateduser = {
-        ...updateduser,
-        surname: updateduser.surName,
-        postalCode: updateduser.postalcode,
-        addedDate: date,
-        addedTime: time,
-        totalSpent: "600", // Example data; replace with real data if needed
-      };
-      setusers((prevusers) =>
-        prevusers.map((user) =>
-          user.id === updateduser.id ? newupdateduser : user
-        )
-      );
-    });
+    //   const newupdateduser = {
+    //     ...updateduser,
+    //     surname: updateduser.surName,
+    //     postalCode: updateduser.postalcode,
+    //     addedDate: date,
+    //     addedTime: time,
+    //     totalSpent: "600", // Example data; replace with real data if needed
+    //   };
+    //   setusers((prevusers) =>
+    //     prevusers.map((user) =>
+    //       user.id === updateduser.id ? newupdateduser : user
+    //     )
+    //   );
+    // });
 
-    socket.on("userDeleted", ({ id }) => {
-      setusers((prevusers) => prevusers.filter((user) => user.id !== id));
-    });
+    // socket.on("userDeleted", ({ id }) => {
+    //   setusers((prevusers) => prevusers.filter((user) => user.id !== id));
+    // });
 
-    return () => {
-      socket.off("userAdded");
-      socket.off("userUpdated");
-      socket.off("userDeleted");
-    };
+    // return () => {
+    //   socket.off("userAdded");
+    //   socket.off("userUpdated");
+    //   socket.off("userDeleted");
+    // };
   }, []);
 
   const handleToggleAdmin = (id) => {
@@ -342,7 +328,7 @@ const RegEmp = () => {
               <table className="table mt-3 custom-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
+                    <th>No</th>
                     <th>Name</th>
                     <th>Surname</th>
                     <th>NIC Number</th>
@@ -361,9 +347,9 @@ const RegEmp = () => {
                   </tr>
                 </thead>
                 <tbody className="custom-table">
-                  {employees.map((employee) => (
+                  {employees.map((employee, index) => (
                     <tr key={employee.id}>
-                      <td>{employee.id}</td>
+                      <td value={employee.id}>{index + 1}</td>
                       <td>{employee.name}</td>
                       <td>{employee.surname}</td>
                       <td>{employee.nicNumber}</td>
@@ -376,7 +362,7 @@ const RegEmp = () => {
                       <td>{employee.sex}</td>
                       <td>
                         <Switch
-                          checked={employee.isAdmin}
+                          checked={employee.accessibility.isAdmin}
                           onChange={() => {
                             if (
                               window.confirm(
@@ -390,7 +376,7 @@ const RegEmp = () => {
                       </td>
                       <td>
                         <Switch
-                          checked={employee.isEmployee}
+                          checked={employee.accessibility.isEmployee}
                           onChange={() => {
                             if (
                               window.confirm(
