@@ -9,6 +9,7 @@ import Cashup from "./Routes/CashupRoutes.js";
 import dotenv from "dotenv";
 import { app, server } from "./SocketIO/socketIO.js";
 import Categories from "./Routes/CategoryRoutes.js";
+import User from "./Routes/UserRoutes.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use("/suppliers", Supplier);
 app.use("/expenses", Expenses);
 app.use("/cashup", Cashup);
 app.use("/categories", Categories);
+app.use("/users", User);
 
 server.listen(PORT, () =>
   console.log(`App is listening on url http://localhost:${PORT}`)

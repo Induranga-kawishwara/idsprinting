@@ -53,10 +53,10 @@ const RegEmpSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")
     .required("Email is required"),
-  password: Yup.string().required("Password is required"),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-    .required("Re-entering the password is required"),
+  // password: Yup.string().required("Password is required"),
+  // confirmPassword: Yup.string()
+  //   .oneOf([Yup.ref("password"), null], "Passwords must match")
+  //   .required("Re-entering the password is required"),
   sex: Yup.string().required("Sex is required"),
 });
 
@@ -64,9 +64,9 @@ const RegEmp = () => {
   const [employees, setEmployees] = useState(initialEmployees);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
 
-  const toggleShowPassword = () => setShowPassword(!showPassword);
+  // const toggleShowPassword = () => setShowPassword(!showPassword);
 
   const handleToggleAdmin = (id) => {
     const updatedEmployees = employees.map((emp) =>
@@ -75,7 +75,9 @@ const RegEmp = () => {
 
     setEmployees(updatedEmployees);
 
-    console.log(updatedEmployees.find((emp) => emp.id === id));
+    setEditingEmployee(updatedEmployees.find((emp) => emp.id === id));
+
+    console.log(editingEmployee);
   };
 
   const handleToggleEmployee = (id) => {
@@ -216,6 +218,14 @@ const RegEmp = () => {
                       <td>
                         <button
                           variant="contained"
+                          size="small"
+                          // onClick={() => handleReset(employee.id)}
+                          className="resetbtn"
+                        >
+                          Reset password
+                        </button>
+                        <button
+                          variant="contained"
                           color="primary"
                           size="small"
                           onClick={() => handleEdit(employee)}
@@ -273,8 +283,8 @@ const RegEmp = () => {
                         EtfNumber: editingEmployee?.EtfNumber || "",
                         birthDate: editingEmployee?.birthDate || "", // Birth Date Field
                         email: editingEmployee?.email || "",
-                        password: "",
-                        confirmPassword: "",
+                        // password: "",
+                        // confirmPassword: "",
                         sex: editingEmployee?.sex || "Male",
                       }}
                       validationSchema={RegEmpSchema}
@@ -445,7 +455,7 @@ const RegEmp = () => {
                               <div className="text-danger">{errors.sex}</div>
                             ) : null}
                           </div>
-                          <div className="mb-3">
+                          {/* <div className="mb-3">
                             <label>Password</label>
                             <div className="input-group">
                               <Field
@@ -487,7 +497,7 @@ const RegEmp = () => {
                                 {errors.confirmPassword}
                               </div>
                             ) : null}
-                          </div>
+                          </div> */}
                           <div className="text-end">
                             <button
                               variant="contained"

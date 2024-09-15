@@ -12,497 +12,481 @@ body,
 }
 
 .bodyofpage {
-    padding-top: 100px;
-  }
-
- 
-// search in add category
-  
-input.searchfunctions {
-    width: 200%; 
-    background-color: #b3cc92; /* Light grey background color */
-    font-weight: bold;
-    color: #000000; /* Text color */
-    padding: 9px; /* Uniform padding */
-    margin: 20px 0px 10px 2px; /* Margin: top, right/left, bottom */
-    border: none; /* Remove border */
-    border-radius: 7px; /* Rounded corners */
-    box-shadow: none; /* Remove any shadow if present */
-    outline: none; /* Remove default outline */
-    font-size: 14px;
+  padding-top: 100px;
 }
-  input.searchfunctions:focus {
-    background-color: #535353; /* Slightly darker grey when focused */
-    outline: none; /* Remove the default focus outline */
+
+// search in add category
+
+input.searchfunctions {
+  width: 200%;
+  background-color: #b3cc92; /* Light grey background color */
+  font-weight: bold;
+  color: #000000; /* Text color */
+  padding: 9px; /* Uniform padding */
+  margin: 20px 0px 10px 2px; /* Margin: top, right/left, bottom */
+  border: none; /* Remove border */
+  border-radius: 7px; /* Rounded corners */
+  box-shadow: none; /* Remove any shadow if present */
+  outline: none; /* Remove default outline */
+  font-size: 14px;
+}
+input.searchfunctions:focus {
+  background-color: #535353; /* Slightly darker grey when focused */
+  outline: none; /* Remove the default focus outline */
 }
 
 /* Optional: Change text color when typing */
-input.searchfunctions:active, input.searchfunctions:hover {
-    color: #ffffff; /* Darker text color when typing or hovered */
+input.searchfunctions:active,
+input.searchfunctions:hover {
+  color: #ffffff; /* Darker text color when typing or hovered */
 }
-
 
 //  search dunction
-input.searchfunctionsdate{
-    width: 100%; 
-    background-color: #b3cc92; /* Light grey background color */
-    font-weight: bold;
-    color: #000000; /* Text color */
-    padding: 9px; /* Uniform padding */
-    margin: 20px 0 10px 0; /* Margin: top, right/left, bottom */
-    border: none; /* Remove border */
-    border-radius: 7px; /* Rounded corners */
-    box-shadow: none; /* Remove any shadow if present */
-    outline: none; /* Remove default outline */
-    font-size: 12px;
+input.searchfunctionsdate {
+  width: 100%;
+  background-color: #b3cc92; /* Light grey background color */
+  font-weight: bold;
+  color: #000000; /* Text color */
+  padding: 9px; /* Uniform padding */
+  margin: 20px 0 10px 0; /* Margin: top, right/left, bottom */
+  border: none; /* Remove border */
+  border-radius: 7px; /* Rounded corners */
+  box-shadow: none; /* Remove any shadow if present */
+  outline: none; /* Remove default outline */
+  font-size: 12px;
 }
-  input.searchfunctionsdate:focus {
-    background-color: #535353; /* Slightly darker grey when focused */
-    outline: none; /* Remove the default focus outline */
+input.searchfunctionsdate:focus {
+  background-color: #535353; /* Slightly darker grey when focused */
+  outline: none; /* Remove the default focus outline */
 }
 /* Optional: Change text color when typing */
-input.searchfunctionsdate:active, input.searchfunctionsdate:hover {
-    color: #ffffff; /* Darker text color when typing or hovered */
+input.searchfunctionsdate:active,
+input.searchfunctionsdate:hover {
+  color: #ffffff; /* Darker text color when typing or hovered */
 }
-
 
 //dropdown filter
 select.formdropdown {
-    width: 30%; 
-    background-color: #b3cc92; /* Light grey background color */
-    font-weight: bold;
-    color: #777777; /* Text color */
-    padding: 9px; /* Uniform padding */
-    margin: 20px 0 10px 0; /* Margin: top, right/left, bottom */
-    border: none; /* Remove border */
-    border-radius: 7px; /* Rounded corners */
-    box-shadow: none; /* Remove any shadow if present */
-    outline: none; /* Remove default outline */
-    font-size: 12px;
-    appearance: none; /* Remove default arrow icon in some browsers */
-    -webkit-appearance: none; /* Safari and Chrome */
-    -moz-appearance: none; /* Firefox */
+  width: 30%;
+  background-color: #b3cc92; /* Light grey background color */
+  font-weight: bold;
+  color: #777777; /* Text color */
+  padding: 9px; /* Uniform padding */
+  margin: 20px 0 10px 0; /* Margin: top, right/left, bottom */
+  border: none; /* Remove border */
+  border-radius: 7px; /* Rounded corners */
+  box-shadow: none; /* Remove any shadow if present */
+  outline: none; /* Remove default outline */
+  font-size: 12px;
+  appearance: none; /* Remove default arrow icon in some browsers */
+  -webkit-appearance: none; /* Safari and Chrome */
+  -moz-appearance: none; /* Firefox */
 }
 
 select.formdropdown:focus {
-    background-color: #535353; /* Change background color on focus */
-    color: #ffffff; /* Text color change on focus */
-    outline: none; /* Remove default outline */
+  background-color: #535353; /* Change background color on focus */
+  color: #ffffff; /* Text color change on focus */
+  outline: none; /* Remove default outline */
 }
 
-select.formdropdown:active, select.formdropdown:hover {
-    color: #ffffff; /* Darker text color when hovered or active */
+select.formdropdown:active,
+select.formdropdown:hover {
+  color: #ffffff; /* Darker text color when hovered or active */
 }
 
 select.formdropdown::after {
-    content: "▼"; /* Add custom arrow */
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    font-size: 10px;
+  content: "▼"; /* Add custom arrow */
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 10px;
 }
-
-
 
 // clear button
 .prevbutton {
-    
-    background-color: #f44336; /* Green */
-    color: rgb(255, 255, 255);
-    border: none; /* Green */
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 18px;
-    padding: 4px 15px;
-    margin: 20px 0px 10px 10px; /* Margin: top, right/left, bottom */
-  }
-  
-  .prevbutton:hover {
-    background-color: #ffffff; /* Green */
-    color:  #f44336;
-    border: 3px solid #f44336;
-  }
+  background-color: #f44336; /* Green */
+  color: rgb(255, 255, 255);
+  border: none; /* Green */
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 4px 15px;
+  margin: 20px 0px 10px 10px; /* Margin: top, right/left, bottom */
+}
 
-
-
+.prevbutton:hover {
+  background-color: #ffffff; /* Green */
+  color: #f44336;
+  border: 3px solid #f44336;
+}
 
 @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
-  
-  .custom-modal-dialog {
-    max-width: 500px; /* Adjust width as needed */
-    width: 100%;
-    margin: 0 auto; /* Center the dialog horizontally */
-    z-index: 1050; /* Ensure it is above other elements */
-    background-color: #9fb47a; /* Modal background color */
-    border-radius: 15px;
-    padding: 25px;
-    margin-top: 100px;
-    margin-bottom: 100px;
-    font-weight: bold;
-    animation: fadeIn 0.5s ease-out; /* Apply the fade-in animation */
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .custom-modal-content {
-    max-height: 80vh; /* Allows the modal to grow up to 80% of the viewport height */
-    overflow-y: auto; /* Enables scrolling if content exceeds max-height */
-    border-radius: 8px; /* Rounded corners */
-    color: #333; /* Font color for the entire modal content */
-  }
-  
+}
 
-  input.form-control,
-  select.form-control {
-    background-color: #ccd5c0; /* Light grey background color */
-    border-color: #ccd5c0; /* Border color */
-    font-weight: bold;
-    color: #333232; /* Text color */
-    padding: 6px; /* Padding inside the input */
-    border-radius: 10px; /* Rounded corners */
-    font-size: 15px;
-  }
-  
-  input.form-control:focus,
-  select.form-control:focus {
-    background-color: #ffffff; /* White background when focused */
-    outline: none; /* Removes default outline */
-    box-shadow: none; /* Removes box shadow */
-  }
-  
-  input.form-control:active,
-  input.form-control:hover,
-  select.form-control:active,
-  select.form-control:hover {
-    color: #363636; /* Darker text color when typing or hovered */
-  }
+.custom-modal-dialog {
+  max-width: 500px; /* Adjust width as needed */
+  width: 100%;
+  margin: 0 auto; /* Center the dialog horizontally */
+  z-index: 1050; /* Ensure it is above other elements */
+  background-color: #9fb47a; /* Modal background color */
+  border-radius: 15px;
+  padding: 25px;
+  margin-top: 100px;
+  margin-bottom: 100px;
+  font-weight: bold;
+  animation: fadeIn 0.5s ease-out; /* Apply the fade-in animation */
+}
 
+.custom-modal-content {
+  max-height: 80vh; /* Allows the modal to grow up to 80% of the viewport height */
+  overflow-y: auto; /* Enables scrolling if content exceeds max-height */
+  border-radius: 8px; /* Rounded corners */
+  color: #333; /* Font color for the entire modal content */
+}
 
-  
+input.form-control,
+select.form-control {
+  background-color: #ccd5c0; /* Light grey background color */
+  border-color: #ccd5c0; /* Border color */
+  font-weight: bold;
+  color: #333232; /* Text color */
+  padding: 6px; /* Padding inside the input */
+  border-radius: 10px; /* Rounded corners */
+  font-size: 15px;
+}
 
-  /* Custom styles for the table */
+input.form-control:focus,
+select.form-control:focus {
+  background-color: #ffffff; /* White background when focused */
+  outline: none; /* Removes default outline */
+  box-shadow: none; /* Removes box shadow */
+}
+
+input.form-control:active,
+input.form-control:hover,
+select.form-control:active,
+select.form-control:hover {
+  color: #363636; /* Darker text color when typing or hovered */
+}
+
+/* Custom styles for the table */
 /* Custom styles for the table with border radius */
 .custom-table {
-    background-color: #0000004b; /* Change this to your desired table background color */
-    color: #333; /* Change this to your desired text color */
-    border-radius: 8px; /* Adjust this value for the desired roundness */
-    overflow: hidden; /* Ensures content doesn't overflow the rounded corners */
-    border-collapse: separate; /* Makes sure border radius works */
-    font-weight: none;
-  }
-  
-  /* Apply different colors for the table headers */
-  .custom-table thead th {
-    background-color: #e0e0e0; /* Header background color */
-    color: #000; /* Header text color */
-  }
-  
-  /* Apply different colors for table rows */
-  .custom-table tbody tr {
-    background-color: #f8f8f8; /* Row background color */
-    color: #333; /* Row text color */
-  }.custom-table tbody td {
-    background-color: #f8f8f8; /* Row background color */
-    color: #525252; /* Row text color */
-  }
-  
-  /* Optional: Hover effect for rows */
-  .custom-table tbody tr:hover {
-    background-color: #ddd; /* Hover background color */
-  }
-  
-  /* Border radius for individual corners if needed */
-  .custom-table th:first-child,
-  .custom-table td:first-child {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-  }
-  
-  .custom-table th:last-child,
-  .custom-table td:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-  }
-  
+  background-color: #0000004b; /* Change this to your desired table background color */
+  color: #333; /* Change this to your desired text color */
+  border-radius: 8px; /* Adjust this value for the desired roundness */
+  overflow: hidden; /* Ensures content doesn't overflow the rounded corners */
+  border-collapse: separate; /* Makes sure border radius works */
+  font-weight: none;
+}
 
+/* Apply different colors for the table headers */
+.custom-table thead th {
+  background-color: #e0e0e0; /* Header background color */
+  color: #000; /* Header text color */
+}
+
+/* Apply different colors for table rows */
+.custom-table tbody tr {
+  background-color: #f8f8f8; /* Row background color */
+  color: #333; /* Row text color */
+}
+.custom-table tbody td {
+  background-color: #f8f8f8; /* Row background color */
+  color: #525252; /* Row text color */
+}
+
+/* Optional: Hover effect for rows */
+.custom-table tbody tr:hover {
+  background-color: #ddd; /* Hover background color */
+}
+
+/* Border radius for individual corners if needed */
+.custom-table th:first-child,
+.custom-table td:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.custom-table th:last-child,
+.custom-table td:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
 
 .addnewbtntop {
-    background-color: #4d7cff; /* Green */
-    color: rgb(255, 255, 255);
-    border: none; /* Green */
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 20px;
-    padding: 8px 25px;
-    margin: 3px;
-  }
+  background-color: #4d7cff; /* Green */
+  color: rgb(255, 255, 255);
+  border: none; /* Green */
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 8px 25px;
+  margin: 3px;
+}
 .addnewbtntop:hover {
-    background-color: #ffffff; /* Green */
-    color: #4d7cff;
-    border: 3px solid #4d7cff;
-  }
+  background-color: #ffffff; /* Green */
+  color: #4d7cff;
+  border: 3px solid #4d7cff;
+}
 
 .editbtn {
-    
-    background-color: #04AA6D; /* Green */
-    color: rgb(255, 255, 255);
-    border: none; /* Green */
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 18px;
-    padding: 4px 15px;
-    margin: 3px;
-  }
-  
-  .editbtn:hover {
-    background-color: #ffffff; /* Green */
-    color:  #04AA6D;
-    border: 3px solid #04AA6D;
-  }
+  background-color: #04aa6d; /* Green */
+  color: rgb(255, 255, 255);
+  border: none; /* Green */
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 4px 15px;
+  margin: 3px;
+}
 
-  .deletebtn {
-    
-    background-color: #f44336; /* Green */
-    color: white;
-    border: none; /* Green */
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 18px;
-    padding: 4px 15px;
-    margin: 3px;
-  }
-  
-  .deletebtn:hover {
-    background-color: #ffffff; /* Green */
-    color:  #f44336;
-    border: 3px solid #f44336;
-  }
+.editbtn:hover {
+  background-color: #ffffff; /* Green */
+  color: #04aa6d;
+  border: 3px solid #04aa6d;
+}
 
-  
-    .closebutton {
-    
-    background-color: #f44336; /* Green */
-    color: white;
-    border: none; /* Green */
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 20px;
-    padding: 4px 15px;
-    margin: 3px;
-  }
-  
-  .closebutton:hover {
-    background-color: #dbdbdb; /* Green */
-    color:  #f44336;
-    border: 3px solid #f44336;
-  }
+.deletebtn {
+  background-color: #f44336; /* Green */
+  color: white;
+  border: none; /* Green */
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 4px 15px;
+  margin: 3px;
+}
 
-  .savechangesbutton {
-    
-    background-color: #04AA6D; /* Green */
-    color: white;
-    border: none; /* Green */
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 20px;
-    padding: 4px 15px;
-    margin: 3px;
-  }
-  
-  .savechangesbutton:hover {
-    background-color: #dbdbdb; /* Green */
-    color:  #04AA6D;
-    border: 3px solid #04AA6D;
-  }
+.resetbtn {
+  background-color: #3662f4; /* Green */
+  color: white;
+  border: none; /* Green */
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 4px 15px;
+  margin: 3px;
+}
 
+.deletebtn:hover {
+  background-color: #ffffff; /* Green */
+  color: #f44336;
+  border: 3px solid #f44336;
+}
 
+.resetbtn:hover {
+  background-color: #ffffff; /* Green */
+  color: #4137ca;
+  border: 3px solid #3639f4;
+}
 
-  .pagination {
-    display: flex;
-    justify-content: flex-end; /* Aligns pagination controls to the right */
-    align-items: center; /* Centers the controls vertically */
-    margin-top: 20px; /* Adds some space above the pagination controls */
-  }
-  
-  .pagination button {
-    margin: 0 5px; /* Adds space between pagination buttons */
-    padding: 5px 10px; /* Adds padding to the buttons */
-    background-color: #007bff; /* Background color for buttons */
-    color: white; /* Text color for buttons */
-    border: none; /* Removes default border */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Changes cursor to pointer on hover */
-  }
-  
-  .pagination button:disabled {
-    background-color: #d6d6d6; /* Lighter color for disabled state */
-    cursor: not-allowed; /* Changes cursor to not-allowed for disabled buttons */
-  }
-  
-  .pagination span {
-    margin: 0 10px; /* Adds space around the page number text */
-    font-size: 16px; /* Adjusts the font size of the page number text */
-  }
+.closebutton {
+  background-color: #f44336; /* Green */
+  color: white;
+  border: none; /* Green */
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 4px 15px;
+  margin: 3px;
+}
 
+.closebutton:hover {
+  background-color: #dbdbdb; /* Green */
+  color: #f44336;
+  border: 3px solid #f44336;
+}
 
-  .sharebutton {
-    
-    background-color: #3360da; /* Green */
-    color: rgb(255, 255, 255);
-    border: none; /* Green */
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 18px;
-    padding: 4px 15px;
-    margin: 3px;
-  }
-  
-  .sharebutton:hover {
-    background-color: #ffffff; /* Green */
-    color:  #3360da;
-    border: 3px solid #3360da;
-  }
-  
+.savechangesbutton {
+  background-color: #04aa6d; /* Green */
+  color: white;
+  border: none; /* Green */
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 4px 15px;
+  margin: 3px;
+}
 
+.savechangesbutton:hover {
+  background-color: #dbdbdb; /* Green */
+  color: #04aa6d;
+  border: 3px solid #04aa6d;
+}
 
+.pagination {
+  display: flex;
+  justify-content: flex-end; /* Aligns pagination controls to the right */
+  align-items: center; /* Centers the controls vertically */
+  margin-top: 20px; /* Adds some space above the pagination controls */
+}
 
+.pagination button {
+  margin: 0 5px; /* Adds space between pagination buttons */
+  padding: 5px 10px; /* Adds padding to the buttons */
+  background-color: #007bff; /* Background color for buttons */
+  color: white; /* Text color for buttons */
+  border: none; /* Removes default border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Changes cursor to pointer on hover */
+}
 
+.pagination button:disabled {
+  background-color: #d6d6d6; /* Lighter color for disabled state */
+  cursor: not-allowed; /* Changes cursor to not-allowed for disabled buttons */
+}
 
-  
+.pagination span {
+  margin: 0 10px; /* Adds space around the page number text */
+  font-size: 16px; /* Adjusts the font size of the page number text */
+}
 
-  /* Custom styles for the react-datepicker container */
+.sharebutton {
+  background-color: #3360da; /* Green */
+  color: rgb(255, 255, 255);
+  border: none; /* Green */
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 4px 15px;
+  margin: 3px;
+}
+
+.sharebutton:hover {
+  background-color: #ffffff; /* Green */
+  color: #3360da;
+  border: 3px solid #3360da;
+}
+
+/* Custom styles for the react-datepicker container */
 .react-datepicker-wrapper {
-    width: 30%;
-  }
-  
-  .react-datepicker {
-    border: 1px solid #d4d4d4;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    
-  }
-  
-  /* Header styles */
-  .react-datepicker__header {
-    background-color: #5c5c5c;
-    border-bottom: 1px solid #d4d4d4;
-    border-radius: 8px 8px 0 0;
-    
-  }
-  
-  .react-datepicker__current-month {
-    font-weight: bold;
-    color: #ffffff;
-    font-size: 13px;
-  }
-  
-  .react-datepicker__day-name {
-    color: #ffffff;
-  }
-  
-  /* Day styles */
-  .react-datepicker__day {
-    color: #6d6d6d;
-    font-size: 14px;
-    margin: 0.2em;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-  }
-  
-  .react-datepicker__day:hover {
-    background-color: #b3b3b3;
-  }
-  
-  .react-datepicker__day--selected {
-    background-color: #ff0000;
-    color: white;
-  }
-  
-  .react-datepicker__day--keyboard-selected {
-    background-color: #0057b381;
-    color: white;
-  }
-  
-  .react-datepicker__day--today {
-    font-weight: bold;
-    color: #000000;
-  }
-  
-  /* Navigation buttons */
-  .react-datepicker__navigation {
-    top: 16px;
-    line-height: 1.5;
-  }
-  
-  .react-datepicker__navigation--previous {
-    border-right-color: #666;
-  }
-  
-  .react-datepicker__navigation--next {
-    border-left-color: #666;
-  }
-  
-  /* Custom input styles */
-  .custom-date-input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: border-color 0.2s;
-  }
-  
-  .custom-date-input:focus {
-    border-color: #007bff;
-    outline: none;
-  }
+  width: 30%;
+}
 
-  
+.react-datepicker {
+  border: 1px solid #d4d4d4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
 
-  
+/* Header styles */
+.react-datepicker__header {
+  background-color: #5c5c5c;
+  border-bottom: 1px solid #d4d4d4;
+  border-radius: 8px 8px 0 0;
+}
+
+.react-datepicker__current-month {
+  font-weight: bold;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.react-datepicker__day-name {
+  color: #ffffff;
+}
+
+/* Day styles */
+.react-datepicker__day {
+  color: #6d6d6d;
+  font-size: 14px;
+  margin: 0.2em;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.react-datepicker__day:hover {
+  background-color: #b3b3b3;
+}
+
+.react-datepicker__day--selected {
+  background-color: #ff0000;
+  color: white;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: #0057b381;
+  color: white;
+}
+
+.react-datepicker__day--today {
+  font-weight: bold;
+  color: #000000;
+}
+
+/* Navigation buttons */
+.react-datepicker__navigation {
+  top: 16px;
+  line-height: 1.5;
+}
+
+.react-datepicker__navigation--previous {
+  border-right-color: #666;
+}
+
+.react-datepicker__navigation--next {
+  border-left-color: #666;
+}
+
+/* Custom input styles */
+.custom-date-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.2s;
+}
+
+.custom-date-input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
 /* Media queries for responsive design */
 @media (max-width: 768px) {
-    .custom-modal-dialog {
-      width: 90%; /* Full width on mobile */
-      margin: 30px auto; /* Reduced margin */
-      margin-top: 30px;
-      margin-bottom: 1px;
-      padding: 20px;
-      
-    }
-  
-    .pagination {
-      flex-direction: column; /* Stack pagination controls vertically */
-      align-items: center; /* Center align pagination */
-    }
-  
-    .addnewbtntop {
-      width: 100%; /* Full width on mobile */
-    }
-  
-    .editbtn,
-    .deletebtn,
-    .closebutton,
-    .savechangesbutton {
-      max-width: 100%; /* Full width on mobile */
-      font-size: 15px;
-    }
-    input.searchfunctionsdate{
-         padding: 9px;
-         padding-left: 10px;
-         padding-right: 10px;
+  .custom-modal-dialog {
+    width: 90%; /* Full width on mobile */
+    margin: 30px auto; /* Reduced margin */
+    margin-top: 30px;
+    margin-bottom: 1px;
+    padding: 20px;
+  }
+
+  .pagination {
+    flex-direction: column; /* Stack pagination controls vertically */
+    align-items: center; /* Center align pagination */
+  }
+
+  .addnewbtntop {
+    width: 100%; /* Full width on mobile */
+  }
+
+  .editbtn,
+  .deletebtn,
+  .resetbtn .closebutton,
+  .savechangesbutton {
+    max-width: 100%; /* Full width on mobile */
+    font-size: 15px;
+  }
+  input.searchfunctionsdate {
+    padding: 9px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
   input.searchfunctions {
-    width: 100%; }
-  
+    width: 100%;
+  }
 }
