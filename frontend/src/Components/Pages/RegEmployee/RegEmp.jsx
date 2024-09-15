@@ -32,7 +32,7 @@ const initialEmployees = [
     refContactNumber: "0777654321",
     epfNumber: "EPF001",
     EtfNumber: "ETF001",
-    email: "john.doe@example.com",
+    email: "indurangakawishwara2003@gmail.com",
     password: "password123",
     birthDate: "1985-06-15", // Birth Date field
     updatedDate: "2024-08-13",
@@ -106,6 +106,27 @@ const RegEmp = () => {
 
   const handleDelete = (id) => {
     setEmployees(employees.filter((employee) => employee.id !== id));
+  };
+
+  const handleReset = (id) => {
+    const employee = employees.find((emp) => emp.id === id);
+
+    if (!employee) {
+      alert("Employee not found.");
+      return;
+    }
+
+    const { email } = employee;
+
+    sendPasswordResetEmail(getAuth(), email)
+      .then(() => {
+        alert(`Password reset email sent to: ${email}`);
+      })
+      .catch((error) => {
+        alert(
+          `Error sending password reset email: ${error.code} - ${error.message}`
+        );
+      });
   };
 
   const handleSubmit = async (values) => {
@@ -281,7 +302,7 @@ const RegEmp = () => {
                         <button
                           variant="contained"
                           size="small"
-                          // onClick={() => handleReset(employee.id)}
+                          onClick={() => handleReset(employee.id)}
                           className="resetbtn"
                         >
                           Reset password
