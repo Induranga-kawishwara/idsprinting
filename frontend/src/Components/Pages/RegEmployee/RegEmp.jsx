@@ -162,6 +162,19 @@ const RegEmp = () => {
     // };
   }, []);
 
+  // Reusable component for displaying file links
+  const FileViewer = ({ fileUrl, fileLabel }) => (
+    <td>
+      {fileUrl ? (
+        <div>
+          <Button onClick={() => window.open(fileUrl, "_blank")}>View</Button>
+        </div>
+      ) : (
+        <span>No {fileLabel}</span>
+      )}
+    </td>
+  );
+
   const handleToggleAdmin = (id) => {
     const updatedEmployees = employees.map((emp) =>
       emp.id === id ? { ...emp, isAdmin: !emp.isAdmin } : emp
@@ -391,51 +404,18 @@ const RegEmp = () => {
                           }}
                         />
                       </td>
-                      <td>
-                        {employee.employeePic ? (
-                          <div>
-                            <Button
-                              onClick={() =>
-                                window.open(employee.employeePic, "_blank")
-                              }
-                            >
-                              View
-                            </Button>
-                          </div>
-                        ) : (
-                          <span>No File</span>
-                        )}
-                      </td>
-                      <td>
-                        {employee.nicFront ? (
-                          <div>
-                            <Button
-                              onClick={() =>
-                                window.open(employee.nicFront, "_blank")
-                              }
-                            >
-                              View
-                            </Button>
-                          </div>
-                        ) : (
-                          <span>No File</span>
-                        )}
-                      </td>
-                      <td>
-                        {employee.nicBack ? (
-                          <div>
-                            <Button
-                              onClick={() =>
-                                window.open(employee.nicBack, "_blank")
-                              }
-                            >
-                              View
-                            </Button>
-                          </div>
-                        ) : (
-                          <span>No File</span>
-                        )}
-                      </td>
+                      <FileViewer
+                        fileUrl={employee.employeePic}
+                        fileLabel="File"
+                      />
+                      <FileViewer
+                        fileUrl={employee.nicFront}
+                        fileLabel="NIC Front"
+                      />
+                      <FileViewer
+                        fileUrl={employee.nicBack}
+                        fileLabel="NIC Back"
+                      />
                       <td>{employee.updatedDate}</td>
                       <td>{employee.updatedTime}</td>
                       <td>
