@@ -7,7 +7,10 @@ import { Button, Modal } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
-import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
+import {
+  ImageUploader,
+  deleteImage,
+} from "../../Reusable/ImageUploder/ImageManager.js";
 import _ from "lodash";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import "../All.scss";
@@ -208,32 +211,49 @@ const Expenses = () => {
   const handleSubmit = async (values) => {
     const currentDate = new Date();
 
-    const downloadURL = await ImageUploader(
-      values.name,
-      currentDate,
-      "Expencess",
-      values.photo
-    );
-
-    const data = {
-      expensesname: values.name,
-      expensesType: values.type,
-      supplier: values.supplier,
-      other: values.other,
-      description: values.description,
-      amount: values.amount,
-      paymentMethod: values.paymentMethod,
-      invoiceNumber: values.invoiceNumber,
-      bankTranferNum: values.bankTransferNumber,
-      chequeNum: values.chequeNumber,
-      image: downloadURL,
-    };
-    if (editingExpense) {
+    // Helper function to upload an image and handle errors
+    const uploadImage = async (fileName, folder, imageFile) => {
       try {
+        const downloadURL = await ImageUploader(
+          fileName,
+          currentDate,
+          folder,
+          imageFile
+        );
+        return downloadURL;
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        throw error;
+      }
+    };
+
+    let downloadURL = null;
+    let imageFileName = `${values.name}-${currentDate.toISOString()}`; // Assuming this is a unique identifier for the image
+
+    try {
+      // Upload image
+      downloadURL = await uploadImage(imageFileName, "Expenses", values.photo);
+
+      // Prepare data object
+      const data = {
+        expensesname: values.name,
+        expensesType: values.type,
+        supplier: values.supplier,
+        other: values.other,
+        description: values.description,
+        amount: values.amount,
+        paymentMethod: values.paymentMethod,
+        invoiceNumber: values.invoiceNumber,
+        bankTranferNum: values.bankTransferNumber,
+        chequeNum: values.chequeNumber,
+        image: downloadURL,
+      };
+
+      if (editingExpense) {
+        // Update existing expense
         const dateObject = new Date(
           `${editingExpense.addedDate} ${editingExpense.addedTime}`
         );
-
         const isoDateString = dateObject.toISOString();
 
         const response = await axios.put(
@@ -242,33 +262,40 @@ const Expenses = () => {
         );
 
         alert(response.data.message);
-      } catch (error) {
-        console.error("Error updating expense:", error);
-        alert("Failed to update the expense. Please try again.");
-      }
-    } else {
-      try {
+      } else {
+        // Create new expense
         const response = await axios.post(
           "https://candied-chartreuse-concavenator.glitch.me/expenses/expenses",
           { ...data, dateAndTime: currentDate }
         );
 
         alert(response.data.message);
-      } catch (error) {
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.message
-        ) {
-          alert(`Error: ${error.response.data.message}`);
-        } else {
-          // Show a generic error message
-          alert("Failed to add the expense. Please try again.");
+      }
+    } catch (error) {
+      // Error handling and cleanup
+      console.error("Error:", error);
+
+      // Attempt to delete the uploaded image if there's an error
+      if (downloadURL) {
+        try {
+          await deleteImage(downloadURL); // Implement this function to delete images
+          console.log(
+            "Uploaded image deleted due to error in data submission."
+          );
+        } catch (deleteError) {
+          console.error("Error deleting image:", deleteError);
         }
       }
+
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to add or update the expense. Please try again.";
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      // Close modal and reset editing state
+      setIsModalOpen(false);
+      setEditingExpense(null);
     }
-    setIsModalOpen(false);
-    setEditingExpense(null);
   };
 
   const filteredExpenses = expenses.filter((expense) => {

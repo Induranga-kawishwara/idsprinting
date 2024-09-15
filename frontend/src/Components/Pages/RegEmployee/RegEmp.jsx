@@ -10,7 +10,10 @@ import {
 } from "firebase/auth";
 import "./RegEmp.scss";
 import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar";
-import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
+import {
+  ImageUploader,
+  deleteImage,
+} from "../../Reusable/ImageUploder/ImageManager.js";
 import { auth } from "../../../config/firebaseConfig.js";
 import axios from "axios";
 import _ from "lodash";
@@ -64,10 +67,6 @@ const RegEmpSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")
     .required("Email is required"),
-  // password: Yup.string().required("Password is required"),
-  // confirmPassword: Yup.string()
-  //   .oneOf([Yup.ref("password"), null], "Passwords must match")
-  //   .required("Re-entering the password is required"),
   sex: Yup.string().required("Sex is required"),
 });
 
@@ -77,9 +76,6 @@ const RegEmp = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // const [showPassword, setShowPassword] = useState(false);
-
-  // const toggleShowPassword = () => setShowPassword(!showPassword);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -296,6 +292,7 @@ const RegEmp = () => {
     });
 
     let userCredential = null;
+    let uploadedImages = [];
 
     try {
       // Upload images concurrently
@@ -305,7 +302,9 @@ const RegEmp = () => {
         uploadImage("nicPhoto", "NIC", values.nicPhoto),
       ]);
 
-      // Construct user data
+      uploadedImages = [employURL, nicBackPhotoURL, nicPhotoURL];
+
+      // Construct user data object
       const userData = constructUserData(
         employURL,
         nicBackPhotoURL,
@@ -332,6 +331,7 @@ const RegEmp = () => {
           uid: user.uid,
           ...userData,
         });
+
         alert(`${response.data.message} \nDefault Password: emp@123`);
 
         // Send password reset email
@@ -341,7 +341,7 @@ const RegEmp = () => {
     } catch (error) {
       console.error("Error:", error);
 
-      // Delete created user if there's an error
+      // Delete created user if there's an error during submission
       if (userCredential) {
         try {
           await userCredential.user.delete();
@@ -349,6 +349,12 @@ const RegEmp = () => {
         } catch (deleteError) {
           console.error("Error deleting user:", deleteError);
         }
+      }
+
+      // Delete uploaded images if submission fails
+      if (uploadedImages.length) {
+        await Promise.all(uploadedImages.map((img) => deleteImage(img)));
+        console.log("Uploaded images deleted due to error in data submission.");
       }
 
       const errorMessage =
@@ -718,49 +724,6 @@ const RegEmp = () => {
                               <div className="text-danger">{errors.sex}</div>
                             ) : null}
                           </div>
-                          {/* <div className="mb-3">
-                            <label>Password</label>
-                            <div className="input-group">
-                              <Field
-                                name="password"
-                                type={showPassword ? "text" : "password"}
-                                className="form-control"
-                              />
-                              <Button
-                                onClick={toggleShowPassword}
-                                className="btn btn-outline-secondary"
-                              >
-                                {showPassword ? "Hide" : "Show"}
-                              </Button>
-                            </div>
-                            {errors.password && touched.password ? (
-                              <div className="text-danger">
-                                {errors.password}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Re-enter Password</label>
-                            <div className="input-group">
-                              <Field
-                                name="confirmPassword"
-                                type={showPassword ? "text" : "password"}
-                                className="form-control"
-                              />
-                              <Button
-                                onClick={toggleShowPassword}
-                                className="btn btn-outline-secondary"
-                              >
-                                {showPassword ? "Hide" : "Show"}
-                              </Button>
-                            </div>
-                            {errors.confirmPassword &&
-                            touched.confirmPassword ? (
-                              <div className="text-danger">
-                                {errors.confirmPassword}
-                              </div>
-                            ) : null}
-                          </div> */}
                           <div className="text-end">
                             <button
                               variant="contained"

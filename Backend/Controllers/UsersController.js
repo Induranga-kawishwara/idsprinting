@@ -58,10 +58,6 @@ export const createUser = async (req, res) => {
 
     const docRef = await UsersCollection.add({ ...user });
 
-    // Remove tesid from the new user object before broadcasting
-    // const { tesid: unused, ...userWithouttesid } = user;
-    // const newUser = { id: docRef.id, ...userWithouttesid };
-
     const newUser = { id: docRef.id, ...user };
 
     broadcastCustomerChanges("UserAdded", newUser);
