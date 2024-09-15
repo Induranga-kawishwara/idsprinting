@@ -99,9 +99,6 @@ const RegEmp = () => {
             contactNumber: user.contactNum,
             refContactNumber: user.referenceConNum,
             EtfNumber: user.etfNUmber,
-            accessibility: user?.accessibility || [
-              { isAdmin: false, isEmployee: false },
-            ],
             updatedDate: date,
             updatedTime: time,
           };
@@ -162,20 +159,59 @@ const RegEmp = () => {
     // };
   }, []);
 
-  const handleToggleAdmin = (id) => {
-    const updatedEmployees = employees.map((emp) =>
-      emp.id === id ? { ...emp, isAdmin: !emp.isAdmin } : emp
-    );
+  // Reusable component for displaying file links
+  const FileViewer = ({ fileUrl, fileLabel }) => (
+    <td>
+      {fileUrl ? (
+        <div>
+          <Button onClick={() => window.open(fileUrl, "_blank")}>View</Button>
+        </div>
+      ) : (
+        <span>No {fileLabel}</span>
+      )}
+    </td>
+  );
 
-    console.log(updatedEmployees.find((emp) => emp.id === id));
+  const handleToggleAdmin = async (id) => {
+    const employee = employees.find((emp) => emp.id === id);
+
+    if (!employee) {
+      alert("Employee not found.");
+      return;
+    }
+    try {
+      // Toggle the employee status and send the update request
+      const response = await axios.put(
+        `http://localhost:8080/users/userAccess/${id}`,
+        { isAdmin: !employee.isAdmin }
+      );
+
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Error updating employee access:", error);
+      alert("Failed to update the employee. Please try again.");
+    }
   };
 
-  const handleToggleEmployee = (id) => {
-    const updatedEmployees = employees.map((emp) =>
-      emp.id === id ? { ...emp, isEmployee: !emp.isEmployee } : emp
-    );
+  const handleToggleEmployee = async (id) => {
+    const employee = employees.find((emp) => emp.id === id);
 
-    console.log(updatedEmployees.find((emp) => emp.id === id));
+    if (!employee) {
+      alert("Employee not found.");
+      return;
+    }
+    try {
+      // Toggle the employee status and send the update request
+      const response = await axios.put(
+        `http://localhost:8080/users/userAccess/${id}`,
+        { isEmployee: !employee.isEmployee }
+      );
+
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Error updating employee access:", error);
+      alert("Failed to update the employee. Please try again.");
+    }
   };
 
   const handleEdit = (employee) => {
@@ -262,6 +298,8 @@ const RegEmp = () => {
         epfNumber: values.epfNumber,
         etfNUmber: values.EtfNumber,
         sex: values.sex,
+        isAdmin: false,
+        isEmployee: false,
         dateAndTime: currentDate.toISOString(),
       };
 
@@ -337,10 +375,13 @@ const RegEmp = () => {
                     <th>Reference Contact</th>
                     <th>EPF Number</th>
                     <th>ETF Number</th>
-                    <th>Birth Date</th> {/* Birth Date Column */}
+                    <th>Birth Date</th>
                     <th>Sex</th>
                     <th>Admin Access</th>
                     <th>Employee Access</th>
+                    <th>Employee Photo</th>
+                    <th>NIC Front Photo</th>
+                    <th>NIC Back Photo</th>
                     <th>Updated Date</th>
                     <th>Updated Time</th>
                     <th>Actions</th>
@@ -362,7 +403,7 @@ const RegEmp = () => {
                       <td>{employee.sex}</td>
                       <td>
                         <Switch
-                          checked={employee.accessibility.isAdmin}
+                          checked={employee.isAdmin}
                           onChange={() => {
                             if (
                               window.confirm(
@@ -376,7 +417,7 @@ const RegEmp = () => {
                       </td>
                       <td>
                         <Switch
-                          checked={employee.accessibility.isEmployee}
+                          checked={employee.isEmployee}
                           onChange={() => {
                             if (
                               window.confirm(
@@ -388,6 +429,18 @@ const RegEmp = () => {
                           }}
                         />
                       </td>
+                      <FileViewer
+                        fileUrl={employee.employeePic}
+                        fileLabel="File"
+                      />
+                      <FileViewer
+                        fileUrl={employee.nicFront}
+                        fileLabel="NIC Front"
+                      />
+                      <FileViewer
+                        fileUrl={employee.nicBack}
+                        fileLabel="NIC Back"
+                      />
                       <td>{employee.updatedDate}</td>
                       <td>{employee.updatedTime}</td>
                       <td>

@@ -10,4 +10,5 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-export default db;
+const auth = admin.auth();
+export { db, auth };

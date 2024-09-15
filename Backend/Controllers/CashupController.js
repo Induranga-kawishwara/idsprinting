@@ -1,4 +1,4 @@
-import db from "../db.js";
+import { db } from "../db.js";
 import Cashup from "../Models/Cashup.js";
 import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 

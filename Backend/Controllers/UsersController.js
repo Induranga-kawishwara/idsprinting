@@ -1,4 +1,4 @@
-import db from "../db.js";
+import { db } from "../db.js";
 import User from "../Models/Users.js";
 import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 
@@ -27,6 +27,8 @@ export const createUser = async (req, res) => {
       epfNumber,
       etfNUmber,
       sex,
+      isAdmin,
+      isEmployee,
       dateAndTime,
     } = req.body;
 
@@ -49,6 +51,8 @@ export const createUser = async (req, res) => {
       epfNumber,
       etfNUmber,
       sex,
+      isAdmin,
+      isEmployee,
       dateAndTime
     );
 
@@ -130,25 +134,18 @@ export const updateUser = async (req, res) => {
 
 export const updateUserAccessibility = async (req, res) => {
   const { id } = req.params;
-  const updatedData = req.body;
-  try {
-    // Check if the user exists
-    const userDoc = UsersCollection.doc(id);
-    const doc = await userDoc.get();
+  const accessibility = req.body;
 
+  try {
+    // Check if the customer exists
+    const doc = await UsersCollection.doc(id).get();
     if (!doc.exists) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).send({ message: "User not found" });
     }
 
-    // Retrieve the existing user data
-    const { accessibility = [] } = doc.data();
-
-    // Update the accessibility array with new data
-    await userDoc.update({ accessibility: [...accessibility, updatedData] });
-
-    // Broadcast the changes (ensure updatedData is properly structured)
-    const updatedUser = { id, ...updatedData };
-    broadcastCustomerChanges("UserAccessibilityUpdated", updatedUser);
+    await UsersCollection.doc(id).update(accessibility);
+    const updatedUsers = { id, ...accessibility };
+    broadcastCustomerChanges("updateUserAccessibility", updatedUsers);
 
     return res.status(200).send({ message: "User updated successfully" });
   } catch (error) {
