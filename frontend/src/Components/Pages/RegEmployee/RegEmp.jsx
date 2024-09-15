@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -13,6 +13,9 @@ import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar"
 import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
 import { auth } from "../../../config/firebaseConfig.js";
 import axios from "axios";
+import _ from "lodash";
+import socket from "../../Utility/SocketConnection.js";
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
 // Initial employee data with birthDate field
 const initialEmployees = [
@@ -69,12 +72,109 @@ const RegEmpSchema = Yup.object().shape({
 });
 
 const RegEmp = () => {
-  const [employees, setEmployees] = useState(initialEmployees);
+  const [employees, setEmployees] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   // const [showPassword, setShowPassword] = useState(false);
 
   // const toggleShowPassword = () => setShowPassword(!showPassword);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userData = await axios.get("http://localhost:8080/users/user/");
+
+        const formattedusers = userData.data.map((user) => {
+          const { date, time } = ConvertToSLT(user.dateAndTime);
+          return {
+            ...user,
+            id: user.id,
+            surname: user.surName,
+
+            nicNumber: "123456789V",
+            nicPhoto: "",
+            nicBackPhoto: "",
+            houseNo: "123",
+            street: "Main St",
+            city: "Colombo",
+            zipCode: "00100",
+            employeePhoto: "",
+            contactNumber: "0771234567",
+            refContactNumber: "0777654321",
+            epfNumber: "EPF001",
+            EtfNumber: "ETF001",
+            email: "indurangakawishwara2003@gmail.com",
+            password: "password123",
+            birthDate: "1985-06-15", // Birth Date field
+            updatedDate: "2024-08-13",
+            updatedTime: "15:00",
+            sex: "Male",
+            isAdmin: true,
+            isEmployee: true,
+
+            phone: user.contactNumber,
+            totalSpent: "100", // Example data; replace with real data if needed
+            addedDate: date,
+            addedTime: time,
+          };
+        });
+
+        setEmployees(formattedusers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // Listen for real-time user updates
+    socket.on("userAdded", (newuser) => {
+      const { date, time } = ConvertToSLT(newuser.addedDateAndTime);
+      const newuseradded = {
+        ...newuser,
+        surname: newuser.surName,
+        phone: newuser.contactNumber,
+        postalCode: newuser.postalcode,
+        addedDate: date,
+        addedTime: time,
+        totalSpent: "500", // Example data; replace with real data if needed
+      };
+      setusers((prevusers) => [newuseradded, ...prevusers]);
+    });
+
+    socket.on("userUpdated", (updateduser) => {
+      const { date, time } = ConvertToSLT(updateduser.addedDateAndTime);
+
+      const newupdateduser = {
+        ...updateduser,
+        surname: updateduser.surName,
+        postalCode: updateduser.postalcode,
+        addedDate: date,
+        addedTime: time,
+        totalSpent: "600", // Example data; replace with real data if needed
+      };
+      setusers((prevusers) =>
+        prevusers.map((user) =>
+          user.id === updateduser.id ? newupdateduser : user
+        )
+      );
+    });
+
+    socket.on("userDeleted", ({ id }) => {
+      setusers((prevusers) => prevusers.filter((user) => user.id !== id));
+    });
+
+    return () => {
+      socket.off("userAdded");
+      socket.off("userUpdated");
+      socket.off("userDeleted");
+    };
+  }, []);
 
   const handleToggleAdmin = (id) => {
     const updatedEmployees = employees.map((emp) =>
@@ -140,7 +240,7 @@ const RegEmp = () => {
 
     // Helper function for uploading images
     const uploadImage = async (fileName, folder, imageFile) => {
-      if (!imageFile) return null; // Skip upload if no image file is provided
+      if (!imageFile) return null;
       return ImageUploader(
         `${values.name}-${values.surname}-${fileName}`,
         currentDate,
