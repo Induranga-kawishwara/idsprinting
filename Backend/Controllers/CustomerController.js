@@ -1,4 +1,4 @@
-import db from "../db.js";
+import { db } from "../db.js";
 import Customer from "../Models/Customer.js";
 import { broadcastCustomerChanges } from "../SocketIO/socketIO.js";
 

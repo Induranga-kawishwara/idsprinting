@@ -18,8 +18,9 @@ class Users {
     epfNumber,
     etfNUmber,
     sex,
-    dateAndTime,
-    accessibility = []
+    isAdmin,
+    isEmployee,
+    dateAndTime
   ) {
     this.uid = uid;
     this.name = name;
@@ -39,8 +40,9 @@ class Users {
     this.epfNumber = epfNumber;
     this.etfNUmber = etfNUmber;
     this.sex = sex;
+    this.isAdmin = isAdmin;
+    this.isEmployee = isEmployee;
     this.dateAndTime = dateAndTime;
-    this.accessibility = accessibility;
   }
 }
 
