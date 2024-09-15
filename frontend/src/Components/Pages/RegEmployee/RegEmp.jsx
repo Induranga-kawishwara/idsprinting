@@ -3,9 +3,15 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal, Switch } from "@mui/material";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import "./RegEmp.scss";
 import SecondaryNavbar from "./../../Reusable/SecondnavBarSettings/SecondNavbar";
 import { ImageUploader } from "../../Reusable/ImageUploder/ImageUploader.js";
+import { auth } from "../../../config/firebaseConfig.js";
 import axios from "axios";
 
 // Initial employee data with birthDate field
@@ -103,82 +109,91 @@ const RegEmp = () => {
   };
 
   const handleSubmit = async (values) => {
-    console.log(values);
     const currentDate = new Date();
 
     // Helper function for uploading images
-    const uploadImage = (fileName, folder, imageFile) =>
-      ImageUploader(
+    const uploadImage = async (fileName, folder, imageFile) => {
+      if (!imageFile) return null; // Skip upload if no image file is provided
+      return ImageUploader(
         `${values.name}-${values.surname}-${fileName}`,
         currentDate,
         folder,
         imageFile
       );
-
-    // Use Promise.all to perform image uploads concurrently
-    const [employURL, nicBackPhotoURL, nicPhotoURL] = await Promise.all([
-      uploadImage("", "EmployeePhotos", values.employeePhoto),
-      uploadImage("nicBackPhoto", "NIC", values.nicBackPhoto),
-      uploadImage("nicPhoto", "NIC", values.nicPhoto),
-    ]);
-
-    // Construct the data object with standardized field names
-    const data = {
-      uid: "1234",
-      name: values.name,
-      surName: values.surname,
-      birthDay: values.birthDate,
-      email: values.email,
-      nicNumber: values.nicNumber,
-      nicFront: nicPhotoURL,
-      nicBack: nicBackPhotoURL,
-      houseNo: values.houseNo,
-      street: values.street,
-      city: values.city,
-      zipCode: values.zipCode,
-      employeePic: employURL,
-      contactNum: values.contactNumber,
-      referenceConNum: values.refContactNumber,
-      epfNumber: values.epfNumber,
-      etfNUmber: values.EtfNumber,
-      sex: values.sex,
-      dateAndTime: currentDate.toISOString(),
     };
 
-    if (editingEmployee) {
-      try {
+    try {
+      // Use Promise.all to upload images concurrently, handling any missing files
+      const [employURL, nicBackPhotoURL, nicPhotoURL] = await Promise.all([
+        uploadImage("", "EmployeePhotos", values.employeePhoto),
+        uploadImage("nicBackPhoto", "NIC", values.nicBackPhoto),
+        uploadImage("nicPhoto", "NIC", values.nicPhoto),
+      ]);
+
+      // Construct the data object
+      const userData = {
+        name: values.name,
+        surName: values.surname,
+        birthDay: values.birthDate,
+        email: values.email,
+        nicNumber: values.nicNumber,
+        nicFront: nicPhotoURL,
+        nicBack: nicBackPhotoURL,
+        houseNo: values.houseNo,
+        street: values.street,
+        city: values.city,
+        zipCode: values.zipCode,
+        employeePic: employURL,
+        contactNum: values.contactNumber,
+        referenceConNum: values.refContactNumber,
+        epfNumber: values.epfNumber,
+        etfNUmber: values.EtfNumber,
+        sex: values.sex,
+        dateAndTime: currentDate.toISOString(),
+      };
+
+      let responseMessage = "";
+      if (editingEmployee) {
+        // Update existing user
         const response = await axios.put(
           `http://localhost:8080/users/user/${editingEmployee.id}`,
-          data
+          userData
         );
+        responseMessage = response.data.message;
+      } else {
+        // Create new user
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          values.email,
+          "emp@123"
+        );
+        const user = userCredential.user;
 
-        alert(response.data.message);
-      } catch (error) {
-        console.error("Error updating user:", error);
-        alert("Failed to update the user. Please try again.");
+        const response = await axios.post("http://localhost:8080/users/user", {
+          uid: user.uid,
+          ...userData,
+        });
+        responseMessage = response.data.message;
+
+        // Send password reset email
+        await sendPasswordResetEmail(getAuth(), values.email);
+        console.log("Password reset email sent.");
       }
-    } else {
-      try {
-        const response = await axios.post(
-          "http://localhost:8080/users/user",
-          data
-        );
-        alert(response.data.message);
-      } catch (error) {
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.message
-        ) {
-          alert(`Error: ${error.response.data.message}`);
-        } else {
-          // Show a generic error message
-          alert("Failed to add the user. Please try again.");
-        }
-      }
+
+      // Success message
+      alert(`${responseMessage} \nDefault Password: emp@123`);
+    } catch (error) {
+      // Improved error handling
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to add or update the user. Please try again.";
+      console.error("Error:", error);
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      // Close modal and reset editing state
+      setIsModalOpen(false);
+      setEditingEmployee(null);
     }
-    setIsModalOpen(false);
-    setEditingEmployee(null);
   };
 
   return (
