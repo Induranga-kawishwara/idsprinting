@@ -490,7 +490,11 @@ const Expenses = () => {
 
         <div className="table-responsive">
           {loading || error || _.isEmpty(data) ? (
-            <TableChecker loading={loading} error={error} data={data} />
+            <TableChecker
+              loading={loading}
+              error={error}
+              hasData={data.length > 0}
+            />
           ) : (
             <table {...getTableProps()} className="table mt-3 custom-table">
               <thead>
