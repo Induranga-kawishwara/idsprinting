@@ -285,18 +285,27 @@ const RegEmp = () => {
 
       let uid = editingEmployee?.uid;
 
-      // If we're editing and the email changes, create a new user
       if (editingEmployee && values.email !== editingEmployee.email) {
-        userCredential = await createUserWithEmailAndPassword(
-          auth,
-          values.email,
-          "emp@123"
-        );
-        uid = userCredential.user.uid;
+        try {
+          // Delete the old user account first
+          const oldUser = await auth.getUserByEmail(editingEmployee.email);
+          await oldUser.delete();
+          console.log("Old user deleted successfully.");
 
-        // Send password reset email to new user
-        await sendPasswordResetEmail(auth, values.email);
-        console.log("Password reset email sent to new user.");
+          // Create a new user with the new email
+          userCredential = await createUserWithEmailAndPassword(
+            auth,
+            values.email,
+            "emp@123"
+          );
+          uid = userCredential.user.uid;
+
+          // Send password reset email to new user
+          await sendPasswordResetEmail(auth, values.email);
+          console.log("Password reset email sent to new user.");
+        } catch (error) {
+          console.error("Error handling user email update:", error);
+        }
       }
 
       if (editingEmployee) {
