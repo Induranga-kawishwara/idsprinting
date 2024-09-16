@@ -108,7 +108,7 @@ const RegEmp = () => {
     socket.on("updateUserAccessibility", (updatedUsers) => {
       setEmployees((prevusers) =>
         prevusers.map((user) =>
-          user.id === updatedUsers.id ? updatedUsers : user
+          user.id === updatedUsers.id ? { ...user, ...updatedUsers } : user
         )
       );
     });
