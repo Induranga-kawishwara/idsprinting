@@ -118,7 +118,7 @@ const TheNavbar = () => {
             >
               <RouterLink to="/quatation">
                 <FcList className={classes.iconSize} />
-                Quotation 
+                Quotation
               </RouterLink>
             </Nav.Link>
 
