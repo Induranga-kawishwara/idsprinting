@@ -78,27 +78,31 @@ const RegEmp = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const mapEmp = (dataset) => {
+      const { date, time } = ConvertToSLT(dataset.dateAndTime);
+      return {
+        ...dataset,
+        id: dataset.id,
+        uid: dataset.uid,
+        surname: dataset.surName,
+        birthDate: dataset.birthDay,
+        nicPhoto: dataset.nicFront,
+        nicBackPhoto: dataset.nicBack,
+        employeePhoto: dataset.employeePic,
+        contactNumber: dataset.contactNum,
+        refContactNumber: dataset.referenceConNum,
+        EtfNumber: dataset.etfNUmber,
+        updatedDate: date,
+        updatedTime: time,
+      };
+    };
+
     const fetchData = async () => {
       try {
         const userData = await axios.get("http://localhost:8080/users");
+        // console.log(userData.data);
 
-        const formattedusers = userData.data.map((user) => {
-          const { date, time } = ConvertToSLT(user.dateAndTime);
-          return {
-            ...user,
-            id: user.id,
-            surname: user.surName,
-            birthDate: user.birthDay,
-            nicPhoto: user.nicFront,
-            nicBackPhoto: user.nicBack,
-            employeePhoto: user.employeePic,
-            contactNumber: user.contactNum,
-            refContactNumber: user.referenceConNum,
-            EtfNumber: user.etfNUmber,
-            updatedDate: date,
-            updatedTime: time,
-          };
-        });
+        const formattedusers = userData.data.map((user) => mapEmp(user));
 
         setEmployees(formattedusers);
         setLoading(false);
@@ -111,48 +115,37 @@ const RegEmp = () => {
 
     fetchData();
 
-    // // Listen for real-time user updates
-    // socket.on("userAdded", (newuser) => {
-    //   const { date, time } = ConvertToSLT(newuser.addedDateAndTime);
-    //   const newuseradded = {
-    //     ...newuser,
-    //     surname: newuser.surName,
-    //     phone: newuser.contactNumber,
-    //     postalCode: newuser.postalcode,
-    //     addedDate: date,
-    //     addedTime: time,
-    //     totalSpent: "500", // Example data; replace with real data if needed
-    //   };
-    //   setusers((prevusers) => [newuseradded, ...prevusers]);
-    // });
+    // Listen for real-time user updates
+    socket.on("UserAdded", (newuser) => {
+      setEmployees((prevusers) => [mapEmp(newuser), ...prevusers]);
+    });
 
-    // socket.on("userUpdated", (updateduser) => {
-    //   const { date, time } = ConvertToSLT(updateduser.addedDateAndTime);
+    socket.on("UsersUpdated", (updatedUsers) => {
+      setEmployees((prevusers) =>
+        prevusers.map((user) =>
+          user.id === updatedUsers.id ? mapEmp(updatedUsers) : user
+        )
+      );
+    });
 
-    //   const newupdateduser = {
-    //     ...updateduser,
-    //     surname: updateduser.surName,
-    //     postalCode: updateduser.postalcode,
-    //     addedDate: date,
-    //     addedTime: time,
-    //     totalSpent: "600", // Example data; replace with real data if needed
-    //   };
-    //   setusers((prevusers) =>
-    //     prevusers.map((user) =>
-    //       user.id === updateduser.id ? newupdateduser : user
-    //     )
-    //   );
-    // });
+    socket.on("UserDeleted", ({ id }) => {
+      setEmployees((prevusers) => prevusers.filter((user) => user.id !== id));
+    });
 
-    // socket.on("userDeleted", ({ id }) => {
-    //   setusers((prevusers) => prevusers.filter((user) => user.id !== id));
-    // });
+    socket.on("updateUserAccessibility", (updatedUsers) => {
+      setEmployees((prevusers) =>
+        prevusers.map((user) =>
+          user.id === updatedUsers.id ? updatedUsers : user
+        )
+      );
+    });
 
-    // return () => {
-    //   socket.off("userAdded");
-    //   socket.off("userUpdated");
-    //   socket.off("userDeleted");
-    // };
+    return () => {
+      socket.off("UserAdded");
+      socket.off("UsersUpdated");
+      socket.off("updateUserAccessibility");
+      socket.off("UserDeleted");
+    };
   }, []);
 
   // Reusable component for displaying file links
