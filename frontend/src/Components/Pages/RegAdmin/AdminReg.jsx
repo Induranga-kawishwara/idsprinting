@@ -19,7 +19,6 @@ const initialAdmins = [
     updatedTime: "15:00",
     sex: "Male", // Added field
   },
-  // Add more admin records if needed
 ];
 
 const AdminRegSchema = Yup.object().shape({
