@@ -20,35 +20,6 @@ import _ from "lodash";
 import socket from "../../Utility/SocketConnection.js";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 
-// Initial employee data with birthDate field
-const initialEmployees = [
-  {
-    id: 1,
-    name: "John",
-    surname: "Doe",
-    nicNumber: "123456789V",
-    nicPhoto: "",
-    nicBackPhoto: "",
-    houseNo: "123",
-    street: "Main St",
-    city: "Colombo",
-    zipCode: "00100",
-    employeePhoto: "",
-    contactNumber: "0771234567",
-    refContactNumber: "0777654321",
-    epfNumber: "EPF001",
-    EtfNumber: "ETF001",
-    email: "indurangakawishwara2003@gmail.com",
-    password: "password123",
-    birthDate: "1985-06-15", // Birth Date field
-    updatedDate: "2024-08-13",
-    updatedTime: "15:00",
-    sex: "Male",
-    isAdmin: true,
-    isEmployee: true,
-  },
-];
-
 const RegEmpSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
   surname: Yup.string().required("Surname is required"),
@@ -100,7 +71,6 @@ const RegEmp = () => {
     const fetchData = async () => {
       try {
         const userData = await axios.get("http://localhost:8080/users");
-        // console.log(userData.data);
 
         const formattedusers = userData.data.map((user) => mapEmp(user));
 
