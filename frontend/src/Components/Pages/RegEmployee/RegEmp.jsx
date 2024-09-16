@@ -287,7 +287,11 @@ const RegEmp = () => {
         // Update existing user
         const response = await axios.put(
           `https://candied-chartreuse-concavenator.glitch.me/users/user/${editingEmployee.id}`,
-          userData
+          {
+            isAdmin: editingEmployee.isAdmin,
+            isEmployee: editingEmployee.isEmployee,
+            ...userData,
+          }
         );
         alert(`${response.data.message}`);
       } else {
