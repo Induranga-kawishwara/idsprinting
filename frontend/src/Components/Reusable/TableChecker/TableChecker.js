@@ -1,9 +1,8 @@
 import React from "react";
 import SyncLoader from "react-spinners/SyncLoader";
-import _ from "lodash";
 import "./TableChecker.scss";
 
-const TableChecker = ({ loading, error, data }) => {
+const TableChecker = ({ loading, error, hasData }) => {
   if (loading) {
     return (
       <div className="message-container">
@@ -20,7 +19,7 @@ const TableChecker = ({ loading, error, data }) => {
     );
   }
 
-  if (_.isEmpty(data)) {
+  if (!hasData) {
     return (
       <div className="message-container">
         <p className="no-data-message">Don't Have Data to Show</p>

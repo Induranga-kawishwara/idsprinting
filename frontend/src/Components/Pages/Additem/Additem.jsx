@@ -435,7 +435,11 @@ const Item = () => {
         </div>
         <div className="table-responsive">
           {loading || error || _.isEmpty(items) ? (
-            <TableChecker loading={loading} error={error} data={items} />
+            <TableChecker
+              loading={loading}
+              error={error}
+              hasData={items.length > 0}
+            />
           ) : (
             <table {...getTableProps()} className="table mt-3 custom-table">
               <thead>

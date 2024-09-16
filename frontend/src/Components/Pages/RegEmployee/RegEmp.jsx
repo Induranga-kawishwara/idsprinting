@@ -355,7 +355,7 @@ const RegEmp = () => {
                 <TableChecker
                   loading={loading}
                   error={error}
-                  data={employees}
+                  hasData={employees.length > 0}
                 />
               ) : (
                 <table className="table mt-3 custom-table">

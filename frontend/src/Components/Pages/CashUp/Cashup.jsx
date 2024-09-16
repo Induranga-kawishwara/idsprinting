@@ -292,7 +292,7 @@ const Cashup = () => {
             <TableChecker
               loading={loading}
               error={error}
-              data={filteredCashups}
+              hasData={filteredCashups.length > 0}
             />
           ) : (
             <table className="table mt-3 custom-table">
