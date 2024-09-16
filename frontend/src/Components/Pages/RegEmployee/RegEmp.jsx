@@ -71,7 +71,9 @@ const RegEmp = () => {
 
     const fetchData = async () => {
       try {
-        const userData = await axios.get("http://localhost:8080/users");
+        const userData = await axios.get(
+          "https://candied-chartreuse-concavenator.glitch.me/users"
+        );
 
         const formattedusers = userData.data.map((user) => mapEmp(user));
 
@@ -142,7 +144,7 @@ const RegEmp = () => {
     try {
       // Toggle the employee status and send the update request
       const response = await axios.put(
-        `http://localhost:8080/users/userAccess/${id}`,
+        `https://candied-chartreuse-concavenator.glitch.me/users/userAccess/${id}`,
         { isAdmin: !employee.isAdmin }
       );
 
@@ -163,7 +165,7 @@ const RegEmp = () => {
     try {
       // Toggle the employee status and send the update request
       const response = await axios.put(
-        `http://localhost:8080/users/userAccess/${id}`,
+        `https://candied-chartreuse-concavenator.glitch.me/users/userAccess/${id}`,
         { isEmployee: !employee.isEmployee }
       );
 
@@ -185,7 +187,7 @@ const RegEmp = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `http://localhost:8080/users/user/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/users/user/${id}`
         );
 
         alert(response.data.message);
@@ -278,7 +280,7 @@ const RegEmp = () => {
       if (editingEmployee) {
         // Update existing user
         const response = await axios.put(
-          `http://localhost:8080/users/user/${editingEmployee.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/users/user/${editingEmployee.id}`,
           userData
         );
         alert(`${response.data.message}`);
@@ -291,10 +293,13 @@ const RegEmp = () => {
         );
         const user = userCredential.user;
 
-        const response = await axios.post("http://localhost:8080/users/user", {
-          uid: user.uid,
-          ...userData,
-        });
+        const response = await axios.post(
+          "https://candied-chartreuse-concavenator.glitch.me/users/user",
+          {
+            uid: user.uid,
+            ...userData,
+          }
+        );
 
         alert(`${response.data.message} \nDefault Password: emp@123`);
 
