@@ -368,7 +368,7 @@ const RegEmp = () => {
   };
 
   return (
-    <div>
+    <div className="bodyofpage">
       <div className="reg-emp">
         <SecondaryNavbar />
         <br />

@@ -7,7 +7,7 @@
   background: linear-gradient(172deg, #000000, #909090);
   background-size: 400% 400%;
   animation: AnimationName 0s ease infinite;
-  font-size: 12px
+  font-size: 12px;
 }
 
 .navbar_brand {
