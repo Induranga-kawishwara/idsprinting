@@ -252,8 +252,6 @@ const RegEmp = () => {
       epfNumber: values.epfNumber,
       etfNUmber: values.EtfNumber,
       sex: values.sex,
-      isAdmin: false,
-      isEmployee: false,
       dateAndTime: currentDate.toISOString(),
     });
 
@@ -297,6 +295,8 @@ const RegEmp = () => {
           "https://candied-chartreuse-concavenator.glitch.me/users/user",
           {
             uid: user.uid,
+            isAdmin: false,
+            isEmployee: false,
             ...userData,
           }
         );
