@@ -197,7 +197,6 @@ const RegEmp = () => {
       }
     }
   };
-
   const handleReset = (id) => {
     const employee = employees.find((emp) => emp.id === id);
 
@@ -208,6 +207,15 @@ const RegEmp = () => {
 
     const { email } = employee;
 
+    const isConfirmed = window.confirm(
+      `Are you sure you want to reset the password for ${employee.name} (${email})?`
+    );
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    // Proceed with password reset
     sendPasswordResetEmail(getAuth(), email)
       .then(() => {
         alert(`Password reset email sent to: ${email}`);
