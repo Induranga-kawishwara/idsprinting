@@ -19,6 +19,7 @@ import axios from "axios";
 import _ from "lodash";
 import socket from "../../Utility/SocketConnection.js";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 
 const RegEmpSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -341,129 +342,140 @@ const RegEmp = () => {
             <button
               variant="contained"
               color="primary"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                setIsModalOpen(true);
+                setEditingEmployee(null);
+              }}
               className="addnewbtntop"
             >
               New Employee
             </button>
             <div className="table-responsive">
-              <table className="table mt-3 custom-table">
-                <thead>
-                  <tr>
-                    <th>No</th>
-                    <th>Name</th>
-                    <th>Surname</th>
-                    <th>NIC Number</th>
-                    <th>Email</th>
-                    <th>Contact Number</th>
-                    <th>Reference Contact</th>
-                    <th>EPF Number</th>
-                    <th>ETF Number</th>
-                    <th>Birth Date</th>
-                    <th>Sex</th>
-                    <th>Admin Access</th>
-                    <th>Employee Access</th>
-                    <th>Employee Photo</th>
-                    <th>NIC Front Photo</th>
-                    <th>NIC Back Photo</th>
-                    <th>Updated Date</th>
-                    <th>Updated Time</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="custom-table">
-                  {employees.map((employee, index) => (
-                    <tr key={employee.id}>
-                      <td value={employee.id}>{index + 1}</td>
-                      <td>{employee.name}</td>
-                      <td>{employee.surname}</td>
-                      <td>{employee.nicNumber}</td>
-                      <td>{employee.email}</td>
-                      <td>{employee.contactNumber}</td>
-                      <td>{employee.refContactNumber}</td>
-                      <td>{employee.epfNumber}</td>
-                      <td>{employee.EtfNumber}</td>
-                      <td>{employee.birthDate}</td> {/* Display Birth Date */}
-                      <td>{employee.sex}</td>
-                      <td>
-                        <Switch
-                          checked={employee.isAdmin}
-                          onChange={() => {
-                            if (
-                              window.confirm(
-                                "Are you sure you want to toggle Admin rights?"
-                              )
-                            ) {
-                              handleToggleAdmin(employee.id);
-                            }
-                          }}
-                        />
-                      </td>
-                      <td>
-                        <Switch
-                          checked={employee.isEmployee}
-                          onChange={() => {
-                            if (
-                              window.confirm(
-                                "Are you sure you want to toggle Employee status?"
-                              )
-                            ) {
-                              handleToggleEmployee(employee.id);
-                            }
-                          }}
-                        />
-                      </td>
-                      <FileViewer
-                        fileUrl={employee.employeePic}
-                        fileLabel="File"
-                      />
-                      <FileViewer
-                        fileUrl={employee.nicFront}
-                        fileLabel="NIC Front"
-                      />
-                      <FileViewer
-                        fileUrl={employee.nicBack}
-                        fileLabel="NIC Back"
-                      />
-                      <td>{employee.updatedDate}</td>
-                      <td>{employee.updatedTime}</td>
-                      <td>
-                        <button
-                          variant="contained"
-                          size="small"
-                          onClick={() => handleReset(employee.id)}
-                          className="resetbtn"
-                        >
-                          Reset password
-                        </button>
-                        <button
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          onClick={() => handleEdit(employee)}
-                          className="editbtn"
-                        >
-                          Edit
-                        </button>{" "}
-                        <button
-                          variant="contained"
-                          color="secondary"
-                          size="small"
-                          onClick={() =>
-                            handleDelete(
-                              `${employee.name}, ${employee.surname}`,
-                              employee.id
-                            )
-                          }
-                          className="deletebtn"
-                        >
-                          Delete
-                        </button>
-                      </td>
+              {loading || error || _.isEmpty(employees) ? (
+                <TableChecker
+                  loading={loading}
+                  error={error}
+                  data={employees}
+                />
+              ) : (
+                <table className="table mt-3 custom-table">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Name</th>
+                      <th>Surname</th>
+                      <th>NIC Number</th>
+                      <th>Email</th>
+                      <th>Contact Number</th>
+                      <th>Reference Contact</th>
+                      <th>EPF Number</th>
+                      <th>ETF Number</th>
+                      <th>Birth Date</th>
+                      <th>Sex</th>
+                      <th>Admin Access</th>
+                      <th>Employee Access</th>
+                      <th>Employee Photo</th>
+                      <th>NIC Front Photo</th>
+                      <th>NIC Back Photo</th>
+                      <th>Updated Date</th>
+                      <th>Updated Time</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="custom-table">
+                    {employees.map((employee, index) => (
+                      <tr key={employee.id}>
+                        <td value={employee.id}>{index + 1}</td>
+                        <td>{employee.name}</td>
+                        <td>{employee.surname}</td>
+                        <td>{employee.nicNumber}</td>
+                        <td>{employee.email}</td>
+                        <td>{employee.contactNumber}</td>
+                        <td>{employee.refContactNumber}</td>
+                        <td>{employee.epfNumber}</td>
+                        <td>{employee.EtfNumber}</td>
+                        <td>{employee.birthDate}</td> {/* Display Birth Date */}
+                        <td>{employee.sex}</td>
+                        <td>
+                          <Switch
+                            checked={employee.isAdmin}
+                            onChange={() => {
+                              if (
+                                window.confirm(
+                                  "Are you sure you want to toggle Admin rights?"
+                                )
+                              ) {
+                                handleToggleAdmin(employee.id);
+                              }
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <Switch
+                            checked={employee.isEmployee}
+                            onChange={() => {
+                              if (
+                                window.confirm(
+                                  "Are you sure you want to toggle Employee status?"
+                                )
+                              ) {
+                                handleToggleEmployee(employee.id);
+                              }
+                            }}
+                          />
+                        </td>
+                        <FileViewer
+                          fileUrl={employee.employeePic}
+                          fileLabel="File"
+                        />
+                        <FileViewer
+                          fileUrl={employee.nicFront}
+                          fileLabel="NIC Front"
+                        />
+                        <FileViewer
+                          fileUrl={employee.nicBack}
+                          fileLabel="NIC Back"
+                        />
+                        <td>{employee.updatedDate}</td>
+                        <td>{employee.updatedTime}</td>
+                        <td>
+                          <button
+                            variant="contained"
+                            size="small"
+                            onClick={() => handleReset(employee.id)}
+                            className="resetbtn"
+                          >
+                            Reset password
+                          </button>
+                          <button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            onClick={() => handleEdit(employee)}
+                            className="editbtn"
+                          >
+                            Edit
+                          </button>{" "}
+                          <button
+                            variant="contained"
+                            color="secondary"
+                            size="small"
+                            onClick={() =>
+                              handleDelete(
+                                `${employee.name}, ${employee.surname}`,
+                                employee.id
+                              )
+                            }
+                            className="deletebtn"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
 
             <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
