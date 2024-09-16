@@ -264,7 +264,7 @@ const RegEmp = () => {
     });
 
     let userCredential = null;
-    let uploadedImages = [];
+    const uploadedImages = [];
 
     try {
       // Upload images concurrently
@@ -274,7 +274,7 @@ const RegEmp = () => {
         uploadImage("nicPhoto", "NIC", values.nicPhoto),
       ]);
 
-      uploadedImages = [employURL, nicBackPhotoURL, nicPhotoURL];
+      uploadedImages.push(employURL, nicBackPhotoURL, nicPhotoURL);
 
       // Construct user data object
       const userData = constructUserData(
@@ -283,17 +283,36 @@ const RegEmp = () => {
         nicPhotoURL
       );
 
+      let uid = editingEmployee?.uid;
+
+      // If we're editing and the email changes, create a new user
+      if (editingEmployee && values.email !== editingEmployee.email) {
+        userCredential = await createUserWithEmailAndPassword(
+          auth,
+          values.email,
+          "emp@123"
+        );
+        uid = userCredential.user.uid;
+
+        // Send password reset email to new user
+        await sendPasswordResetEmail(auth, values.email);
+        console.log("Password reset email sent to new user.");
+      }
+
       if (editingEmployee) {
         // Update existing user
+        const updatedUserData = {
+          uid,
+          isAdmin: editingEmployee.isAdmin,
+          isEmployee: editingEmployee.isEmployee,
+          ...userData,
+        };
+
         const response = await axios.put(
           `https://candied-chartreuse-concavenator.glitch.me/users/user/${editingEmployee.id}`,
-          {
-            isAdmin: editingEmployee.isAdmin,
-            isEmployee: editingEmployee.isEmployee,
-            ...userData,
-          }
+          updatedUserData
         );
-        alert(`${response.data.message}`);
+        alert(response.data.message);
       } else {
         // Create new user
         userCredential = await createUserWithEmailAndPassword(
@@ -313,31 +332,30 @@ const RegEmp = () => {
           }
         );
 
-        alert(`${response.data.message} \nDefault Password: emp@123`);
+        alert(`${response.data.message}\nDefault Password: emp@123`);
 
         // Send password reset email
-        await sendPasswordResetEmail(getAuth(), values.email);
-        console.log("Password reset email sent.");
+        await sendPasswordResetEmail(auth, values.email);
+        console.log("Password reset email sent to new user.");
       }
     } catch (error) {
       console.error("Error:", error);
 
-      // Delete created user if there's an error during submission
+      // Handle user deletion if there was an error in data submission
       if (userCredential) {
         try {
           await userCredential.user.delete();
-          console.log("Created user deleted due to error in data submission.");
+          console.log("Newly created user deleted due to error.");
         } catch (deleteError) {
           console.error("Error deleting user:", deleteError);
         }
       }
 
-      // Delete uploaded images if submission fails
-      if (uploadedImages.length) {
-        await Promise.all(uploadedImages.map((img) => deleteImage(img)));
-        console.log("Uploaded images deleted due to error in data submission.");
-      }
+      // Delete uploaded images in case of error
+      await Promise.all(uploadedImages.map((img) => img && deleteImage(img)));
+      console.log("Uploaded images deleted due to error in submission.");
 
+      // Display an error message
       const errorMessage =
         error.response?.data?.message ||
         "Failed to add or update the user. Please try again.";
