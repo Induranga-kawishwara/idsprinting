@@ -11,9 +11,9 @@ import PaymentModal from "./PaymentModal"; // Import the new component
 import images from "../../../Assest/receiptImages.json";
 
 const initialProducts = [
-  { id: 1, name: "Shirts", price: 9.99, gsm: 180, color: "Red" },
-  { id: 2, name: "Pants", price: 14.99, gsm: 200, color: "Blue" },
-  { id: 3, name: "Dresses", price: 19.99, gsm: 150, color: "Green" },
+  { id: 1, name: "Shirts", price: 9.99, stoke: 10, gsm: 180, color: "Red" },
+  { id: 2, name: "Pants", price: 14.99, stoke: 10, gsm: 200, color: "Blue" },
+  { id: 3, name: "Dresses", price: 19.99, stoke: 10, gsm: 150, color: "Green" },
   { id: 4, name: "Shoes", price: 14.99, gsm: null, color: "Black" },
   { id: 5, name: "Jackets", price: 29.99, gsm: 300, color: "Grey" },
   { id: 6, name: "T-shirts", price: 7.99, gsm: 170, color: "White" },
@@ -159,22 +159,24 @@ const Sales = () => {
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      if (searchField === "name") {
-        return product.name
-          .toLowerCase()
-          .includes(productSearchQuery.toLowerCase());
-      } else if (searchField === "price") {
-        return product.price.toString().includes(productSearchQuery);
-      } else if (searchField === "gsm") {
-        return (
-          product.gsm && product.gsm.toString().includes(productSearchQuery)
-        );
-      } else if (searchField === "color") {
-        return product.color
-          .toLowerCase()
-          .includes(productSearchQuery.toLowerCase());
+      if (product.stoke > 0) {
+        if (searchField === "name") {
+          return product.name
+            .toLowerCase()
+            .includes(productSearchQuery.toLowerCase());
+        } else if (searchField === "price") {
+          return product.price.toString().includes(productSearchQuery);
+        } else if (searchField === "gsm") {
+          return (
+            product.gsm && product.gsm.toString().includes(productSearchQuery)
+          );
+        } else if (searchField === "color") {
+          return product.color
+            .toLowerCase()
+            .includes(productSearchQuery.toLowerCase());
+        }
+        return true;
       }
-      return true;
     });
   }, [productSearchQuery, searchField, products]);
 
@@ -1008,6 +1010,7 @@ const Sales = () => {
                 >
                   {product.name}
                   <span>Rs. {product.price.toFixed(2)}</span>
+                  <span>Stoke. {product.stoke}</span>
                 </button>
               ))}
             </div>
