@@ -482,7 +482,7 @@ const RegEmp = () => {
                         />
                         <td>{employee.updatedDate}</td>
                         <td>{employee.updatedTime}</td>
-                        <td>
+                        <td className="fixed-column">
                           <button
                             variant="contained"
                             size="small"
@@ -499,7 +499,7 @@ const RegEmp = () => {
                             className="editbtn"
                           >
                             Edit
-                          </button>{" "}
+                          </button>
                           <button
                             variant="contained"
                             color="secondary"
