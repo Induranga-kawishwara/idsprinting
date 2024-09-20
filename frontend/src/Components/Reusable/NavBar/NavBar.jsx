@@ -13,6 +13,8 @@ import {
   FcElectricity,
   FcFolder,
   FcBiotech,
+  FcBullish,
+  FcLineChart,
 } from "react-icons/fc";
 import { FiAlignJustify } from "react-icons/fi";
 import classes from "./TheNavbar.module.css"; // Import the CSS module
@@ -131,6 +133,15 @@ const TheNavbar = () => {
                 Expenses
               </RouterLink>
             </Nav.Link>
+            <Nav.Link
+              className={`${classes.nav__link} me-4`}
+              onClick={closeNavbar}
+            >
+              <RouterLink to="/cashin">
+                <FcBullish className={classes.iconSize} />
+                CashIn
+              </RouterLink>
+            </Nav.Link>
 
             <Nav.Link
               className={`${classes.nav__link} me-4`}
@@ -147,8 +158,18 @@ const TheNavbar = () => {
               onClick={closeNavbar}
             >
               <RouterLink to="/reports">
-                <FcBiotech className={classes.iconSize} />
+                <FcLineChart className={classes.iconSize} />
                 Reports
+              </RouterLink>
+            </Nav.Link>
+
+            <Nav.Link
+              className={`${classes.nav__link} me-4`}
+              onClick={closeNavbar}
+            >
+              <RouterLink to="/wastemanagement">
+                <FcBiotech className={classes.iconSize} />
+                Waste Management
               </RouterLink>
             </Nav.Link>
 
