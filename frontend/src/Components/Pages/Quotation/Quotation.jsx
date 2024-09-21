@@ -363,7 +363,9 @@ const Quotation = () => {
   // Common function to generate a PDF from the table data
   // Function to generate a PDF for either Soft Copy or Print
   const generatePDF = (type) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+      format: [210, 297],
+    });
 
     // Base64 images for soft copy and print
     const softCopyLogo =
@@ -373,37 +375,50 @@ const Quotation = () => {
 
     // Add image based on type (Soft Copy or Print)
     if (type === "Soft Copy") {
-      doc.addImage(softCopyLogo, "PNG", 0, 0, 210, 297); // Adjust the position of the image
+      doc.addImage(softCopyLogo, "PNG", 0, 10, 210, 297); // Adjust the position of the image
     } else if (type === "Print") {
-      doc.addImage(printCopyLogo, "PNG", 0, 0, 210, 297); // Adjust the position of the image
+      doc.addImage(printCopyLogo, "PNG", 0, 10, 210, 297); // Adjust the position of the image
     }
 
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString();
     const formattedTime = currentDate.toLocaleTimeString();
 
-    doc.setFontSize(18);
-    doc.text(`Quotation Receipt (${type})`, 14, 70); // Position the title after the image
+    // doc.setFontSize(18);
+    // doc.text(`Quotation Receipt (${type})`, 14, 70); // Position the title after the image
+    doc.setFont("helvetica", "bold"); // Set the font to Helvetica, bold and italic
     doc.setFontSize(12);
-    doc.text(`Date: ${formattedDate}`, 14, 80);
-    doc.text(`Time: ${formattedTime}`, 14, 86);
+    doc.setTextColor(255, 255, 255); // Set the text color to blue (RGB: 0, 0, 255)
+
+    doc.text(`${formattedDate}`, 80.5, 61.8);
+    doc.text(`${formattedTime}`, 80.5, 66.9);
 
     // Add Quotation Number
     const quotationNumber = qtNumber || generateUniqueqtNumber();
-    doc.text(`Quotation Number: ${quotationNumber}`, 14, 92);
+    doc.text(`${quotationNumber}`, 110.9, 64);
 
+    doc.text(` ${selectedCustomer.address}`, 165, 64);
+
+    doc.setTextColor(0, 0, 0); // Set the text color to blue (RGB: 0, 0, 255)
     if (selectedCustomer) {
-      doc.text("Customer:", 14, 100);
+      //doc.text("Customer:", 14, 100);
+      doc.setFontSize(18);
       doc.text(
-        `Name: ${selectedCustomer.name} ${selectedCustomer.surname}`,
-        14,
-        106
+        `${selectedCustomer.name} ${selectedCustomer.surname}`,
+        10.9,
+        58.5
       );
-      doc.text(`Email: ${selectedCustomer.email}`, 14, 112);
-      doc.text(`Phone: ${selectedCustomer.phone}`, 14, 118);
+
+      doc.setTextColor(117, 117, 117); // Set the text color to blue (RGB: 0, 0, 255)
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal"); // Set the font to Helvetica, normal (non-bold, non-italic)
+
+      doc.text(`${selectedCustomer.phone}`, 10.9, 63);
+      doc.text(`${selectedCustomer.email}`, 10.9, 67);
+      doc.text(`Address: ${selectedCustomer.address}`, 10.9, 71);
     }
 
-    doc.text("Products:", 14, 130);
+    // doc.text("Products:", 14, 130);
     transaction.products.forEach((product, index) => {
       const y = 136 + index * 6;
       doc.text(
@@ -413,9 +428,17 @@ const Quotation = () => {
         14,
         y
       );
+      // doc.text(product.name, productNameX, y); // Product Name
     });
-
-    doc.text(`Total: Rs.${transaction.total.toFixed(2)}`, 14, 170);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold"); // Set the font to Helvetica, bold and italic
+    doc.text(`${transaction.total.toFixed(2)}`, 195, 186, {
+      align: "right",
+    });
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal"); // Set the font to Helvetica, bold and italic
     doc.text(`Validity Period: ${validityPeriod} days`, 14, 180);
     doc.text(`Completion: within ${completionDays} working days`, 14, 186);
 
