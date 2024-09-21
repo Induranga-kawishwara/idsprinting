@@ -16,6 +16,7 @@ import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import "../All.scss";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 import socket from "../../Utility/SocketConnection.js";
+import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 
 const ExpenseSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -61,6 +62,7 @@ const Expenses = () => {
   const [currentPage, setCurrentPage] = useState(0); // Current page state
   const [supplier, setSupplier] = useState([]);
   const itemsPerPage = 10; // Define how many items per page you want
+  const [loadingpage, setLoadingpage] = useState(false);
   const totalPages = Math.ceil(expenses.length / itemsPerPage); // Calculate total pages
 
   useEffect(() => {
@@ -209,6 +211,7 @@ const Expenses = () => {
     }
   }, []);
   const handleSubmit = async (values) => {
+    setLoadingpage(true);
     const currentDate = new Date();
 
     // Helper function to upload an image and handle errors
@@ -293,6 +296,7 @@ const Expenses = () => {
       alert(`Error: ${errorMessage}`);
     } finally {
       // Close modal and reset editing state
+      setLoadingpage(false);
       setIsModalOpen(false);
       setEditingExpense(null);
     }
@@ -400,420 +404,445 @@ const Expenses = () => {
     tableInstance;
 
   return (
-    <div className="bodyofpage">
-      <div className="container">
-        <button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            setIsModalOpen(true);
-            setEditingExpense(null);
-          }}
-          className="addnewbtntop"
-        >
-          New Expense
-        </button>
-        <div className="d-flex align-items-center mb-3">
-          <input
-            type="text"
-            className="searchfunctions me-2"
-            placeholder="Search by Name, Amount, and Invoice Number"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+    <div>
+      {loadingpage ? (
+        <div>
+          <Loading />
         </div>
-        <div className="d-flex align-items-center mb-3">
-          <DatePicker
-            selected={startDate}
-            onChange={(date) => setStartDate(date)}
-            selectsStart
-            startDate={startDate}
-            endDate={endDate}
-            placeholderText="Start Date"
-            className="searchfunctionsdate me-2"
-          />
-          <DatePicker
-            selected={endDate}
-            onChange={(date) => setEndDate(date)}
-            selectsEnd
-            startDate={startDate}
-            endDate={endDate}
-            minDate={startDate}
-            placeholderText="End Date"
-            className="searchfunctionsdate me-2"
-          />
-          <select
-            className="formdropdown"
-            value={paymentMethodFilter}
-            onChange={(e) => setPaymentMethodFilter(e.target.value)}
-          >
-            <option value="" disabled>
-              Payment Method
-            </option>
-            <option value="Card">Card</option>
-            <option value="Cash">Cash</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="Cheque">Cheque</option>
-          </select>
-
-          <select
-            className="formdropdown"
-            value={typeOfExpensesFilter}
-            onChange={(e) => setTypeOfExpensesFilter(e.target.value)}
-          >
-            <option value="" disabled>
-              Expenses Type
-            </option>
-            <option value="Suppliers">Suppliers</option>
-            <option value="Others">Others</option>
-            <option value="Electricity Bill">Electricity Bill</option>
-            <option value="Gas Bill">Gas Bill</option>
-            <option value="Phone Bill">Phone Bill</option>
-            {/* Add any other types of expenses */}
-          </select>
-
-          <button
-            variant="contained"
-            color="secondary"
-            className="prevbutton"
-            onClick={() => {
-              setSearchQuery("");
-              setStartDate(null);
-              setEndDate(null);
-              setPaymentMethodFilter("");
-              setTypeOfExpensesFilter("");
-            }}
-          >
-            Clear
-          </button>
-        </div>
-
-        <div className="table-responsive">
-          {loading || error || _.isEmpty(data) ? (
-            <TableChecker
-              loading={loading}
-              error={error}
-              hasData={data.length > 0}
-            />
-          ) : (
-            <table {...getTableProps()} className="table mt-3 custom-table">
-              <thead>
-                {headerGroups.map((headerGroup) => (
-                  <tr
-                    {...headerGroup.getHeaderGroupProps()}
-                    key={headerGroup.id}
-                  >
-                    {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()} key={column.id}>
-                        {column.render("Header")}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody {...getTableBodyProps()} className="custom-table">
-                {rows.map((row) => {
-                  prepareRow(row);
-                  return (
-                    <tr {...row.getRowProps()} key={row.id}>
-                      {row.cells.map((cell) => (
-                        <td {...cell.getCellProps()} key={cell.column.id}>
-                          {cell.render("Cell")}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="pagination">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-            disabled={currentPage === 0}
-          >
-            Previous
-          </button>
-          <span>
-            Page {currentPage + 1} of {totalPages}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
-            }
-            disabled={currentPage === totalPages - 1}
-          >
-            Next
-          </button>
-        </div>
-        {/* Form Modal */}
-        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingExpense ? "Edit Expense" : "Add New Expense"}
-                </h5>
-                <Button
-                  className="btn-close"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                  }}
-                ></Button>
-              </div>
-              <div className="modal-body">
-                <Formik
-                  initialValues={{
-                    name: editingExpense?.name || "",
-                    type: editingExpense?.type || "",
-                    supplier: editingExpense?.supplier || "",
-                    other: editingExpense?.other || "",
-                    description: editingExpense?.description || "",
-                    amount: editingExpense?.amount || "",
-                    invoiceNumber: editingExpense?.invoiceNumber || "",
-                    photo: editingExpense?.photo || null,
-                    paymentMethod: editingExpense?.paymentMethod || "",
-                    bankTransferNumber:
-                      editingExpense?.bankTransferNumber || "",
-                    chequeNumber: editingExpense?.chequeNumber || "",
-                  }}
-                  validationSchema={ExpenseSchema}
-                  onSubmit={handleSubmit}
-                >
-                  {({ setFieldValue, errors, touched, values }) => (
-                    <Form>
-                      <div className="mb-3">
-                        <label htmlFor="name">Name</label>
-                        <Field
-                          name="name"
-                          className={`form-control ${
-                            errors.name && touched.name
-                              ? "is-invalid"
-                              : touched.name
-                              ? "is-valid"
-                              : ""
-                          }`}
-                        />
-                        {errors.name && touched.name ? (
-                          <div className="invalid-feedback">{errors.name}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label htmlFor="type">Type of Expenses</label>
-                        <Field
-                          as="select"
-                          name="type"
-                          className={`form-control ${
-                            errors.type && touched.type
-                              ? "is-invalid"
-                              : touched.type
-                              ? "is-valid"
-                              : ""
-                          }`}
-                        >
-                          <option value="">Select Type</option>
-                          <option value="Suppliers">Suppliers</option>
-                          <option value="Others">Others</option>
-                          <option value="Electricity Bill">
-                            Electricity Bill
-                          </option>
-                          <option value="Gas Bill">Fuel Bill</option>
-                          <option value="Phone Bill">Phone Bill</option>
-                        </Field>
-                        {errors.type && touched.type ? (
-                          <div className="invalid-feedback">{errors.type}</div>
-                        ) : null}
-                      </div>
-                      {values.type === "Suppliers" && (
-                        <div className="mb-3">
-                          <label htmlFor="supplier">Supplier</label>
-                          <Field
-                            as="select"
-                            name="supplier"
-                            className={`form-control ${
-                              errors.supplier && touched.supplier
-                                ? "is-invalid"
-                                : touched.supplier
-                                ? "is-valid"
-                                : ""
-                            }`}
-                          >
-                            <option value="">Select Supplier</option>
-                            {supplier.map((supplier) => (
-                              <option key={supplier.id} value={supplier.name}>
-                                {supplier.name}
-                              </option>
-                            ))}
-                          </Field>
-                          {errors.supplier && touched.supplier ? (
-                            <div className="invalid-feedback">
-                              {errors.supplier}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.type === "Others" && (
-                        <div className="mb-3">
-                          <label htmlFor="other">Other Details</label>
-                          <Field
-                            name="other"
-                            className={`form-control ${
-                              errors.other && touched.other
-                                ? "is-invalid"
-                                : touched.other
-                                ? "is-valid"
-                                : ""
-                            }`}
-                          />
-                          {errors.other && touched.other ? (
-                            <div className="invalid-feedback">
-                              {errors.other}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      <div className="mb-3">
-                        <label htmlFor="description">Description</label>
-                        <Field
-                          name="description"
-                          as="textarea"
-                          className="form-control"
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label htmlFor="amount">Amount Rs</label>
-                        <Field
-                          name="amount"
-                          className={`form-control ${
-                            errors.amount && touched.amount
-                              ? "is-invalid"
-                              : touched.amount
-                              ? "is-valid"
-                              : ""
-                          }`}
-                        />
-                        {errors.amount && touched.amount ? (
-                          <div className="invalid-feedback">
-                            {errors.amount}
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label htmlFor="paymentMethod">Payment Method</label>
-                        <Field
-                          as="select"
-                          name="paymentMethod"
-                          className={`form-control ${
-                            errors.paymentMethod && touched.paymentMethod
-                              ? "is-invalid"
-                              : touched.paymentMethod
-                              ? "is-valid"
-                              : ""
-                          }`}
-                        >
-                          <option value="">Select Payment Method</option>
-                          <option value="Card">Card</option>
-                          <option value="Cash">Cash</option>
-                          <option value="Bank Transfer">Bank Transfer</option>
-                          <option value="Cheque">Cheque</option>
-                        </Field>
-                        {errors.paymentMethod && touched.paymentMethod ? (
-                          <div className="invalid-feedback">
-                            {errors.paymentMethod}
-                          </div>
-                        ) : null}
-                      </div>
-                      {values.paymentMethod === "Bank Transfer" && (
-                        <div className="mb-3">
-                          <label htmlFor="bankTransferNumber">
-                            Bank Transfer Number
-                          </label>
-                          <Field
-                            name="bankTransferNumber"
-                            className={`form-control ${
-                              errors.bankTransferNumber &&
-                              touched.bankTransferNumber
-                                ? "is-invalid"
-                                : touched.bankTransferNumber
-                                ? "is-valid"
-                                : ""
-                            }`}
-                          />
-                          {errors.bankTransferNumber &&
-                          touched.bankTransferNumber ? (
-                            <div className="invalid-feedback">
-                              {errors.bankTransferNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      {values.paymentMethod === "Cheque" && (
-                        <div className="mb-3">
-                          <label htmlFor="chequeNumber">Cheque Number</label>
-                          <Field
-                            name="chequeNumber"
-                            className={`form-control ${
-                              errors.chequeNumber && touched.chequeNumber
-                                ? "is-invalid"
-                                : touched.chequeNumber
-                                ? "is-valid"
-                                : ""
-                            }`}
-                          />
-                          {errors.chequeNumber && touched.chequeNumber ? (
-                            <div className="invalid-feedback">
-                              {errors.chequeNumber}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      <div className="mb-3">
-                        <label htmlFor="invoiceNumber">Invoice Number</label>
-                        <Field
-                          name="invoiceNumber"
-                          className={`form-control ${
-                            errors.invoiceNumber && touched.invoiceNumber
-                              ? "is-invalid"
-                              : touched.invoiceNumber
-                              ? "is-valid"
-                              : ""
-                          }`}
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label htmlFor="photo">Upload Photo</label>
-                        <input
-                          type="file"
-                          name="photo"
-                          onChange={(event) =>
-                            setFieldValue("photo", event.target.files[0])
-                          }
-                          className="form-control"
-                        />
-                      </div>
-                      <div className="modal-footer">
-                        <button type="submit" className="savechangesbutton">
-                          {editingExpense ? "Update Expense" : "Add Expense"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsModalOpen(false)}
-                          className="closebutton"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
+      ) : (
+        <div className="bodyofpage">
+          <div className="container">
+            <button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setIsModalOpen(true);
+                setEditingExpense(null);
+              }}
+              className="addnewbtntop"
+            >
+              New Expense
+            </button>
+            <div className="d-flex align-items-center mb-3">
+              <input
+                type="text"
+                className="searchfunctions me-2"
+                placeholder="Search by Name, Amount, and Invoice Number"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
+            <div className="d-flex align-items-center mb-3">
+              <DatePicker
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+                placeholderText="Start Date"
+                className="searchfunctionsdate me-2"
+              />
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                minDate={startDate}
+                placeholderText="End Date"
+                className="searchfunctionsdate me-2"
+              />
+              <select
+                className="formdropdown"
+                value={paymentMethodFilter}
+                onChange={(e) => setPaymentMethodFilter(e.target.value)}
+              >
+                <option value="" disabled>
+                  Payment Method
+                </option>
+                <option value="Card">Card</option>
+                <option value="Cash">Cash</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cheque">Cheque</option>
+              </select>
+
+              <select
+                className="formdropdown"
+                value={typeOfExpensesFilter}
+                onChange={(e) => setTypeOfExpensesFilter(e.target.value)}
+              >
+                <option value="" disabled>
+                  Expenses Type
+                </option>
+                <option value="Suppliers">Suppliers</option>
+                <option value="Others">Others</option>
+                <option value="Electricity Bill">Electricity Bill</option>
+                <option value="Gas Bill">Gas Bill</option>
+                <option value="Phone Bill">Phone Bill</option>
+                {/* Add any other types of expenses */}
+              </select>
+
+              <button
+                variant="contained"
+                color="secondary"
+                className="prevbutton"
+                onClick={() => {
+                  setSearchQuery("");
+                  setStartDate(null);
+                  setEndDate(null);
+                  setPaymentMethodFilter("");
+                  setTypeOfExpensesFilter("");
+                }}
+              >
+                Clear
+              </button>
+            </div>
+
+            <div className="table-responsive">
+              {loading || error || _.isEmpty(data) ? (
+                <TableChecker
+                  loading={loading}
+                  error={error}
+                  hasData={data.length > 0}
+                />
+              ) : (
+                <table {...getTableProps()} className="table mt-3 custom-table">
+                  <thead>
+                    {headerGroups.map((headerGroup) => (
+                      <tr
+                        {...headerGroup.getHeaderGroupProps()}
+                        key={headerGroup.id}
+                      >
+                        {headerGroup.headers.map((column) => (
+                          <th {...column.getHeaderProps()} key={column.id}>
+                            {column.render("Header")}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody {...getTableBodyProps()} className="custom-table">
+                    {rows.map((row) => {
+                      prepareRow(row);
+                      return (
+                        <tr {...row.getRowProps()} key={row.id}>
+                          {row.cells.map((cell) => (
+                            <td {...cell.getCellProps()} key={cell.column.id}>
+                              {cell.render("Cell")}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="pagination">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+                disabled={currentPage === 0}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+                }
+                disabled={currentPage === totalPages - 1}
+              >
+                Next
+              </button>
+            </div>
+            {/* Form Modal */}
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+                <div className="modal-content custom-modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      {editingExpense ? "Edit Expense" : "Add New Expense"}
+                    </h5>
+                    <Button
+                      className="btn-close"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                      }}
+                    ></Button>
+                  </div>
+                  <div className="modal-body">
+                    <Formik
+                      initialValues={{
+                        name: editingExpense?.name || "",
+                        type: editingExpense?.type || "",
+                        supplier: editingExpense?.supplier || "",
+                        other: editingExpense?.other || "",
+                        description: editingExpense?.description || "",
+                        amount: editingExpense?.amount || "",
+                        invoiceNumber: editingExpense?.invoiceNumber || "",
+                        photo: editingExpense?.photo || null,
+                        paymentMethod: editingExpense?.paymentMethod || "",
+                        bankTransferNumber:
+                          editingExpense?.bankTransferNumber || "",
+                        chequeNumber: editingExpense?.chequeNumber || "",
+                      }}
+                      validationSchema={ExpenseSchema}
+                      onSubmit={handleSubmit}
+                    >
+                      {({ setFieldValue, errors, touched, values }) => (
+                        <Form>
+                          <div className="mb-3">
+                            <label htmlFor="name">Name</label>
+                            <Field
+                              name="name"
+                              className={`form-control ${
+                                errors.name && touched.name
+                                  ? "is-invalid"
+                                  : touched.name
+                                  ? "is-valid"
+                                  : ""
+                              }`}
+                            />
+                            {errors.name && touched.name ? (
+                              <div className="invalid-feedback">
+                                {errors.name}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label htmlFor="type">Type of Expenses</label>
+                            <Field
+                              as="select"
+                              name="type"
+                              className={`form-control ${
+                                errors.type && touched.type
+                                  ? "is-invalid"
+                                  : touched.type
+                                  ? "is-valid"
+                                  : ""
+                              }`}
+                            >
+                              <option value="">Select Type</option>
+                              <option value="Suppliers">Suppliers</option>
+                              <option value="Others">Others</option>
+                              <option value="Electricity Bill">
+                                Electricity Bill
+                              </option>
+                              <option value="Gas Bill">Fuel Bill</option>
+                              <option value="Phone Bill">Phone Bill</option>
+                            </Field>
+                            {errors.type && touched.type ? (
+                              <div className="invalid-feedback">
+                                {errors.type}
+                              </div>
+                            ) : null}
+                          </div>
+                          {values.type === "Suppliers" && (
+                            <div className="mb-3">
+                              <label htmlFor="supplier">Supplier</label>
+                              <Field
+                                as="select"
+                                name="supplier"
+                                className={`form-control ${
+                                  errors.supplier && touched.supplier
+                                    ? "is-invalid"
+                                    : touched.supplier
+                                    ? "is-valid"
+                                    : ""
+                                }`}
+                              >
+                                <option value="">Select Supplier</option>
+                                {supplier.map((supplier) => (
+                                  <option
+                                    key={supplier.id}
+                                    value={supplier.name}
+                                  >
+                                    {supplier.name}
+                                  </option>
+                                ))}
+                              </Field>
+                              {errors.supplier && touched.supplier ? (
+                                <div className="invalid-feedback">
+                                  {errors.supplier}
+                                </div>
+                              ) : null}
+                            </div>
+                          )}
+                          {values.type === "Others" && (
+                            <div className="mb-3">
+                              <label htmlFor="other">Other Details</label>
+                              <Field
+                                name="other"
+                                className={`form-control ${
+                                  errors.other && touched.other
+                                    ? "is-invalid"
+                                    : touched.other
+                                    ? "is-valid"
+                                    : ""
+                                }`}
+                              />
+                              {errors.other && touched.other ? (
+                                <div className="invalid-feedback">
+                                  {errors.other}
+                                </div>
+                              ) : null}
+                            </div>
+                          )}
+                          <div className="mb-3">
+                            <label htmlFor="description">Description</label>
+                            <Field
+                              name="description"
+                              as="textarea"
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label htmlFor="amount">Amount Rs</label>
+                            <Field
+                              name="amount"
+                              className={`form-control ${
+                                errors.amount && touched.amount
+                                  ? "is-invalid"
+                                  : touched.amount
+                                  ? "is-valid"
+                                  : ""
+                              }`}
+                            />
+                            {errors.amount && touched.amount ? (
+                              <div className="invalid-feedback">
+                                {errors.amount}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label htmlFor="paymentMethod">
+                              Payment Method
+                            </label>
+                            <Field
+                              as="select"
+                              name="paymentMethod"
+                              className={`form-control ${
+                                errors.paymentMethod && touched.paymentMethod
+                                  ? "is-invalid"
+                                  : touched.paymentMethod
+                                  ? "is-valid"
+                                  : ""
+                              }`}
+                            >
+                              <option value="">Select Payment Method</option>
+                              <option value="Card">Card</option>
+                              <option value="Cash">Cash</option>
+                              <option value="Bank Transfer">
+                                Bank Transfer
+                              </option>
+                              <option value="Cheque">Cheque</option>
+                            </Field>
+                            {errors.paymentMethod && touched.paymentMethod ? (
+                              <div className="invalid-feedback">
+                                {errors.paymentMethod}
+                              </div>
+                            ) : null}
+                          </div>
+                          {values.paymentMethod === "Bank Transfer" && (
+                            <div className="mb-3">
+                              <label htmlFor="bankTransferNumber">
+                                Bank Transfer Number
+                              </label>
+                              <Field
+                                name="bankTransferNumber"
+                                className={`form-control ${
+                                  errors.bankTransferNumber &&
+                                  touched.bankTransferNumber
+                                    ? "is-invalid"
+                                    : touched.bankTransferNumber
+                                    ? "is-valid"
+                                    : ""
+                                }`}
+                              />
+                              {errors.bankTransferNumber &&
+                              touched.bankTransferNumber ? (
+                                <div className="invalid-feedback">
+                                  {errors.bankTransferNumber}
+                                </div>
+                              ) : null}
+                            </div>
+                          )}
+                          {values.paymentMethod === "Cheque" && (
+                            <div className="mb-3">
+                              <label htmlFor="chequeNumber">
+                                Cheque Number
+                              </label>
+                              <Field
+                                name="chequeNumber"
+                                className={`form-control ${
+                                  errors.chequeNumber && touched.chequeNumber
+                                    ? "is-invalid"
+                                    : touched.chequeNumber
+                                    ? "is-valid"
+                                    : ""
+                                }`}
+                              />
+                              {errors.chequeNumber && touched.chequeNumber ? (
+                                <div className="invalid-feedback">
+                                  {errors.chequeNumber}
+                                </div>
+                              ) : null}
+                            </div>
+                          )}
+                          <div className="mb-3">
+                            <label htmlFor="invoiceNumber">
+                              Invoice Number
+                            </label>
+                            <Field
+                              name="invoiceNumber"
+                              className={`form-control ${
+                                errors.invoiceNumber && touched.invoiceNumber
+                                  ? "is-invalid"
+                                  : touched.invoiceNumber
+                                  ? "is-valid"
+                                  : ""
+                              }`}
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label htmlFor="photo">Upload Photo</label>
+                            <input
+                              type="file"
+                              name="photo"
+                              onChange={(event) =>
+                                setFieldValue("photo", event.target.files[0])
+                              }
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="modal-footer">
+                            <button type="submit" className="savechangesbutton">
+                              {editingExpense
+                                ? "Update Expense"
+                                : "Add Expense"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsModalOpen(false)}
+                              className="closebutton"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </Form>
+                      )}
+                    </Formik>
+                  </div>
+                </div>
+              </div>
+            </Modal>
           </div>
-        </Modal>
-      </div>
+        </div>
+      )}
     </div>
   );
 };
