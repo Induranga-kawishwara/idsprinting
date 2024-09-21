@@ -7,6 +7,7 @@ import _ from "lodash";
 import CustomerFormModal from "./CustomerFormModal"; // Adjust the import path
 import socket from "../../Utility/SocketConnection.js";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 
 const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -14,6 +15,7 @@ const Customer = () => {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingpage, setLoadingpage] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -116,6 +118,8 @@ const Customer = () => {
   }, []);
 
   const handleSubmit = async (values) => {
+    setLoadingpage(true);
+
     const currentDate = new Date();
 
     const data = {
@@ -158,7 +162,7 @@ const Customer = () => {
         }
       }
     }
-
+    setLoadingpage(false);
     setIsModalOpen(false);
     setEditingCustomer(null);
   };
@@ -261,90 +265,100 @@ const Customer = () => {
   };
 
   return (
-    <div className="bodyofpage">
-      <div className="container">
-        <button
-          variant="contained"
-          onClick={() => {
-            setIsModalOpen(true);
-            setEditingCustomer(null);
-          }}
-          className="addnewbtntop"
-        >
-          New Customer
-        </button>
-
-        <div className="d-flex align-items-center mb-3">
-          <input
-            type="text"
-            className="searchfunctions"
-            placeholder="Search by name, surname, or phone"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button
-            variant="contained"
-            onClick={clearFilters}
-            className="prevbutton"
-          >
-            Clear
-          </button>
+    <div>
+      {loadingpage ? (
+        <div>
+          <Loading />
         </div>
-        <div className="table-responsive">
-          {loading || error || _.isEmpty(data) ? (
-            <TableChecker
-              loading={loading}
-              error={error}
-              hasData={data.length > 0}
-            />
-          ) : (
-            <table {...getTableProps()} className="table mt-3 custom-table">
-              <thead>
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
-                        {column.render("Header")}
-                      </th>
+      ) : (
+        <div className="bodyofpage">
+          <div className="container">
+            <button
+              variant="contained"
+              onClick={() => {
+                setIsModalOpen(true);
+                setEditingCustomer(null);
+              }}
+              className="addnewbtntop"
+            >
+              New Customer
+            </button>
+
+            <div className="d-flex align-items-center mb-3">
+              <input
+                type="text"
+                className="searchfunctions"
+                placeholder="Search by name, surname, or phone"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button
+                variant="contained"
+                onClick={clearFilters}
+                className="prevbutton"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="table-responsive">
+              {loading || error || _.isEmpty(data) ? (
+                <TableChecker
+                  loading={loading}
+                  error={error}
+                  hasData={data.length > 0}
+                />
+              ) : (
+                <table {...getTableProps()} className="table mt-3 custom-table">
+                  <thead>
+                    {headerGroups.map((headerGroup) => (
+                      <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map((column) => (
+                          <th {...column.getHeaderProps()}>
+                            {column.render("Header")}
+                          </th>
+                        ))}
+                      </tr>
                     ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody {...getTableBodyProps()} className="custom-table">
-                {rows.map((row) => {
-                  prepareRow(row);
-                  return (
-                    <tr {...row.getRowProps()}>
-                      {row.cells.map((cell) => (
-                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+                  </thead>
+                  <tbody {...getTableBodyProps()} className="custom-table">
+                    {rows.map((row) => {
+                      prepareRow(row);
+                      return (
+                        <tr {...row.getRowProps()}>
+                          {row.cells.map((cell) => (
+                            <td {...cell.getCellProps()}>
+                              {cell.render("Cell")}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
-        <CustomerFormModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleSubmit}
-          initialValues={
-            editingCustomer || {
-              name: "",
-              surname: "",
-              email: "",
-              phone: "",
-              houseNo: "",
-              street: "",
-              city: "",
-              postalCode: "",
-              customerType: "",
-            }
-          }
-        />
-      </div>
+            <CustomerFormModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onSubmit={handleSubmit}
+              initialValues={
+                editingCustomer || {
+                  name: "",
+                  surname: "",
+                  email: "",
+                  phone: "",
+                  houseNo: "",
+                  street: "",
+                  city: "",
+                  postalCode: "",
+                  customerType: "",
+                }
+              }
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
