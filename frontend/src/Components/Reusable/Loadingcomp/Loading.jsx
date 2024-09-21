@@ -5,7 +5,7 @@ import "./Loading.scss"; // Optional: if you want to add custom styles
 const Loading = () => {
   return (
     <div className="loading-container">
-      <CircularProgress />
+      <CircularProgress color="inherit" />
       <p>Loading, please wait...</p>
     </div>
   );

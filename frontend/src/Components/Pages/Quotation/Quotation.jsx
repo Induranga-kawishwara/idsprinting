@@ -3,39 +3,41 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Modal, TextField } from "@mui/material";
-//import "./Quotation.scss"; // Ensure the correct CSS file is imported
+import "./Quotation.scss"; // Ensure the correct CSS file is imported
 import jsPDF from "jspdf"; // Import jsPDF
+import images from "./images.json";
 
 const initialProducts = [
-  {
-    id: 1,
-    name: "Shirts",
-    price: 9.99,
-    gsm: 180,
-    color: "Red",
-  },
-  {
-    id: 2,
-    name: "Pants",
-    price: 14.99,
-    gsm: 200,
-    color: "Blue",
-  },
-  {
-    id: 3,
-    name: "Dresses",
-    price: 19.99,
-    gsm: 150,
-    color: "Green",
-  },
-  {
-    id: 4,
-    name: "Shoes",
-    price: 14.99,
-    gsm: null,
-    color: "Black",
-  },
-  // Add more products as needed
+  { id: 1, name: "Shirts", price: 9.99, stoke: 10, gsm: 180, color: "Red" },
+  { id: 2, name: "Pants", price: 14.99, stoke: 10, gsm: 200, color: "Blue" },
+  { id: 3, name: "Dresses", price: 19.99, stoke: 10, gsm: 150, color: "Green" },
+  { id: 4, name: "Shoes", price: 14.99, gsm: null, color: "Black" },
+  { id: 5, name: "Jackets", price: 29.99, gsm: 300, color: "Grey" },
+  { id: 6, name: "T-shirts", price: 7.99, gsm: 170, color: "White" },
+  { id: 7, name: "Shorts", price: 11.99, gsm: 160, color: "Yellow" },
+  { id: 8, name: "Hats", price: 5.99, gsm: null, color: "Red" },
+  { id: 9, name: "Socks", price: 2.99, gsm: 100, color: "Black" },
+  { id: 10, name: "Belts", price: 12.99, gsm: null, color: "Brown" },
+  { id: 11, name: "Skirts", price: 16.99, gsm: 180, color: "Pink" },
+  { id: 12, name: "Scarves", price: 8.99, gsm: 120, color: "Purple" },
+  { id: 13, name: "Gloves", price: 6.99, gsm: null, color: "Blue" },
+  { id: 14, name: "Jeans", price: 24.99, gsm: 250, color: "Dark Blue" },
+  { id: 15, name: "Sweaters", price: 19.99, gsm: 300, color: "Green" },
+  { id: 16, name: "Suits", price: 49.99, gsm: 350, color: "Black" },
+  { id: 17, name: "Ties", price: 9.99, gsm: 90, color: "Red" },
+  { id: 18, name: "Blouses", price: 15.99, gsm: 140, color: "Yellow" },
+  { id: 19, name: "Sandals", price: 13.99, gsm: null, color: "Beige" },
+  { id: 20, name: "Boots", price: 29.99, gsm: null, color: "Brown" },
+  { id: 21, name: "Hoodies", price: 22.99, gsm: 320, color: "Grey" },
+  { id: 22, name: "Caps", price: 7.99, gsm: null, color: "Black" },
+  { id: 23, name: "Vests", price: 14.99, gsm: 200, color: "White" },
+  { id: 24, name: "Coats", price: 39.99, gsm: 400, color: "Navy Blue" },
+  { id: 25, name: "Leggings", price: 10.99, gsm: 160, color: "Black" },
+  { id: 26, name: "Tracksuits", price: 25.99, gsm: 220, color: "Grey" },
+  { id: 27, name: "Swimwear", price: 18.99, gsm: 80, color: "Red" },
+  { id: 28, name: "Sneakers", price: 34.99, gsm: null, color: "White" },
+  { id: 29, name: "Slippers", price: 8.99, gsm: null, color: "Blue" },
+  { id: 30, name: "Blazers", price: 44.99, gsm: 280, color: "Black" },
 ];
 
 const initialCustomers = [
@@ -44,21 +46,77 @@ const initialCustomers = [
     name: "The J",
     surname: "Valoy",
     email: "valoy@domain.com",
-    phone: "123-456-7890",
+    phone: "0711093799",
     totalSpent: "RD $50.00",
-    houseNo: "",
-    street: "",
-    city: "",
-    postalCode: "",
+    houseNo: "12B",
+    street: "Maple Street",
+    city: "Santo Domingo",
+    postalCode: "10101",
   },
-  // Add more customers if needed
+  {
+    id: 2,
+    name: "Maria",
+    surname: "Santiago",
+    email: "maria.santiago@example.com",
+    phone: "0711223344",
+    totalSpent: "RD $200.00",
+    houseNo: "45",
+    street: "Elm Avenue",
+    city: "Santiago",
+    postalCode: "51000",
+  },
+  {
+    id: 3,
+    name: "Pedro",
+    surname: "Gomez",
+    email: "pedro.gomez@example.com",
+    phone: "0722334455",
+    totalSpent: "RD $120.50",
+    houseNo: "89A",
+    street: "Cedar Lane",
+    city: "La Vega",
+    postalCode: "41000",
+  },
+  {
+    id: 4,
+    name: "Laura",
+    surname: "Martinez",
+    email: "laura.martinez@example.com",
+    phone: "0712334455",
+    totalSpent: "RD $75.75",
+    houseNo: "22C",
+    street: "Oak Street",
+    city: "Puerto Plata",
+    postalCode: "57000",
+  },
+  {
+    id: 5,
+    name: "Juan",
+    surname: "Rodriguez",
+    email: "juan.rodriguez@example.com",
+    phone: "0733445566",
+    totalSpent: "RD $300.00",
+    houseNo: "5",
+    street: "Pine Boulevard",
+    city: "Punta Cana",
+    postalCode: "23000",
+  },
 ];
+const generateUniqueqtNumber = () => {
+  const now = new Date();
+  const year = String(now.getFullYear()).slice(2);
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  const milliseconds = String(now.getMilliseconds()).padStart(3, "0");
 
-
+  return `QUT-${year}${month}${day}-${hours}${minutes}${seconds}-${milliseconds}`;
+};
 
 const adminEmail = "admin@admin.com";
 const adminPassword = "admin123";
-
 
 const ProductSchema = Yup.object().shape({
   name: Yup.string().required("Product name is required"),
@@ -79,10 +137,10 @@ const Quotation = () => {
     total: 0.0,
     net: 0.0,
   });
-
-  const [isViewQuotationModalOpen, setIsViewQuotationModalOpen] = useState(false);
-const [quotationToView, setQuotationToView] = useState(null);
-
+  const [qtNumber, setqtNumber] = useState(null);
+  const [isViewQuotationModalOpen, setIsViewQuotationModalOpen] =
+    useState(false);
+  const [quotationToView, setQuotationToView] = useState(null);
 
   const [products] = useState(initialProducts);
   const [productSearchQuery, setProductSearchQuery] = useState("");
@@ -93,7 +151,10 @@ const [quotationToView, setQuotationToView] = useState(null);
   const [completionDays, setCompletionDays] = useState(""); // State for completion days
   const [quotations, setQuotations] = useState([]); // State to store quotations
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false); // State for admin modal
-  const [adminCredentials, setAdminCredentials] = useState({ email: "", password: "" }); // Admin credentials state
+  const [adminCredentials, setAdminCredentials] = useState({
+    email: "",
+    password: "",
+  }); // Admin credentials state
   const [quotationToDelete, setQuotationToDelete] = useState(null); // State to track which quotation to delete
 
   const filteredProducts = useMemo(() => {
@@ -121,7 +182,6 @@ const [quotationToView, setQuotationToView] = useState(null);
     setQuotationToView(quotation);
     setIsViewQuotationModalOpen(true);
   };
-  
 
   const filteredCustomers = useMemo(
     () =>
@@ -270,11 +330,11 @@ const [quotationToView, setQuotationToView] = useState(null);
 
   // Function to save the current quotation to the list
   const saveQuotation = () => {
-    const quotationNumber = new Date().getTime(); // Generate unique quotation number
+    const quotationNumber = generateUniqueqtNumber(); // Generate unique quotation number
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString();
     const formattedTime = currentDate.toLocaleTimeString();
-    
+
     const newQuotation = {
       date: formattedDate, // Save the date
       time: formattedTime, // Save the time
@@ -282,190 +342,155 @@ const [quotationToView, setQuotationToView] = useState(null);
         ? `${selectedCustomer.name} ${selectedCustomer.surname}`
         : "No customer selected",
       contactNumber: selectedCustomer ? selectedCustomer.phone : "N/A",
-      quotationNumber: quotationNumber,
+      quotationNumber: quotationNumber, // Use the generated quotation number
       amount: transaction.total.toFixed(2),
       products: transaction.products, // Include products in the quotation
       validityPeriod: validityPeriod, // Save the validity period
       completionDays: completionDays, // Save the completion days
     };
-  
+
     setQuotations((prevQuotations) => [...prevQuotations, newQuotation]);
   };
-  
-  
 
-  const generateSoftCopyPDF = () => {
-    if (!selectedCustomer) {
-      alert("Please select a customer before generating a quotation.");
-      return;
-    }
-  
-    // Check if validity period and completion days are filled
-    if (!validityPeriod || !completionDays) {
-      alert("Please enter both the validity period and the date of completion.");
-      return;
-    }
-  
+  // Function to generate Soft Copy PDF from table data
+  const generateSoftCopyPDFFromTable = (quotation) => {
     generatePDF("Soft Copy");
-    saveQuotation(); // Save the quotation after generating the PDF
-  };
-  
-  const generatePrintPDF = () => {
-    if (!selectedCustomer) {
-      alert("Please select a customer before generating a quotation.");
-      return;
-    }
-  
-    // Check if validity period and completion days are filled
-    if (!validityPeriod || !completionDays) {
-      alert("Please enter both the validity period and the date of completion.");
-      return;
-    }
-  
-    generatePDF("Print");
-    saveQuotation(); // Save the quotation after printing the PDF
   };
 
-  
-  // Common function to generate PDF based on type
+  const generatePrintPDFFromTable = (quotation) => {
+    generatePDF("Print");
+  };
+
+  // Common function to generate a PDF from the table data
+  // Function to generate a PDF for either Soft Copy or Print
   const generatePDF = (type) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+      format: [210, 297],
+    });
+
+    // Base64 images for soft copy and print
+    const softCopyLogo = "";
+    const printCopyLogo = "";
+
+    // Add image based on type (Soft Copy or Print)
+    if (type === "Soft Copy") {
+      doc.addImage(images.softcopyy, "PNG", 0, 10, 210, 297); // Adjust the position of the image
+    } else if (type === "Print") {
+      doc.addImage(images.print, "PNG", 0, 10, 210, 297); // Adjust the position of the image
+    }
 
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString();
     const formattedTime = currentDate.toLocaleTimeString();
 
-    doc.setFontSize(18);
-    doc.text(`Quotation Receipt (${type})`, 14, 22);
+    // doc.setFontSize(18);
+    // doc.text(`Quotation Receipt (${type})`, 14, 70); // Position the title after the image
+    doc.setFont("helvetica", "bold"); // Set the font to Helvetica, bold and italic
     doc.setFontSize(12);
-    doc.text(`Date: ${formattedDate}`, 14, 36);
-    doc.text(`Time: ${formattedTime}`, 14, 42);
+    doc.setTextColor(255, 255, 255); // Set the text color to blue (RGB: 0, 0, 255)
 
-    doc.text("Customer:", 14, 50);
+    doc.text(`${formattedDate}`, 80.5, 61.8);
+    doc.text(`${formattedTime}`, 80.5, 66.9);
+
+    // Add Quotation Number
+    const quotationNumber = qtNumber || generateUniqueqtNumber();
+    doc.text(`${quotationNumber}`, 110.9, 64);
+
+    doc.text(` ${selectedCustomer.address}`, 165, 64);
+
+    doc.setTextColor(0, 0, 0); // Set the text color to blue (RGB: 0, 0, 255)
     if (selectedCustomer) {
+      //doc.text("Customer:", 14, 100);
+      doc.setFontSize(18);
       doc.text(
-        `Name: ${selectedCustomer.name} ${selectedCustomer.surname}`,
-        14,
-        56
+        `${selectedCustomer.name} ${selectedCustomer.surname}`,
+        10.9,
+        58.5
       );
-      doc.text(`Email: ${selectedCustomer.email}`, 14, 62);
-      doc.text(`Phone: ${selectedCustomer.phone}`, 14, 68);
+
+      doc.setTextColor(117, 117, 117); // Set the text color to blue (RGB: 0, 0, 255)
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal"); // Set the font to Helvetica, normal (non-bold, non-italic)
+
+      doc.text(`${selectedCustomer.phone}`, 10.9, 63);
+      doc.text(`${selectedCustomer.email}`, 10.9, 67);
+      doc.text(`Address: ${selectedCustomer.address}`, 10.9, 71);
     }
 
-    doc.text("Products:", 14, 80);
+    // doc.text("Products:", 14, 130);
+    // transaction.products.forEach((product, index) => {
+    //   const y = 136 + index * 6;
+    //   doc.text(
+    //     `${product.name} - ${product.qty} x Rs.${product.price.toFixed(
+    //       2
+    //     )} = Rs.${(product.qty * product.price).toFixed(2)}`,
+    //     14,
+    //     y
+    //   );
+    // });
+
     transaction.products.forEach((product, index) => {
-      const y = 86 + index * 6;
-      doc.text(
-        `${product.name} - ${product.qty} x $${product.price.toFixed(2)} = $${(
-          product.qty * product.price
-        ).toFixed(2)}`,
-        14,
-        y
-      );
+      const y = 91 + index * 7.5; // Adjust y position for each product
+
+      // Define the X positions for each part of the text
+      const productNameX = 15.3; // X position for product name
+      const qtyX = 142.8; // X position for quantity
+      const priceX = 105.8; // X position for price
+      const totalX = 187.8; // X position for total (qty * price)
+
+      // Draw each part of the text at the specified X positions
+      doc.text(product.name, productNameX, y);
+      doc.text(`${product.qty}`, qtyX, y, { align: "center" }); // Quantity
+      doc.text(`Rs.${product.price.toFixed(2)}`, priceX, y, {
+        align: "center",
+      }); // Unit Price
+
+      const totalPrice = `Rs.${(product.qty * product.price).toFixed(2)}`;
+      doc.text(totalPrice, totalX, y, { align: "right" }); // Total price aligned
     });
 
-    doc.text(`Total: $${transaction.total.toFixed(2)}`, 14, 120);
-
-    doc.text(`Validity Period: ${validityPeriod} days`, 14, 130); // Add validity period
-    doc.text(`Completion: within ${completionDays} working days`, 14, 136); // Add completion days
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold"); // Set the font to Helvetica, bold and italic
+    doc.text(`${transaction.total.toFixed(2)}`, 195, 186, {
+      align: "right",
+    });
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal"); // Set the font to Helvetica, bold and italic
+    doc.text(`${completionDays}`, 79.7, 201.7, { align: "center" });
+    doc.setTextColor(237, 28, 36);
+    doc.text(`${validityPeriod} days`, 64.5, 257);
 
     if (type === "Soft Copy") {
-      doc.save("quotation_soft_copy.pdf");
+      doc.save(`quotation_${quotationNumber}.pdf`);
     } else if (type === "Print") {
       doc.autoPrint();
       window.open(doc.output("bloburl"), "_blank");
     }
   };
 
-  // Functions to generate PDF from table without saving
-  const generateSoftCopyPDFFromTable = (quotation) => {
-    generatePDFFromTable(quotation, "Soft Copy");
-  };
-
-  const generatePrintPDFFromTable = (quotation) => {
-    generatePDFFromTable(quotation, "Print");
-  };
-
-  // Common function to generate PDF from table quotation
-  const generatePDFFromTable = (quotation, type) => {
-    const doc = new jsPDF();
-  
-    // Use saved date and time
-    const formattedDate = quotation.date;
-    const formattedTime = quotation.time;
-  
-    // Check if validity period and completion days are available
-    if (!quotation.validityPeriod || !quotation.completionDays) {
-      alert("This quotation does not have a validity period or date of completion. Please update the quotation to include these details.");
-      return;
-    }
-  
-    // Header for the PDF
-    doc.setFontSize(18);
-    doc.text(`Quotation Receipt (${type})`, 14, 22);
-    doc.setFontSize(12);
-    doc.text(`Date: ${formattedDate}`, 14, 36);
-    doc.text(`Time: ${formattedTime}`, 14, 42);
-  
-    // Customer details
-    doc.text("Customer:", 14, 50);
-    doc.text(`Name: ${quotation.customer}`, 14, 56);
-    doc.text(`Contact Number: ${quotation.contactNumber}`, 14, 62);
-  
-    // Quotation details
-    doc.text(`Quotation Number: ${quotation.quotationNumber}`, 14, 74);
-    doc.text(`Amount: $${quotation.amount}`, 14, 86);
-  
-    // Product details
-    if (quotation.products && quotation.products.length > 0) {
-      doc.text("Products:", 14, 100);
-      quotation.products.forEach((product, index) => {
-        const y = 106 + index * 6;
-        doc.text(
-          `${product.name} - ${product.qty} x $${product.price.toFixed(2)} = $${(
-            product.qty * product.price
-          ).toFixed(2)}`,
-          14,
-          y
-        );
-      });
-    }
-  
-    // Use saved validity period and completion days
-    doc.text(`Validity Period: ${quotation.validityPeriod} days`, 14, 130);
-    doc.text(`Completion: within ${quotation.completionDays} working days`, 14, 136);
-  
-    // Save or print the PDF
-    if (type === "Soft Copy") {
-      doc.save(`quotation_${quotation.quotationNumber}.pdf`);
-    } else if (type === "Print") {
-      doc.autoPrint();
-      window.open(doc.output("bloburl"), "_blank");
-    }
-  };
-  
-  
-
-  // Handle generating PDF based on selected copy type
+  // Handle PDF generation based on copyType
   const handleGeneratePDF = () => {
     if (!selectedCustomer) {
       alert("Please select a customer before generating a quotation.");
       return;
     }
-  
+
     // Check if validity period and completion days are filled
     if (!validityPeriod || !completionDays) {
-      alert("Please enter both the validity period and the date of completion.");
+      alert(
+        "Please enter both the validity period and the date of completion."
+      );
       return;
     }
-  
+
     if (copyType === "Soft Copy") {
-      generateSoftCopyPDF();
+      generatePDF("Soft Copy");
     } else if (copyType === "Print") {
-      generatePrintPDF();
+      generatePDF("Print");
     }
   };
-  
 
   // Handle delete quotation with admin confirmation
   const handleDeleteQuotation = (quotation) => {
@@ -490,15 +515,18 @@ const [quotationToView, setQuotationToView] = useState(null);
       alert("Invalid admin credentials. Please try again.");
     }
   };
-  
 
   return (
-    <div className="quotation-page">
-      <div className="quotation-dashboard">
+    <div className="sales-page">
+      <div className="sales-dashboard">
         <br />
         <br />
-        <div className="quotation-body">
+        <div className="sales-body">
           <div className="left-panel">
+            <div className="net-amount-box">
+              <h2>Net Amount</h2>
+              <p>Rs. {transaction.net.toFixed(2)}</p>
+            </div>
             <div className="customer-info">
               {selectedCustomer ? (
                 <div className="customer-selected">
@@ -511,13 +539,13 @@ const [quotationToView, setQuotationToView] = useState(null);
                     </p>
                     <div className="customer-metrics">
                       <span>Email: {selectedCustomer.email}</span>
-                      <br />
+
                       <span>Phone: {selectedCustomer.phone}</span>
                     </div>
                   </div>
                   <button
                     onClick={handleRemoveCustomer}
-                    className="remove-customer-button"
+                    className="creditcustomersbtn"
                   >
                     Remove Customer
                   </button>
@@ -544,10 +572,9 @@ const [quotationToView, setQuotationToView] = useState(null);
                 </>
               )}
             </div>
-
             <div className="transaction-summary">
-              <div className="table-responsive">
-                <table>
+              <div class="custom-table-sale table-responsive">
+                <table className="table mt-3 custom-table">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -584,7 +611,10 @@ const [quotationToView, setQuotationToView] = useState(null);
                         </td>
                         <td>{(product.qty * product.price).toFixed(2)}</td>
                         <td>
-                          <button onClick={() => removeProduct(product.id)}>
+                          <button
+                            className="tableremovebtn"
+                            onClick={() => removeProduct(product.id)}
+                          >
                             Remove
                           </button>
                         </td>
@@ -604,9 +634,9 @@ const [quotationToView, setQuotationToView] = useState(null);
                 </Button>
               </div>
 
-              <div className="totals">
+              {/* <div className="totals">
                 <p>Net: {transaction.net.toFixed(2)}</p>
-              </div>
+              </div> */}
             </div>
 
             {/* Inputs for Validity Period and Completion Days */}
@@ -633,46 +663,39 @@ const [quotationToView, setQuotationToView] = useState(null);
               </div>
             </div>
 
-            {/* Dropdown for selecting Print or Soft Copy */}
+            <label>Do you want softcopy or print ?</label>
             <div className="action-buttons">
-  <select
-    value={copyType}
-    onChange={(e) => setCopyType(e.target.value)}
-    className="form-control mb-2"
-  >
-    <option value="" label="Select" disabled />
-    <option value="Soft Copy">Soft Copy</option>
-    <option value="Print">Print</option>
-  </select>
-  <button
-    onClick={handleGeneratePDF}
-    className="button-generate-pdf"
-    disabled={!selectedCustomer} // Disable if no customer is selected
-  >
-    {copyType === "Print" ? "Print PDF" : "Generate PDF"}
-  </button>
-</div>
+              <select
+                value={copyType}
+                onChange={(e) => setCopyType(e.target.value)}
+                className="form-control mb-2"
+              >
+                <option value="" label="Select" disabled />
+                <option value="Soft Copy">Soft Copy</option>
+                <option value="Print">Print</option>
+              </select>
+              <button
+                onClick={() => generatePDF(copyType)}
+                className="button-add-product"
+                disabled={!selectedCustomer}
+              >
+                {copyType === "Print" ? "Print PDF" : "Generate PDF"}
+              </button>
+            </div>
           </div>
           <div className="right-panel">
             {/* Product Search and Filter */}
-            <div className="product-search">
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder={`Search by ${searchField}`}
-                  value={productSearchQuery}
-                  onChange={(e) => setProductSearchQuery(e.target.value)}
-                />
-                <button
-                  className="btn btn-outline-secondary"
-                  onClick={clearSearch}
-                >
-                  Clear
-                </button>
-              </div>
+            <div className="d-flex align-items-center mb-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder={`Search by ${searchField}`}
+                value={productSearchQuery}
+                onChange={(e) => setProductSearchQuery(e.target.value)}
+              />
+
               <select
-                className="form-control mt-2"
+                className="form-control"
                 value={searchField}
                 onChange={(e) => setSearchField(e.target.value)}
               >
@@ -681,6 +704,9 @@ const [quotationToView, setQuotationToView] = useState(null);
                 <option value="gsm">GSM</option>
                 <option value="color">Color</option>
               </select>
+              <button className="prevbutton2" onClick={clearSearch}>
+                Clear
+              </button>
             </div>
             <div className="product-grid">
               {filteredProducts.map((product) => (
@@ -701,82 +727,108 @@ const [quotationToView, setQuotationToView] = useState(null);
         <div className="quotation-list">
           <h4>Saved Quotations</h4>
           <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Time</th>
-                      <th>Customer</th>
-                      <th>Contact Number</th>
-                      <th>Quotation Number</th>
-                      <th>Amount</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {quotations.map((quotation) => (
-                      <tr key={quotation.quotationNumber}>
-                        <td>{quotation.date}</td>
-                        <td>{quotation.time}</td>
-                        <td>{quotation.customer}</td>
-                        <td>{quotation.contactNumber}</td>
-                        <td>{quotation.quotationNumber}</td>
-                        <td>{quotation.amount}</td>
-                        <td>
-                          <button onClick={() => generateSoftCopyPDFFromTable(quotation)}>Soft Copy</button>
-                          <button onClick={() => generatePrintPDFFromTable(quotation)}>Print</button>
-                          <button onClick={() => handleDeleteQuotation(quotation)}>Delete</button>
-                          <button onClick={() => handleViewQuotation(quotation)}>View Quotation</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Customer</th>
+                <th>Contact Number</th>
+                <th>Quotation Number</th> {/* Add Quotation Number header */}
+                <th>Amount</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quotations.map((quotation) => (
+                <tr key={quotation.quotationNumber}>
+                  <td>{quotation.date}</td>
+                  <td>{quotation.time}</td>
+                  <td>{quotation.customer}</td>
+                  <td>{quotation.contactNumber}</td>
+                  <td>{quotation.quotationNumber}</td>{" "}
+                  {/* Display the Quotation Number */}
+                  <td>{quotation.amount}</td>
+                  <td>
+                    <button
+                      onClick={() => generateSoftCopyPDFFromTable(quotation)}
+                    >
+                      Soft Copy
+                    </button>
+                    <button
+                      onClick={() => generatePrintPDFFromTable(quotation)}
+                    >
+                      Print
+                    </button>
+                    <button onClick={() => handleDeleteQuotation(quotation)}>
+                      Delete
+                    </button>
+                    <button onClick={() => handleViewQuotation(quotation)}>
+                      View Quotation
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-                <Modal
-                  open={isViewQuotationModalOpen}
-                  onClose={() => setIsViewQuotationModalOpen(false)}
-                >
-                  <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-                    <div className="modal-content custom-modal-content">
-                      <div className="modal-header">
-                        <h5 className="modal-title">Quotation Details</h5>
-                        <Button
-                          type="button"
-                          className="btn-close"
-                          aria-label="Close"
-                          onClick={() => setIsViewQuotationModalOpen(false)}
-                        />
-                      </div>
-                      <div className="modal-body">
-                        {quotationToView && (
-                          <>
-                            <p><strong>Date:</strong> {quotationToView.date}</p>
-                            <p><strong>Customer:</strong> {quotationToView.customer}</p>
-                            <p><strong>Contact Number:</strong> {quotationToView.contactNumber}</p>
-                            <p><strong>Quotation Number:</strong> {quotationToView.quotationNumber}</p>
-                            <p><strong>Amount:</strong> ${quotationToView.amount}</p>
-                            <h5>Products:</h5>
-                            {quotationToView.products.map((product, index) => (
-                              <p key={index}>
-                                {product.name} - {product.qty} x ${product.price.toFixed(2)} = ${(product.qty * product.price).toFixed(2)}
-                              </p>
-                            ))}
-                          </>
-                        )}
-                      </div>
-                      <div className="modal-footer">
-                        <Button
-                          variant="secondary"
-                          onClick={() => setIsViewQuotationModalOpen(false)}
-                        >
-                          Close
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </Modal>
 
+        <Modal
+          open={isViewQuotationModalOpen}
+          onClose={() => setIsViewQuotationModalOpen(false)}
+        >
+          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+            <div className="modal-content custom-modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Quotation Details</h5>
+                <Button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={() => setIsViewQuotationModalOpen(false)}
+                />
+              </div>
+              <div className="modal-body">
+                {quotationToView && (
+                  <>
+                    <p>
+                      <strong>Date:</strong> {quotationToView.date}
+                    </p>
+                    <p>
+                      <strong>Customer:</strong> {quotationToView.customer}
+                    </p>
+                    <p>
+                      <strong>Contact Number:</strong>{" "}
+                      {quotationToView.contactNumber}
+                    </p>
+                    <p>
+                      <strong>Quotation Number:</strong>{" "}
+                      {quotationToView.quotationNumber}
+                    </p>
+                    <p>
+                      <strong>Amount:</strong> ${quotationToView.amount}
+                    </p>
+                    <h5>Products:</h5>
+                    {quotationToView.products.map((product, index) => (
+                      <p key={index}>
+                        {product.name} - {product.qty} x $
+                        {product.price.toFixed(2)} = $
+                        {(product.qty * product.price).toFixed(2)}
+                      </p>
+                    ))}
+                  </>
+                )}
+              </div>
+              <div className="modal-footer">
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsViewQuotationModalOpen(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Modal>
 
         {/* Admin Authentication Modal */}
         <Modal
@@ -800,7 +852,10 @@ const [quotationToView, setQuotationToView] = useState(null);
                   type="email"
                   value={adminCredentials.email}
                   onChange={(e) =>
-                    setAdminCredentials({ ...adminCredentials, email: e.target.value })
+                    setAdminCredentials({
+                      ...adminCredentials,
+                      email: e.target.value,
+                    })
                   }
                   fullWidth
                   className="mb-3"
@@ -810,7 +865,10 @@ const [quotationToView, setQuotationToView] = useState(null);
                   type="password"
                   value={adminCredentials.password}
                   onChange={(e) =>
-                    setAdminCredentials({ ...adminCredentials, password: e.target.value })
+                    setAdminCredentials({
+                      ...adminCredentials,
+                      password: e.target.value,
+                    })
                   }
                   fullWidth
                   className="mb-3"
@@ -822,10 +880,7 @@ const [quotationToView, setQuotationToView] = useState(null);
                   >
                     Cancel
                   </Button>
-                  <Button
-                    variant="primary"
-                    onClick={confirmDeleteQuotation}
-                  >
+                  <Button variant="primary" onClick={confirmDeleteQuotation}>
                     Confirm Delete
                   </Button>
                 </div>
@@ -892,15 +947,20 @@ const [quotationToView, setQuotationToView] = useState(null);
                         ) : null}
                       </div>
                       <div className="modal-footer">
-                        <Button
+                        <button
+                          className="closebutton"
                           variant="secondary"
                           onClick={() => setIsAddProductModalOpen(false)}
                         >
                           Cancel
-                        </Button>
-                        <Button type="submit" variant="primary">
+                        </button>
+                        <button
+                          className="savechangesbutton"
+                          type="submit"
+                          variant="primary"
+                        >
                           Add Product
-                        </Button>
+                        </button>
                       </div>
                     </Form>
                   )}
