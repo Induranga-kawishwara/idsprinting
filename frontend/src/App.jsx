@@ -18,9 +18,7 @@ import Expenses from "./Components/Pages/AddExpenses/Expenses";
 import CashUp from "./Components/Pages/CashUp/Cashup";
 import Sales from "./Components/Pages/Sales/Sales";
 import Settings from "./Components/Pages/RegEmployee/RegEmp";
-import AdminReg from "./Components/Pages/RegAdmin/AdminReg";
 import Quatation from "./Components/Pages/Quotation/Quotation";
-import Loading from "./Components/Reusable/Loadingcomp/Loading";
 import Cashin from "./Components/Pages/Cashin/Cashin";
 import WasteManagement from "./Components/Pages/WasteManagement/WasteManagement";
 
@@ -43,11 +41,10 @@ const Layout = () => {
         <Route path="/cashups" element={<CashUp />} />
         <Route path="/sales" element={<Sales />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/adminreg" element={<AdminReg />} />
         <Route path="/quatation" element={<Quatation />} />
         <Route path="/credit-customers" element={<CreditCustomers />} />
         <Route path="/sales-history" element={<SalesHistory />} />
-        <Route path="/loading" element={<Loading />} />
+        {/* <Route path="/loading" element={<Loading />} /> */}
         <Route path="/cashin" element={<Cashin />} />
         <Route path="/wastemanagement" element={<WasteManagement />} />
       </Routes>

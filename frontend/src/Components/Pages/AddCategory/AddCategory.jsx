@@ -12,6 +12,7 @@ import axios from "axios";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 
 const CategorySchema = Yup.object().shape({
   rawMaterialName: Yup.string().required("Raw Material Name is required"),
@@ -36,6 +37,7 @@ const Category = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loadingpage, setLoadingpage] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -176,6 +178,7 @@ const Category = () => {
   }, []);
 
   const handleSubmit = async (values) => {
+    setLoadingpage(true);
     const currentDate = new Date();
 
     const data = {
@@ -215,7 +218,7 @@ const Category = () => {
         }
       }
     }
-
+    setLoadingpage(false);
     setIsModalOpen(false);
     setEditingCategory(null);
   };
@@ -306,245 +309,267 @@ const Category = () => {
     tableInstance;
 
   return (
-    <div className="bodyofpage">
-      <div className="container">
-        <button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            setIsModalOpen(true);
-            setEditingCategory(null);
-          }}
-          className="addnewbtntop"
-        >
-          New Category
-        </button>
-        <div className="d-flex align-items-center mb-3">
-          <input
-            type="text"
-            className="searchfunctions me-2"
-            placeholder="Search by name, size, or price"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <DatePicker
-            selected={dateRange.start}
-            onChange={(date) =>
-              setDateRange((prev) => ({ ...prev, start: date }))
-            }
-            selectsStart
-            startDate={dateRange.start}
-            endDate={dateRange.end}
-            className="searchfunctionsdate"
-            placeholderText="S.Date"
-          />
-          <DatePicker
-            selected={dateRange.end}
-            onChange={(date) =>
-              setDateRange((prev) => ({ ...prev, end: date }))
-            }
-            selectsEnd
-            startDate={dateRange.start}
-            endDate={dateRange.end}
-            className="searchfunctionsdate"
-            placeholderText="E.Date"
-            minDate={dateRange.start}
-          />
-          <button className="prevbutton" onClick={clearFilters}>
-            Clear
-          </button>
+    <div>
+      {loadingpage ? (
+        <div>
+          <Loading />
         </div>
-        <div className="table-responsive">
-          {loading || error || _.isEmpty(data) ? (
-            <TableChecker
-              loading={loading}
-              error={error}
-              hasData={data.length > 0}
-            />
-          ) : (
-            <table {...getTableProps()} className="table mt-3 custom-table">
-              <thead className="custom-table">
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
-                        {column.render("Header")}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody {...getTableBodyProps()} className="custom-table">
-                {rows.map((row) => {
-                  prepareRow(row);
-                  return (
-                    <tr {...row.getRowProps()}>
-                      {row.cells.map((cell) => (
-                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="pagination">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-            disabled={currentPage === 0}
-          >
-            Previous
-          </button>
-          <span>
-            Page {currentPage + 1} of {totalPages}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
-            }
-            disabled={currentPage === totalPages - 1}
-          >
-            Next
-          </button>
-        </div>
-
-        {/* Form Modal */}
-        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingCategory ? "Edit Category" : "New Category"}
-                </h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <Formik
-                  initialValues={{
-                    rawMaterialName: editingCategory?.rawMaterialName || "",
-                    size: editingCategory?.size || "",
-                    thickness: editingCategory?.thickness || "",
-                    qty: editingCategory?.qty || "",
-                    supplier: editingCategory?.supplier || "",
-                    company: editingCategory?.company || "",
-                    buyingPrice: editingCategory?.buyingPrice || "",
-                    addedBy: editingCategory?.addedBy || "",
-                  }}
-                  validationSchema={CategorySchema}
-                  onSubmit={handleSubmit}
-                >
-                  {({ errors, touched }) => (
-                    <Form>
-                      <br />
-                      <div className="mb-3">
-                        <label>Raw Material Name</label>
-                        <Field
-                          name="rawMaterialName"
-                          className="form-control"
-                        />
-                        {errors.rawMaterialName && touched.rawMaterialName ? (
-                          <div className="text-danger">
-                            {errors.rawMaterialName}
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Size</label>
-                        <Field name="size" className="form-control" />
-                        {errors.size && touched.size ? (
-                          <div className="text-danger">{errors.size}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Thickness (Gsm Or mm)</label>
-                        <Field name="thickness" className="form-control" />
-                        {errors.thickness && touched.thickness ? (
-                          <div className="text-danger">{errors.thickness}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>QTY</label>
-                        <Field name="qty" className="form-control" />
-                        {errors.qty && touched.qty ? (
-                          <div className="text-danger">{errors.qty}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Supplier</label>
-                        <Field
-                          as="select"
-                          name="supplier"
-                          className="form-control"
-                        >
-                          <option
-                            value=""
-                            label="Select a supplier"
-                            disabled
-                            hidden
-                          />
-                          {suppliers.map((supplier) => (
-                            <option key={supplier.id} value={supplier.name}>
-                              {supplier.name}
-                            </option>
-                          ))}
-                        </Field>
-                        {errors.supplier && touched.supplier ? (
-                          <div className="text-danger">{errors.supplier}</div>
-                        ) : null}
-                      </div>
-
-                      <div className="mb-3">
-                        <label>Company</label>
-                        <Field name="company" className="form-control" />
-                        {errors.company && touched.company ? (
-                          <div className="text-danger">{errors.company}</div>
-                        ) : null}
-                      </div>
-
-                      <div className="mb-3">
-                        <label>Buying Price</label>
-                        <Field name="buyingPrice" className="form-control" />
-                        {errors.buyingPrice && touched.buyingPrice ? (
-                          <div className="text-danger">
-                            {errors.buyingPrice}
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Added By</label>
-                        <Field name="addedBy" className="form-control" />
-                        {errors.addedBy && touched.addedBy ? (
-                          <div className="text-danger">{errors.addedBy}</div>
-                        ) : null}
-                      </div>
-                      <div className="modal-footer">
-                        <button type="submit" className="savechangesbutton">
-                          {editingCategory ? "Update" : "Add"}
-                        </button>
-                        <button
-                          type="button"
-                          className="closebutton"
-                          onClick={() => setIsModalOpen(false)}
-                        >
-                          Close
-                        </button>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
+      ) : (
+        <div className="bodyofpage">
+          <div className="container">
+            <button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setIsModalOpen(true);
+                setEditingCategory(null);
+              }}
+              className="addnewbtntop"
+            >
+              New Category
+            </button>
+            <div className="d-flex align-items-center mb-3">
+              <input
+                type="text"
+                className="searchfunctions me-2"
+                placeholder="Search by name, size, or price"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <DatePicker
+                selected={dateRange.start}
+                onChange={(date) =>
+                  setDateRange((prev) => ({ ...prev, start: date }))
+                }
+                selectsStart
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                className="searchfunctionsdate"
+                placeholderText="S.Date"
+              />
+              <DatePicker
+                selected={dateRange.end}
+                onChange={(date) =>
+                  setDateRange((prev) => ({ ...prev, end: date }))
+                }
+                selectsEnd
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                className="searchfunctionsdate"
+                placeholderText="E.Date"
+                minDate={dateRange.start}
+              />
+              <button className="prevbutton" onClick={clearFilters}>
+                Clear
+              </button>
             </div>
+            <div className="table-responsive">
+              {loading || error || _.isEmpty(data) ? (
+                <TableChecker
+                  loading={loading}
+                  error={error}
+                  hasData={data.length > 0}
+                />
+              ) : (
+                <table {...getTableProps()} className="table mt-3 custom-table">
+                  <thead className="custom-table">
+                    {headerGroups.map((headerGroup) => (
+                      <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map((column) => (
+                          <th {...column.getHeaderProps()}>
+                            {column.render("Header")}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody {...getTableBodyProps()} className="custom-table">
+                    {rows.map((row) => {
+                      prepareRow(row);
+                      return (
+                        <tr {...row.getRowProps()}>
+                          {row.cells.map((cell) => (
+                            <td {...cell.getCellProps()}>
+                              {cell.render("Cell")}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="pagination">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+                disabled={currentPage === 0}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+                }
+                disabled={currentPage === totalPages - 1}
+              >
+                Next
+              </button>
+            </div>
+
+            {/* Form Modal */}
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+                <div className="modal-content custom-modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      {editingCategory ? "Edit Category" : "New Category"}
+                    </h5>
+                    <Button
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={() => setIsModalOpen(false)}
+                    />
+                  </div>
+                  <div className="modal-body">
+                    <Formik
+                      initialValues={{
+                        rawMaterialName: editingCategory?.rawMaterialName || "",
+                        size: editingCategory?.size || "",
+                        thickness: editingCategory?.thickness || "",
+                        qty: editingCategory?.qty || "",
+                        supplier: editingCategory?.supplier || "",
+                        company: editingCategory?.company || "",
+                        buyingPrice: editingCategory?.buyingPrice || "",
+                        addedBy: editingCategory?.addedBy || "",
+                      }}
+                      validationSchema={CategorySchema}
+                      onSubmit={handleSubmit}
+                    >
+                      {({ errors, touched }) => (
+                        <Form>
+                          <br />
+                          <div className="mb-3">
+                            <label>Raw Material Name</label>
+                            <Field
+                              name="rawMaterialName"
+                              className="form-control"
+                            />
+                            {errors.rawMaterialName &&
+                            touched.rawMaterialName ? (
+                              <div className="text-danger">
+                                {errors.rawMaterialName}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Size</label>
+                            <Field name="size" className="form-control" />
+                            {errors.size && touched.size ? (
+                              <div className="text-danger">{errors.size}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Thickness (Gsm Or mm)</label>
+                            <Field name="thickness" className="form-control" />
+                            {errors.thickness && touched.thickness ? (
+                              <div className="text-danger">
+                                {errors.thickness}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>QTY</label>
+                            <Field name="qty" className="form-control" />
+                            {errors.qty && touched.qty ? (
+                              <div className="text-danger">{errors.qty}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Supplier</label>
+                            <Field
+                              as="select"
+                              name="supplier"
+                              className="form-control"
+                            >
+                              <option
+                                value=""
+                                label="Select a supplier"
+                                disabled
+                                hidden
+                              />
+                              {suppliers.map((supplier) => (
+                                <option key={supplier.id} value={supplier.name}>
+                                  {supplier.name}
+                                </option>
+                              ))}
+                            </Field>
+                            {errors.supplier && touched.supplier ? (
+                              <div className="text-danger">
+                                {errors.supplier}
+                              </div>
+                            ) : null}
+                          </div>
+
+                          <div className="mb-3">
+                            <label>Company</label>
+                            <Field name="company" className="form-control" />
+                            {errors.company && touched.company ? (
+                              <div className="text-danger">
+                                {errors.company}
+                              </div>
+                            ) : null}
+                          </div>
+
+                          <div className="mb-3">
+                            <label>Buying Price</label>
+                            <Field
+                              name="buyingPrice"
+                              className="form-control"
+                            />
+                            {errors.buyingPrice && touched.buyingPrice ? (
+                              <div className="text-danger">
+                                {errors.buyingPrice}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Added By</label>
+                            <Field name="addedBy" className="form-control" />
+                            {errors.addedBy && touched.addedBy ? (
+                              <div className="text-danger">
+                                {errors.addedBy}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="modal-footer">
+                            <button type="submit" className="savechangesbutton">
+                              {editingCategory ? "Update" : "Add"}
+                            </button>
+                            <button
+                              type="button"
+                              className="closebutton"
+                              onClick={() => setIsModalOpen(false)}
+                            >
+                              Close
+                            </button>
+                          </div>
+                        </Form>
+                      )}
+                    </Formik>
+                  </div>
+                </div>
+              </div>
+            </Modal>
           </div>
-        </Modal>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

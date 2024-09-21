@@ -9,6 +9,7 @@ import axios from "axios";
 import _ from "lodash";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 
 const SupplierSchema = Yup.object().shape({
   name: Yup.string().required("Supplier Name is required"),
@@ -29,6 +30,7 @@ const Supplier = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loadingpage, setLoadingpage] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,6 +123,8 @@ const Supplier = () => {
     }
   }, []);
   const handleSubmit = async (values) => {
+    setLoadingpage(true);
+
     const currentDate = new Date();
 
     const data = {
@@ -161,6 +165,7 @@ const Supplier = () => {
         }
       }
     }
+    setLoadingpage(false);
     setIsModalOpen(false);
     setEditingSupplier(null);
   };
@@ -257,179 +262,196 @@ const Supplier = () => {
     tableInstance;
 
   return (
-    <div className="bodyofpage">
-      <div className="container">
-        <button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            setIsModalOpen(true);
-            setEditingSupplier(null);
-          }}
-          className="addnewbtntop"
-        >
-          New Supplier
-        </button>
-        <div className="d-flex align-items-center mb-3">
-          <input
-            type="text"
-            className="searchfunctions me-2"
-            placeholder="Search by item Name or Phone number"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button
-            variant="outlined"
-            color="secondary"
-            onClick={handleClear}
-            className="prevbutton"
-          >
-            Clear
-          </button>
+    <div>
+      {" "}
+      {loadingpage ? (
+        <div>
+          <Loading />
         </div>
-        <div className="table-responsive">
-          {loading || error || _.isEmpty(data) ? (
-            <TableChecker
-              loading={loading}
-              error={error}
-              hasData={data.length > 0}
-            />
-          ) : (
-            <table className="table mt-3 custom-table" {...getTableProps()}>
-              <thead>
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
-                        {column.render("Header")}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody {...getTableBodyProps()} className="custom-table">
-                {rows.map((row) => {
-                  prepareRow(row);
-                  return (
-                    <tr {...row.getRowProps()}>
-                      {row.cells.map((cell) => (
-                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Form Modal */}
-        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingSupplier ? "Edit Supplier" : "New Supplier"}
-                </h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <Formik
-                  initialValues={{
-                    name: editingSupplier?.name || "",
-                    contactNumber: editingSupplier?.contactNumber || "",
-                    email: editingSupplier?.email || "",
-                    address1: editingSupplier?.address1 || "",
-                    address2: editingSupplier?.address2 || "",
-                    city: editingSupplier?.city || "",
-                    postalCode: editingSupplier?.postalCode || "",
-                    businessId: editingSupplier?.businessId || "",
-                    additionalData: editingSupplier?.additionalData || "", // New field
-                  }}
-                  validationSchema={SupplierSchema}
-                  onSubmit={handleSubmit}
-                >
-                  {({ errors, touched }) => (
-                    <Form>
-                      <br />
-                      <div className="mb-3">
-                        <label>Supplier Name</label>
-                        <Field name="name" className="form-control" />
-                        {errors.name && touched.name ? (
-                          <div className="text-danger">{errors.name}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Contact Number</label>
-                        <Field name="contactNumber" className="form-control" />
-                        {errors.contactNumber && touched.contactNumber ? (
-                          <div className="text-danger">
-                            {errors.contactNumber}
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Email Address (Optional)</label>
-                        <Field name="email" className="form-control" />
-                        {errors.email && touched.email ? (
-                          <div className="text-danger">{errors.email}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Address 1 (Optional)</label>
-                        <Field name="address1" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>Address 2 (Optional)</label>
-                        <Field name="address2" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>City (Optional)</label>
-                        <Field name="city" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>Postal Code (Optional)</label>
-                        <Field name="postalCode" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>Business ID (Optional)</label>
-                        <Field name="businessId" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label>Additional Data (Optional)</label>
-                        <Field name="additionalData" className="form-control" />
-                      </div>
-                      <div className="d-flex justify-content-end">
-                        <button
-                          variant="contained"
-                          color="primary"
-                          type="submit"
-                          className="savechangesbutton"
-                        >
-                          {editingSupplier ? "Update Supplier" : "Add"}
-                        </button>
-                        <button
-                          variant="contained"
-                          color="secondary"
-                          onClick={() => setIsModalOpen(false)}
-                          className="closebutton"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
+      ) : (
+        <div className="bodyofpage">
+          <div className="container">
+            <button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setIsModalOpen(true);
+                setEditingSupplier(null);
+              }}
+              className="addnewbtntop"
+            >
+              New Supplier
+            </button>
+            <div className="d-flex align-items-center mb-3">
+              <input
+                type="text"
+                className="searchfunctions me-2"
+                placeholder="Search by item Name or Phone number"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button
+                variant="outlined"
+                color="secondary"
+                onClick={handleClear}
+                className="prevbutton"
+              >
+                Clear
+              </button>
             </div>
+            <div className="table-responsive">
+              {loading || error || _.isEmpty(data) ? (
+                <TableChecker
+                  loading={loading}
+                  error={error}
+                  hasData={data.length > 0}
+                />
+              ) : (
+                <table className="table mt-3 custom-table" {...getTableProps()}>
+                  <thead>
+                    {headerGroups.map((headerGroup) => (
+                      <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map((column) => (
+                          <th {...column.getHeaderProps()}>
+                            {column.render("Header")}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody {...getTableBodyProps()} className="custom-table">
+                    {rows.map((row) => {
+                      prepareRow(row);
+                      return (
+                        <tr {...row.getRowProps()}>
+                          {row.cells.map((cell) => (
+                            <td {...cell.getCellProps()}>
+                              {cell.render("Cell")}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Form Modal */}
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+                <div className="modal-content custom-modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      {editingSupplier ? "Edit Supplier" : "New Supplier"}
+                    </h5>
+                    <Button
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={() => setIsModalOpen(false)}
+                    />
+                  </div>
+                  <div className="modal-body">
+                    <Formik
+                      initialValues={{
+                        name: editingSupplier?.name || "",
+                        contactNumber: editingSupplier?.contactNumber || "",
+                        email: editingSupplier?.email || "",
+                        address1: editingSupplier?.address1 || "",
+                        address2: editingSupplier?.address2 || "",
+                        city: editingSupplier?.city || "",
+                        postalCode: editingSupplier?.postalCode || "",
+                        businessId: editingSupplier?.businessId || "",
+                        additionalData: editingSupplier?.additionalData || "", // New field
+                      }}
+                      validationSchema={SupplierSchema}
+                      onSubmit={handleSubmit}
+                    >
+                      {({ errors, touched }) => (
+                        <Form>
+                          <br />
+                          <div className="mb-3">
+                            <label>Supplier Name</label>
+                            <Field name="name" className="form-control" />
+                            {errors.name && touched.name ? (
+                              <div className="text-danger">{errors.name}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Contact Number</label>
+                            <Field
+                              name="contactNumber"
+                              className="form-control"
+                            />
+                            {errors.contactNumber && touched.contactNumber ? (
+                              <div className="text-danger">
+                                {errors.contactNumber}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Email Address (Optional)</label>
+                            <Field name="email" className="form-control" />
+                            {errors.email && touched.email ? (
+                              <div className="text-danger">{errors.email}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Address 1 (Optional)</label>
+                            <Field name="address1" className="form-control" />
+                          </div>
+                          <div className="mb-3">
+                            <label>Address 2 (Optional)</label>
+                            <Field name="address2" className="form-control" />
+                          </div>
+                          <div className="mb-3">
+                            <label>City (Optional)</label>
+                            <Field name="city" className="form-control" />
+                          </div>
+                          <div className="mb-3">
+                            <label>Postal Code (Optional)</label>
+                            <Field name="postalCode" className="form-control" />
+                          </div>
+                          <div className="mb-3">
+                            <label>Business ID (Optional)</label>
+                            <Field name="businessId" className="form-control" />
+                          </div>
+                          <div className="mb-3">
+                            <label>Additional Data (Optional)</label>
+                            <Field
+                              name="additionalData"
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="d-flex justify-content-end">
+                            <button
+                              variant="contained"
+                              color="primary"
+                              type="submit"
+                              className="savechangesbutton"
+                            >
+                              {editingSupplier ? "Update Supplier" : "Add"}
+                            </button>
+                            <button
+                              variant="contained"
+                              color="secondary"
+                              onClick={() => setIsModalOpen(false)}
+                              className="closebutton"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </Form>
+                      )}
+                    </Formik>
+                  </div>
+                </div>
+              </div>
+            </Modal>
           </div>
-        </Modal>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

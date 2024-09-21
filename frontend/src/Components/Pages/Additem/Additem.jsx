@@ -12,6 +12,7 @@ import socket from "../../Utility/SocketConnection.js";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 
 const ItemSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item Code is required"),
@@ -42,6 +43,7 @@ const Item = () => {
   const [selectedCategory, setSelectedCategory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loadingpage, setLoadingpage] = useState(false);
 
   useEffect(() => {
     const mapCategoryData = (category) => ({
@@ -233,6 +235,7 @@ const Item = () => {
   });
 
   const handleSubmit = async (values) => {
+    setLoadingpage(true);
     const currentDate = new Date();
     const data = {
       ...values,
@@ -267,6 +270,7 @@ const Item = () => {
     }
 
     // Close modal and reset editing state
+    setLoadingpage(false);
     setIsModalOpen(false);
     setEditingItem(null);
   };
@@ -372,372 +376,402 @@ const Item = () => {
     tableInstance;
 
   return (
-    <div className="bodyofpage">
-      <div className="container">
-        <button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            setIsModalOpen(true);
-            setEditingItem(null);
-            setSelectedCategory(null);
-          }}
-          className="addnewbtntop"
-        >
-          New Item
-        </button>
-        <div className="d-flex align-items-center mb-3">
-          <input
-            type="text"
-            className="searchfunctions me-2"
-            placeholder="Search by name, code, or price"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <DatePicker
-            selected={dateRange.start}
-            onChange={(date) =>
-              setDateRange((prev) => ({ ...prev, start: date }))
-            }
-            selectsStart
-            startDate={dateRange.start}
-            endDate={dateRange.end}
-            className="searchfunctionsdate me-2"
-            placeholderText="S.Date"
-          />
-          <DatePicker
-            selected={dateRange.end}
-            onChange={(date) =>
-              setDateRange((prev) => ({ ...prev, end: date }))
-            }
-            selectsEnd
-            startDate={dateRange.start}
-            endDate={dateRange.end}
-            className="searchfunctionsdate me-2"
-            placeholderText="E.Date"
-            minDate={dateRange.start}
-          />
-          <select
-            className="formdropdown me-2 "
-            value={sizeFilter}
-            onChange={(e) => setSizeFilter(e.target.value)}
-          >
-            <option value="">Size Category</option>
-            {sizeCategory.map((size) => (
-              <option key={size.value} value={size.value}>
-                {size.label}
-              </option>
-            ))}
-          </select>
-          <button className="prevbutton" onClick={clearFilters}>
-            Clear
-          </button>
+    <div>
+      {loadingpage ? (
+        <div>
+          <Loading />
         </div>
-        <div className="table-responsive">
-          {loading || error || _.isEmpty(items) ? (
-            <TableChecker
-              loading={loading}
-              error={error}
-              hasData={items.length > 0}
-            />
-          ) : (
-            <table {...getTableProps()} className="table mt-3 custom-table">
-              <thead>
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
-                        {column.render("Header")}
-                      </th>
-                    ))}
-                  </tr>
+      ) : (
+        <div className="bodyofpage">
+          <div className="container">
+            <button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setIsModalOpen(true);
+                setEditingItem(null);
+                setSelectedCategory(null);
+              }}
+              className="addnewbtntop"
+            >
+              New Item
+            </button>
+            <div className="d-flex align-items-center mb-3">
+              <input
+                type="text"
+                className="searchfunctions me-2"
+                placeholder="Search by name, code, or price"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <DatePicker
+                selected={dateRange.start}
+                onChange={(date) =>
+                  setDateRange((prev) => ({ ...prev, start: date }))
+                }
+                selectsStart
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                className="searchfunctionsdate me-2"
+                placeholderText="S.Date"
+              />
+              <DatePicker
+                selected={dateRange.end}
+                onChange={(date) =>
+                  setDateRange((prev) => ({ ...prev, end: date }))
+                }
+                selectsEnd
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                className="searchfunctionsdate me-2"
+                placeholderText="E.Date"
+                minDate={dateRange.start}
+              />
+              <select
+                className="formdropdown me-2 "
+                value={sizeFilter}
+                onChange={(e) => setSizeFilter(e.target.value)}
+              >
+                <option value="">Size Category</option>
+                {sizeCategory.map((size) => (
+                  <option key={size.value} value={size.value}>
+                    {size.label}
+                  </option>
                 ))}
-              </thead>
-              <tbody {...getTableBodyProps()} className="custom-table">
-                {rows.map((row) => {
-                  prepareRow(row);
-                  return (
-                    <tr {...row.getRowProps()}>
-                      {row.cells.map((cell) => (
-                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="pagination">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-            disabled={currentPage === 0}
-          >
-            Previous
-          </button>
-          <span>
-            Page {currentPage + 1} of {totalPages}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
-            }
-            disabled={currentPage === totalPages - 1}
-          >
-            Next
-          </button>
-        </div>
-
-        {/* Form Modal */}
-        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingItem ? "Edit Item" : "New Item"}
-                </h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <Formik
-                  initialValues={{
-                    itemCode: editingItem?.itemCode || "",
-                    itemName: editingItem?.itemName || "",
-                    category:
-                      editingItem?.category || selectedCategory?.name || "",
-                    color: editingItem?.color || "",
-                    qty: editingItem?.qty || selectedCategory?.qty || "",
-                    buyingPrice:
-                      editingItem?.buyingPrice ||
-                      selectedCategory?.buyingPrice ||
-                      "",
-                    size: editingItem?.size || selectedCategory?.size || "",
-                    company:
-                      editingItem?.company || selectedCategory?.company || "",
-                    wholesale: editingItem?.wholesale || "",
-                    discount: editingItem?.discount || "",
-                    retailPrice: editingItem?.retailPrice || "",
-                    supplier: editingItem?.supplier || "",
-                    selling: editingItem
-                      ? calculateSellingPrice(
-                          editingItem.retailPrice,
-                          editingItem.discount
-                        )
-                      : 0,
-                  }}
-                  validationSchema={Yup.object().shape({
-                    ...ItemSchema.fields,
-                    category: Yup.string()
-                      .required("Category is required")
-                      .default(editingItem?.category || selectedCategory?.name),
-                  })}
-                  onSubmit={handleSubmit}
-                >
-                  {({
-                    values,
-                    errors,
-                    touched,
-                    setFieldValue,
-                    handleChange,
-                  }) => {
-                    const handlePriceChange = (e) => {
-                      const { name, value } = e.target;
-
-                      handleChange(e);
-
-                      const updatedValues = {
-                        ...values,
-                        [name]: value,
-                      };
-
-                      const sellingPrice = calculateSellingPrice(
-                        updatedValues.retailPrice || 0,
-                        updatedValues.discount || 0
-                      );
-
-                      // Update the selling price in Formik state
-                      setFieldValue("selling", sellingPrice.toFixed(2));
-                    };
-
-                    return (
-                      <Form>
-                        {/* Form Fields */}
-                        <div className="mb-3">
-                          <label>Item Code</label>
-                          <Field name="itemCode" className="form-control" />
-                          {errors.itemCode && touched.itemCode && (
-                            <div className="text-danger">{errors.itemCode}</div>
-                          )}
-                        </div>
-
-                        <div className="mb-3">
-                          <label>Item Name</label>
-                          <Field name="itemName" className="form-control" />
-                          {errors.itemName && touched.itemName && (
-                            <div className="text-danger">{errors.itemName}</div>
-                          )}
-                        </div>
-
-                        <div className="mb-3">
-                          <label>Color</label>
-                          <Field name="color" className="form-control" />
-                          {errors.color && touched.color && (
-                            <div className="text-danger">{errors.color}</div>
-                          )}
-                        </div>
-
-                        <div className="mb-3">
-                          <label>Stock Category</label>
-                          <Field
-                            as="select"
-                            name="category"
-                            className="form-control"
-                            onChange={handleCategoryChange}
-                          >
-                            <option
-                              className="form-control"
-                              label={
-                                selectedCategory?.name ||
-                                editingItem?.category ||
-                                "Select a type of stock"
-                              }
-                              hidden
-                            />
-                            {categoryOptions.map((category, index) => (
-                              <option
-                                className="form-control"
-                                key={index}
-                                value={category.id}
-                              >
-                                {category.name}
-                              </option>
-                            ))}
-                          </Field>
-                          {errors.category && touched.category && (
-                            <div className="text-danger">{errors.category}</div>
-                          )}
-                        </div>
-
-                        <div className="mb-3">
-                          <label>Qty</label>
-                          <Field
-                            name="qty"
-                            className="form-control"
-                            value={selectedCategory?.qty || editingItem?.qty}
-                            disabled
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <label>Size</label>
-                          <Field
-                            name="size"
-                            className="form-control"
-                            value={selectedCategory?.size || editingItem?.size}
-                            disabled
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <label>Company</label>
-                          <Field
-                            name="company"
-                            className="form-control"
-                            value={
-                              selectedCategory?.company || editingItem?.company
-                            }
-                            disabled
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <label>Buying Price</label>
-                          <Field
-                            name="buyingPrice"
-                            type="number"
-                            className="form-control"
-                            value={
-                              selectedCategory?.buyingPrice ||
-                              editingItem?.buyingPrice
-                            }
-                            disabled
-                          />
-                          {errors.buyingPrice && touched.buyingPrice && (
-                            <div className="text-danger">
-                              {errors.buyingPrice}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mb-3">
-                          <label>Wholesale</label>
-                          <Field
-                            name="wholesale"
-                            type="number"
-                            className="form-control"
-                          />
-                        </div>
-                        <div className="mb-3">
-                          <label>Retail Price</label>
-                          <Field
-                            name="retailPrice"
-                            type="number"
-                            className="form-control"
-                            onChange={handlePriceChange} // Call custom handler
-                          />
-                          {errors.retailPrice && touched.retailPrice && (
-                            <div className="text-danger">
-                              {errors.retailPrice}
-                            </div>
-                          )}
-                        </div>
-                        <div className="mb-3">
-                          <label>Discount</label>
-                          <Field
-                            name="discount"
-                            type="number"
-                            className="form-control"
-                            onChange={handlePriceChange} // Call custom handler
-                          />
-                        </div>
-                        <div className="mb-3">
-                          <label>Selling Price</label>
-                          <Field
-                            name="selling"
-                            type="number"
-                            className="form-control"
-                            disabled
-                          />
-                        </div>
-
-                        <div className="d-flex justify-content-end">
-                          <button type="submit" className="savechangesbutton">
-                            {editingItem ? "Update" : "Add"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setIsModalOpen(false)}
-                            className="closebutton"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </Form>
-                    );
-                  }}
-                </Formik>
-              </div>
+              </select>
+              <button className="prevbutton" onClick={clearFilters}>
+                Clear
+              </button>
             </div>
+            <div className="table-responsive">
+              {loading || error || _.isEmpty(items) ? (
+                <TableChecker
+                  loading={loading}
+                  error={error}
+                  hasData={items.length > 0}
+                />
+              ) : (
+                <table {...getTableProps()} className="table mt-3 custom-table">
+                  <thead>
+                    {headerGroups.map((headerGroup) => (
+                      <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map((column) => (
+                          <th {...column.getHeaderProps()}>
+                            {column.render("Header")}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody {...getTableBodyProps()} className="custom-table">
+                    {rows.map((row) => {
+                      prepareRow(row);
+                      return (
+                        <tr {...row.getRowProps()}>
+                          {row.cells.map((cell) => (
+                            <td {...cell.getCellProps()}>
+                              {cell.render("Cell")}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="pagination">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+                disabled={currentPage === 0}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+                }
+                disabled={currentPage === totalPages - 1}
+              >
+                Next
+              </button>
+            </div>
+
+            {/* Form Modal */}
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+                <div className="modal-content custom-modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      {editingItem ? "Edit Item" : "New Item"}
+                    </h5>
+                    <Button
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={() => setIsModalOpen(false)}
+                    />
+                  </div>
+                  <div className="modal-body">
+                    <Formik
+                      initialValues={{
+                        itemCode: editingItem?.itemCode || "",
+                        itemName: editingItem?.itemName || "",
+                        category:
+                          editingItem?.category || selectedCategory?.name || "",
+                        color: editingItem?.color || "",
+                        qty: editingItem?.qty || selectedCategory?.qty || "",
+                        buyingPrice:
+                          editingItem?.buyingPrice ||
+                          selectedCategory?.buyingPrice ||
+                          "",
+                        size: editingItem?.size || selectedCategory?.size || "",
+                        company:
+                          editingItem?.company ||
+                          selectedCategory?.company ||
+                          "",
+                        wholesale: editingItem?.wholesale || "",
+                        discount: editingItem?.discount || "",
+                        retailPrice: editingItem?.retailPrice || "",
+                        supplier: editingItem?.supplier || "",
+                        selling: editingItem
+                          ? calculateSellingPrice(
+                              editingItem.retailPrice,
+                              editingItem.discount
+                            )
+                          : 0,
+                      }}
+                      validationSchema={Yup.object().shape({
+                        ...ItemSchema.fields,
+                        category: Yup.string()
+                          .required("Category is required")
+                          .default(
+                            editingItem?.category || selectedCategory?.name
+                          ),
+                      })}
+                      onSubmit={handleSubmit}
+                    >
+                      {({
+                        values,
+                        errors,
+                        touched,
+                        setFieldValue,
+                        handleChange,
+                      }) => {
+                        const handlePriceChange = (e) => {
+                          const { name, value } = e.target;
+
+                          handleChange(e);
+
+                          const updatedValues = {
+                            ...values,
+                            [name]: value,
+                          };
+
+                          const sellingPrice = calculateSellingPrice(
+                            updatedValues.retailPrice || 0,
+                            updatedValues.discount || 0
+                          );
+
+                          // Update the selling price in Formik state
+                          setFieldValue("selling", sellingPrice.toFixed(2));
+                        };
+
+                        return (
+                          <Form>
+                            {/* Form Fields */}
+                            <div className="mb-3">
+                              <label>Item Code</label>
+                              <Field name="itemCode" className="form-control" />
+                              {errors.itemCode && touched.itemCode && (
+                                <div className="text-danger">
+                                  {errors.itemCode}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mb-3">
+                              <label>Item Name</label>
+                              <Field name="itemName" className="form-control" />
+                              {errors.itemName && touched.itemName && (
+                                <div className="text-danger">
+                                  {errors.itemName}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mb-3">
+                              <label>Color</label>
+                              <Field name="color" className="form-control" />
+                              {errors.color && touched.color && (
+                                <div className="text-danger">
+                                  {errors.color}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mb-3">
+                              <label>Stock Category</label>
+                              <Field
+                                as="select"
+                                name="category"
+                                className="form-control"
+                                onChange={handleCategoryChange}
+                              >
+                                <option
+                                  className="form-control"
+                                  label={
+                                    selectedCategory?.name ||
+                                    editingItem?.category ||
+                                    "Select a type of stock"
+                                  }
+                                  hidden
+                                />
+                                {categoryOptions.map((category, index) => (
+                                  <option
+                                    className="form-control"
+                                    key={index}
+                                    value={category.id}
+                                  >
+                                    {category.name}
+                                  </option>
+                                ))}
+                              </Field>
+                              {errors.category && touched.category && (
+                                <div className="text-danger">
+                                  {errors.category}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mb-3">
+                              <label>Qty</label>
+                              <Field
+                                name="qty"
+                                className="form-control"
+                                value={
+                                  selectedCategory?.qty || editingItem?.qty
+                                }
+                                disabled
+                              />
+                            </div>
+
+                            <div className="mb-3">
+                              <label>Size</label>
+                              <Field
+                                name="size"
+                                className="form-control"
+                                value={
+                                  selectedCategory?.size || editingItem?.size
+                                }
+                                disabled
+                              />
+                            </div>
+
+                            <div className="mb-3">
+                              <label>Company</label>
+                              <Field
+                                name="company"
+                                className="form-control"
+                                value={
+                                  selectedCategory?.company ||
+                                  editingItem?.company
+                                }
+                                disabled
+                              />
+                            </div>
+
+                            <div className="mb-3">
+                              <label>Buying Price</label>
+                              <Field
+                                name="buyingPrice"
+                                type="number"
+                                className="form-control"
+                                value={
+                                  selectedCategory?.buyingPrice ||
+                                  editingItem?.buyingPrice
+                                }
+                                disabled
+                              />
+                              {errors.buyingPrice && touched.buyingPrice && (
+                                <div className="text-danger">
+                                  {errors.buyingPrice}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="mb-3">
+                              <label>Wholesale</label>
+                              <Field
+                                name="wholesale"
+                                type="number"
+                                className="form-control"
+                              />
+                            </div>
+                            <div className="mb-3">
+                              <label>Retail Price</label>
+                              <Field
+                                name="retailPrice"
+                                type="number"
+                                className="form-control"
+                                onChange={handlePriceChange} // Call custom handler
+                              />
+                              {errors.retailPrice && touched.retailPrice && (
+                                <div className="text-danger">
+                                  {errors.retailPrice}
+                                </div>
+                              )}
+                            </div>
+                            <div className="mb-3">
+                              <label>Discount</label>
+                              <Field
+                                name="discount"
+                                type="number"
+                                className="form-control"
+                                onChange={handlePriceChange} // Call custom handler
+                              />
+                            </div>
+                            <div className="mb-3">
+                              <label>Selling Price</label>
+                              <Field
+                                name="selling"
+                                type="number"
+                                className="form-control"
+                                disabled
+                              />
+                            </div>
+
+                            <div className="d-flex justify-content-end">
+                              <button
+                                type="submit"
+                                className="savechangesbutton"
+                              >
+                                {editingItem ? "Update" : "Add"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setIsModalOpen(false)}
+                                className="closebutton"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </Form>
+                        );
+                      }}
+                    </Formik>
+                  </div>
+                </div>
+              </div>
+            </Modal>
           </div>
-        </Modal>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

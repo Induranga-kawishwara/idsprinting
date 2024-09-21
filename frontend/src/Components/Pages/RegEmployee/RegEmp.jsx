@@ -20,6 +20,7 @@ import _ from "lodash";
 import socket from "../../Utility/SocketConnection.js";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
+import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 
 const RegEmpSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -48,6 +49,7 @@ const RegEmp = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loadingpage, setLoadingpage] = useState(false);
 
   useEffect(() => {
     const mapEmp = (dataset) => {
@@ -228,6 +230,8 @@ const RegEmp = () => {
   };
 
   const handleSubmit = async (values) => {
+    setLoadingpage(true);
+
     const currentDate = new Date();
 
     // Helper function for uploading images
@@ -371,406 +375,449 @@ const RegEmp = () => {
       alert(`Error: ${errorMessage}`);
     } finally {
       // Close modal and reset editing state
+      setLoadingpage(false);
       setIsModalOpen(false);
       setEditingEmployee(null);
     }
   };
 
   return (
-    <div className="bodyofpage">
-      <div className="reg-emp">
-        <SecondaryNavbar />
-        <br />
-        <div className="">
-          <div className="container">
-            <button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                setIsModalOpen(true);
-                setEditingEmployee(null);
-              }}
-              className="addnewbtntop"
-            >
-              New Employee
-            </button>
-            <div className="table-responsive">
-              {loading || error || _.isEmpty(employees) ? (
-                <TableChecker
-                  loading={loading}
-                  error={error}
-                  hasData={employees.length > 0}
-                />
-              ) : (
-                <table className="table mt-3 custom-table">
-                  <thead>
-                    <tr>
-                      <th>No</th>
-                      <th>Name</th>
-                      <th>Surname</th>
-                      <th>NIC Number</th>
-                      <th>Email</th>
-                      <th>Contact Number</th>
-                      <th>Reference Contact</th>
-                      <th>EPF Number</th>
-                      <th>ETF Number</th>
-                      <th>Birth Date</th>
-                      <th>Sex</th>
-                      <th>Admin Access</th>
-                      <th>Employee Access</th>
-                      <th>Employee Photo</th>
-                      <th>NIC Front Photo</th>
-                      <th>NIC Back Photo</th>
-                      <th>Updated Date</th>
-                      <th>Updated Time</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="custom-table">
-                    {employees.map((employee, index) => (
-                      <tr key={employee.id}>
-                        <td value={employee.id}>{index + 1}</td>
-                        <td>{employee.name}</td>
-                        <td>{employee.surname}</td>
-                        <td>{employee.nicNumber}</td>
-                        <td>{employee.email}</td>
-                        <td>{employee.contactNumber}</td>
-                        <td>{employee.refContactNumber}</td>
-                        <td>{employee.epfNumber}</td>
-                        <td>{employee.EtfNumber}</td>
-                        <td>{employee.birthDate}</td> {/* Display Birth Date */}
-                        <td>{employee.sex}</td>
-                        <td>
-                          <Switch
-                            checked={employee.isAdmin}
-                            onChange={() => {
-                              if (
-                                window.confirm(
-                                  "Are you sure you want to toggle Admin rights?"
-                                )
-                              ) {
-                                handleToggleAdmin(employee.id);
-                              }
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <Switch
-                            checked={employee.isEmployee}
-                            onChange={() => {
-                              if (
-                                window.confirm(
-                                  "Are you sure you want to toggle Employee status?"
-                                )
-                              ) {
-                                handleToggleEmployee(employee.id);
-                              }
-                            }}
-                          />
-                        </td>
-                        <FileViewer
-                          fileUrl={employee.employeePic}
-                          fileLabel="File"
-                        />
-                        <FileViewer
-                          fileUrl={employee.nicFront}
-                          fileLabel="NIC Front"
-                        />
-                        <FileViewer
-                          fileUrl={employee.nicBack}
-                          fileLabel="NIC Back"
-                        />
-                        <td>{employee.updatedDate}</td>
-                        <td>{employee.updatedTime}</td>
-                        <td className="fixed-column">
-                          <button
-                            variant="contained"
-                            size="small"
-                            onClick={() => handleReset(employee.id)}
-                            className="resetbtn"
-                          >
-                            Reset password
-                          </button>
-                          <button
-                            variant="contained"
-                            color="primary"
-                            size="small"
-                            onClick={() => handleEdit(employee)}
-                            className="editbtn"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            variant="contained"
-                            color="secondary"
-                            size="small"
-                            onClick={() =>
-                              handleDelete(
-                                `${employee.name}, ${employee.surname}`,
-                                employee.id
-                              )
-                            }
-                            className="deletebtn"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-              <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-                <div className="modal-content custom-modal-content">
-                  <div className="modal-header">
-                    <h5 className="modal-title">
-                      {editingEmployee ? "Edit Employee" : "New Employee"}
-                    </h5>
-                    <Button
-                      type="button"
-                      className="btn-close"
-                      aria-label="Close"
-                      onClick={() => setIsModalOpen(false)}
+    <div>
+      {loadingpage ? (
+        <div>
+          <Loading />
+        </div>
+      ) : (
+        <div className="bodyofpage">
+          <div className="reg-emp">
+            <SecondaryNavbar />
+            <br />
+            <div className="">
+              <div className="container">
+                <button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    setIsModalOpen(true);
+                    setEditingEmployee(null);
+                  }}
+                  className="addnewbtntop"
+                >
+                  New Employee
+                </button>
+                <div className="table-responsive">
+                  {loading || error || _.isEmpty(employees) ? (
+                    <TableChecker
+                      loading={loading}
+                      error={error}
+                      hasData={employees.length > 0}
                     />
-                  </div>
-                  <div className="modal-body">
-                    <Formik
-                      initialValues={{
-                        name: editingEmployee?.name || "",
-                        surname: editingEmployee?.surname || "",
-                        nicNumber: editingEmployee?.nicNumber || "",
-                        nicPhoto: editingEmployee?.nicPhoto || null,
-                        nicBackPhoto: editingEmployee?.nicBackPhoto || null,
-                        houseNo: editingEmployee?.houseNo || "",
-                        street: editingEmployee?.street || "",
-                        city: editingEmployee?.city || "",
-                        zipCode: editingEmployee?.zipCode || "",
-                        employeePhoto: editingEmployee?.employeePhoto || null,
-                        contactNumber: editingEmployee?.contactNumber || "",
-                        refContactNumber:
-                          editingEmployee?.refContactNumber || "",
-                        epfNumber: editingEmployee?.epfNumber || "",
-                        EtfNumber: editingEmployee?.EtfNumber || "",
-                        birthDate: editingEmployee?.birthDate || "", // Birth Date Field
-                        email: editingEmployee?.email || "",
-                        // password: "",
-                        // confirmPassword: "",
-                        sex: editingEmployee?.sex || "Male",
-                      }}
-                      validationSchema={RegEmpSchema}
-                      onSubmit={handleSubmit}
-                    >
-                      {({ setFieldValue, errors, touched }) => (
-                        <Form>
-                          <div className="mb-3">
-                            <label>Name</label>
-                            <Field name="name" className="form-control" />
-                            {errors.name && touched.name ? (
-                              <div className="text-danger">{errors.name}</div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Surname</label>
-                            <Field name="surname" className="form-control" />
-                            {errors.surname && touched.surname ? (
-                              <div className="text-danger">
-                                {errors.surname}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>NIC Number</label>
-                            <Field name="nicNumber" className="form-control" />
-                            {errors.nicNumber && touched.nicNumber ? (
-                              <div className="text-danger">
-                                {errors.nicNumber}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Birth Date</label>{" "}
-                            {/* Birth Date Field in Form */}
-                            <Field
-                              name="birthDate"
-                              type="date"
-                              className="form-control"
+                  ) : (
+                    <table className="table mt-3 custom-table">
+                      <thead>
+                        <tr>
+                          <th>No</th>
+                          <th>Name</th>
+                          <th>Surname</th>
+                          <th>NIC Number</th>
+                          <th>Email</th>
+                          <th>Contact Number</th>
+                          <th>Reference Contact</th>
+                          <th>EPF Number</th>
+                          <th>ETF Number</th>
+                          <th>Birth Date</th>
+                          <th>Sex</th>
+                          <th>Admin Access</th>
+                          <th>Employee Access</th>
+                          <th>Employee Photo</th>
+                          <th>NIC Front Photo</th>
+                          <th>NIC Back Photo</th>
+                          <th>Updated Date</th>
+                          <th>Updated Time</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="custom-table">
+                        {employees.map((employee, index) => (
+                          <tr key={employee.id}>
+                            <td value={employee.id}>{index + 1}</td>
+                            <td>{employee.name}</td>
+                            <td>{employee.surname}</td>
+                            <td>{employee.nicNumber}</td>
+                            <td>{employee.email}</td>
+                            <td>{employee.contactNumber}</td>
+                            <td>{employee.refContactNumber}</td>
+                            <td>{employee.epfNumber}</td>
+                            <td>{employee.EtfNumber}</td>
+                            <td>{employee.birthDate}</td>{" "}
+                            {/* Display Birth Date */}
+                            <td>{employee.sex}</td>
+                            <td>
+                              <Switch
+                                checked={employee.isAdmin}
+                                onChange={() => {
+                                  if (
+                                    window.confirm(
+                                      "Are you sure you want to toggle Admin rights?"
+                                    )
+                                  ) {
+                                    handleToggleAdmin(employee.id);
+                                  }
+                                }}
+                              />
+                            </td>
+                            <td>
+                              <Switch
+                                checked={employee.isEmployee}
+                                onChange={() => {
+                                  if (
+                                    window.confirm(
+                                      "Are you sure you want to toggle Employee status?"
+                                    )
+                                  ) {
+                                    handleToggleEmployee(employee.id);
+                                  }
+                                }}
+                              />
+                            </td>
+                            <FileViewer
+                              fileUrl={employee.employeePic}
+                              fileLabel="File"
                             />
-                            {errors.birthDate && touched.birthDate ? (
-                              <div className="text-danger">
-                                {errors.birthDate}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Email</label>
-                            <Field
-                              name="email"
-                              type="email"
-                              className="form-control"
+                            <FileViewer
+                              fileUrl={employee.nicFront}
+                              fileLabel="NIC Front"
                             />
-                            {errors.email && touched.email ? (
-                              <div className="text-danger">{errors.email}</div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label htmlFor="photo">NIC Photo</label>
-                            <input
-                              name="nicPhoto"
-                              type="file"
-                              onChange={(event) =>
-                                setFieldValue("nicPhoto", event.target.files[0])
-                              }
-                              className="form-control"
+                            <FileViewer
+                              fileUrl={employee.nicBack}
+                              fileLabel="NIC Back"
                             />
-                          </div>
-                          <div className="mb-3">
-                            <label htmlFor="photo">NIC Back Photo</label>
-                            <input
-                              name="nicBackPhoto"
-                              type="file"
-                              onChange={(event) =>
-                                setFieldValue(
-                                  "nicBackPhoto",
-                                  event.target.files[0]
-                                )
-                              }
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="mb-3">
-                            <label>House No.</label>
-                            <Field name="houseNo" className="form-control" />
-                            {errors.houseNo && touched.houseNo ? (
-                              <div className="text-danger">
-                                {errors.houseNo}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Street</label>
-                            <Field name="street" className="form-control" />
-                            {errors.street && touched.street ? (
-                              <div className="text-danger">{errors.street}</div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>City</label>
-                            <Field name="city" className="form-control" />
-                            {errors.city && touched.city ? (
-                              <div className="text-danger">{errors.city}</div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Zip Code</label>
-                            <Field name="zipCode" className="form-control" />
-                            {errors.zipCode && touched.zipCode ? (
-                              <div className="text-danger">
-                                {errors.zipCode}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label htmlFor="photo">Employee Photo</label>
-                            <input
-                              name="employeePhoto"
-                              type="file"
-                              className="form-control"
-                              onChange={(event) =>
-                                setFieldValue(
-                                  "employeePhoto",
-                                  event.target.files[0]
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="mb-3">
-                            <label>Contact Number</label>
-                            <Field
-                              name="contactNumber"
-                              className="form-control"
-                            />
-                            {errors.contactNumber && touched.contactNumber ? (
-                              <div className="text-danger">
-                                {errors.contactNumber}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Reference Contact Number</label>
-                            <Field
-                              name="refContactNumber"
-                              className="form-control"
-                            />
-                            {errors.refContactNumber &&
-                            touched.refContactNumber ? (
-                              <div className="text-danger">
-                                {errors.refContactNumber}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>EPF Number</label>
-                            <Field name="epfNumber" className="form-control" />
-                            {errors.epfNumber && touched.epfNumber ? (
-                              <div className="text-danger">
-                                {errors.epfNumber}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>ETF Number</label>
-                            <Field name="EtfNumber" className="form-control" />
-                            {errors.EtfNumber && touched.EtfNumber ? (
-                              <div className="text-danger">
-                                {errors.EtfNumber}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mb-3">
-                            <label>Sex</label>
-                            <Field
-                              as="select"
-                              name="sex"
-                              className="form-control"
-                            >
-                              <option value="Male">Male</option>
-                              <option value="Female">Female</option>
-                            </Field>
-                            {errors.sex && touched.sex ? (
-                              <div className="text-danger">{errors.sex}</div>
-                            ) : null}
-                          </div>
-                          <div className="text-end">
-                            <button
-                              variant="contained"
-                              color="primary"
-                              type="submit"
-                              className="savechangesbutton"
-                            >
-                              Save
-                            </button>
-                            <button
-                              variant="contained"
-                              color="secondary"
-                              onClick={() => setIsModalOpen(false)}
-                              className="closebutton"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </Form>
-                      )}
-                    </Formik>
-                  </div>
+                            <td>{employee.updatedDate}</td>
+                            <td>{employee.updatedTime}</td>
+                            <td className="fixed-column">
+                              <button
+                                variant="contained"
+                                size="small"
+                                onClick={() => handleReset(employee.id)}
+                                className="resetbtn"
+                              >
+                                Reset password
+                              </button>
+                              <button
+                                variant="contained"
+                                color="primary"
+                                size="small"
+                                onClick={() => handleEdit(employee)}
+                                className="editbtn"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                variant="contained"
+                                color="secondary"
+                                size="small"
+                                onClick={() =>
+                                  handleDelete(
+                                    `${employee.name}, ${employee.surname}`,
+                                    employee.id
+                                  )
+                                }
+                                className="deletebtn"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
+
+                <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                  <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+                    <div className="modal-content custom-modal-content">
+                      <div className="modal-header">
+                        <h5 className="modal-title">
+                          {editingEmployee ? "Edit Employee" : "New Employee"}
+                        </h5>
+                        <Button
+                          type="button"
+                          className="btn-close"
+                          aria-label="Close"
+                          onClick={() => setIsModalOpen(false)}
+                        />
+                      </div>
+                      <div className="modal-body">
+                        <Formik
+                          initialValues={{
+                            name: editingEmployee?.name || "",
+                            surname: editingEmployee?.surname || "",
+                            nicNumber: editingEmployee?.nicNumber || "",
+                            nicPhoto: editingEmployee?.nicPhoto || null,
+                            nicBackPhoto: editingEmployee?.nicBackPhoto || null,
+                            houseNo: editingEmployee?.houseNo || "",
+                            street: editingEmployee?.street || "",
+                            city: editingEmployee?.city || "",
+                            zipCode: editingEmployee?.zipCode || "",
+                            employeePhoto:
+                              editingEmployee?.employeePhoto || null,
+                            contactNumber: editingEmployee?.contactNumber || "",
+                            refContactNumber:
+                              editingEmployee?.refContactNumber || "",
+                            epfNumber: editingEmployee?.epfNumber || "",
+                            EtfNumber: editingEmployee?.EtfNumber || "",
+                            birthDate: editingEmployee?.birthDate || "", // Birth Date Field
+                            email: editingEmployee?.email || "",
+                            // password: "",
+                            // confirmPassword: "",
+                            sex: editingEmployee?.sex || "Male",
+                          }}
+                          validationSchema={RegEmpSchema}
+                          onSubmit={handleSubmit}
+                        >
+                          {({ setFieldValue, errors, touched }) => (
+                            <Form>
+                              <div className="mb-3">
+                                <label>Name</label>
+                                <Field name="name" className="form-control" />
+                                {errors.name && touched.name ? (
+                                  <div className="text-danger">
+                                    {errors.name}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>Surname</label>
+                                <Field
+                                  name="surname"
+                                  className="form-control"
+                                />
+                                {errors.surname && touched.surname ? (
+                                  <div className="text-danger">
+                                    {errors.surname}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>NIC Number</label>
+                                <Field
+                                  name="nicNumber"
+                                  className="form-control"
+                                />
+                                {errors.nicNumber && touched.nicNumber ? (
+                                  <div className="text-danger">
+                                    {errors.nicNumber}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>Birth Date</label>{" "}
+                                {/* Birth Date Field in Form */}
+                                <Field
+                                  name="birthDate"
+                                  type="date"
+                                  className="form-control"
+                                />
+                                {errors.birthDate && touched.birthDate ? (
+                                  <div className="text-danger">
+                                    {errors.birthDate}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>Email</label>
+                                <Field
+                                  name="email"
+                                  type="email"
+                                  className="form-control"
+                                />
+                                {errors.email && touched.email ? (
+                                  <div className="text-danger">
+                                    {errors.email}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label htmlFor="photo">NIC Photo</label>
+                                <input
+                                  name="nicPhoto"
+                                  type="file"
+                                  onChange={(event) =>
+                                    setFieldValue(
+                                      "nicPhoto",
+                                      event.target.files[0]
+                                    )
+                                  }
+                                  className="form-control"
+                                />
+                              </div>
+                              <div className="mb-3">
+                                <label htmlFor="photo">NIC Back Photo</label>
+                                <input
+                                  name="nicBackPhoto"
+                                  type="file"
+                                  onChange={(event) =>
+                                    setFieldValue(
+                                      "nicBackPhoto",
+                                      event.target.files[0]
+                                    )
+                                  }
+                                  className="form-control"
+                                />
+                              </div>
+                              <div className="mb-3">
+                                <label>House No.</label>
+                                <Field
+                                  name="houseNo"
+                                  className="form-control"
+                                />
+                                {errors.houseNo && touched.houseNo ? (
+                                  <div className="text-danger">
+                                    {errors.houseNo}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>Street</label>
+                                <Field name="street" className="form-control" />
+                                {errors.street && touched.street ? (
+                                  <div className="text-danger">
+                                    {errors.street}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>City</label>
+                                <Field name="city" className="form-control" />
+                                {errors.city && touched.city ? (
+                                  <div className="text-danger">
+                                    {errors.city}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>Zip Code</label>
+                                <Field
+                                  name="zipCode"
+                                  className="form-control"
+                                />
+                                {errors.zipCode && touched.zipCode ? (
+                                  <div className="text-danger">
+                                    {errors.zipCode}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label htmlFor="photo">Employee Photo</label>
+                                <input
+                                  name="employeePhoto"
+                                  type="file"
+                                  className="form-control"
+                                  onChange={(event) =>
+                                    setFieldValue(
+                                      "employeePhoto",
+                                      event.target.files[0]
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div className="mb-3">
+                                <label>Contact Number</label>
+                                <Field
+                                  name="contactNumber"
+                                  className="form-control"
+                                />
+                                {errors.contactNumber &&
+                                touched.contactNumber ? (
+                                  <div className="text-danger">
+                                    {errors.contactNumber}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>Reference Contact Number</label>
+                                <Field
+                                  name="refContactNumber"
+                                  className="form-control"
+                                />
+                                {errors.refContactNumber &&
+                                touched.refContactNumber ? (
+                                  <div className="text-danger">
+                                    {errors.refContactNumber}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>EPF Number</label>
+                                <Field
+                                  name="epfNumber"
+                                  className="form-control"
+                                />
+                                {errors.epfNumber && touched.epfNumber ? (
+                                  <div className="text-danger">
+                                    {errors.epfNumber}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>ETF Number</label>
+                                <Field
+                                  name="EtfNumber"
+                                  className="form-control"
+                                />
+                                {errors.EtfNumber && touched.EtfNumber ? (
+                                  <div className="text-danger">
+                                    {errors.EtfNumber}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="mb-3">
+                                <label>Sex</label>
+                                <Field
+                                  as="select"
+                                  name="sex"
+                                  className="form-control"
+                                >
+                                  <option value="Male">Male</option>
+                                  <option value="Female">Female</option>
+                                </Field>
+                                {errors.sex && touched.sex ? (
+                                  <div className="text-danger">
+                                    {errors.sex}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <div className="text-end">
+                                <button
+                                  variant="contained"
+                                  color="primary"
+                                  type="submit"
+                                  className="savechangesbutton"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  variant="contained"
+                                  color="secondary"
+                                  onClick={() => setIsModalOpen(false)}
+                                  className="closebutton"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </Form>
+                          )}
+                        </Formik>
+                      </div>
+                    </div>
+                  </div>
+                </Modal>
               </div>
-            </Modal>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
