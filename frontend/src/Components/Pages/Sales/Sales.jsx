@@ -342,24 +342,24 @@ const Sales = () => {
   const addProductToTransaction = (product) => {
     setTransaction((prevTransaction) => {
       const existingProduct = prevTransaction.products.find(
-        (p) => p.id === product.id
+        (p) => p.Itemid === product.Itemid
       );
       let updatedProducts;
 
       if (existingProduct) {
         updatedProducts = prevTransaction.products.map((p) =>
-          p.id === product.id ? { ...p, qty: p.qty + 1 } : p
+          p.Itemid === product.Itemid ? { ...p, qty: p.qty + 1 } : p
         );
       } else {
         updatedProducts = [
           ...prevTransaction.products,
-          { ...product, qty: 1, discount: 0 },
+          { ...product, qty: 1, discount: product.discount },
         ];
       }
 
       const total = updatedProducts.reduce(
         (sum, p) =>
-          sum + Number(p.qty) * (Number(p.price) - Number(p.discount)), // Ensure numbers
+          sum + Number(p.qty) * (Number(p.sellingPrice) - Number(p.discount)),
         0
       );
       const net = total - prevTransaction.discount;
