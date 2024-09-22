@@ -298,6 +298,8 @@ const Sales = () => {
           sum + Number(p.qty) * (Number(p.sellingPrice) - Number(p.discount)),
         0
       );
+
+      console.log(total);
       const net = total - prevTransaction.discount;
 
       return { ...prevTransaction, products: updatedProducts, total, net };
@@ -365,7 +367,7 @@ const Sales = () => {
   const removeProduct = (productId) => {
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.filter(
-        (product) => product.id !== productId
+        (product) => product.Itemid !== productId
       );
       const total = updatedProducts.reduce(
         (sum, p) => sum + p.qty * p.price,
@@ -953,22 +955,24 @@ const Sales = () => {
                   </thead>
                   <tbody>
                     {transaction.products.map((product) => (
-                      <tr key={product.id}>
-                        <td>{product.name}</td>
+                      <tr key={product.Itemid}>
+                        {/* {console.log(transaction)} */}
+
+                        <td>{product.itemName}</td>
                         <td>
                           <input
                             type="number"
                             value={product.qty}
                             min="1"
                             onChange={(e) =>
-                              updateProductQty(product.id, e.target.value)
+                              updateProductQty(product.itemName, e.target.value)
                             }
                           />
                         </td>
                         <td>
                           <input
                             type="number"
-                            value={product.price}
+                            value={product.sellingPrice}
                             min="0"
                             step="0.01"
                             onChange={(e) =>
@@ -983,7 +987,10 @@ const Sales = () => {
                             min="0"
                             step="0.01"
                             onChange={(e) =>
-                              updateProductDiscount(product.id, e.target.value)
+                              updateProductDiscount(
+                                product.itemName,
+                                e.target.value
+                              )
                             }
                           />
                         </td>
@@ -998,7 +1005,7 @@ const Sales = () => {
                         <td>
                           <button
                             className="tableremovebtn"
-                            onClick={() => removeProduct(product.id)}
+                            onClick={() => removeProduct(product.Itemid)}
                           >
                             Remove
                           </button>
@@ -1081,7 +1088,7 @@ const Sales = () => {
               {filteredProducts.map((data) => (
                 <div>
                   {" "}
-                  <span>data.category</span>
+                  <span>{data.category}</span>
                   {data.items.map((item) => (
                     <button
                       key={item.Itemid}
