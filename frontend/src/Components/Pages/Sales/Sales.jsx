@@ -101,7 +101,7 @@ const Sales = () => {
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
-  const [customers] = useState(initialCustomers);
+  const [customers, setCustomers] = useState([]);
   const [transaction, setTransaction] = useState({
     products: [],
     total: 0.0,
@@ -211,9 +211,14 @@ const Sales = () => {
     };
     const fetchData = async () => {
       try {
-        const ItemData = await axios.get(
-          "https://candied-chartreuse-concavenator.glitch.me/categories/"
-        );
+        const [ItemData, customerData] = await Promise.all([
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/categories/"
+          ),
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/customers/"
+          ),
+        ]);
 
         const newData = ItemData.data
           .filter((category) => Number(category.qty) > 0)
@@ -227,6 +232,17 @@ const Sales = () => {
             return { category: category.rawMaterialName, items };
           });
 
+        const formattedCustomers = customerData.data.map((customer) => {
+          const { date, time } = ConvertToSLT(customer.addedDateAndTime);
+          return {
+            ...customer,
+            id: customer.id,
+            surname: customer.surName,
+            phone: customer.contactNumber,
+          };
+        });
+
+        setCustomers(formattedCustomers);
         setProducts(newData);
         setLoading(false);
       } catch (error) {
@@ -270,12 +286,56 @@ const Sales = () => {
 
     // });
 
+    // // Listen for real-time customer updates
+    // socket.on("customerAdded", (newCustomer) => {
+    //   const { date, time } = ConvertToSLT(newCustomer.addedDateAndTime);
+    //   const newCustomeradded = {
+    //     ...newCustomer,
+    //     surname: newCustomer.surName,
+    //     phone: newCustomer.contactNumber,
+    //     postalCode: newCustomer.postalcode,
+    //     addedDate: date,
+    //     addedTime: time,
+    //     totalSpent: "500", // Example data; replace with real data if needed
+    //   };
+    //   setCustomers((prevCustomers) => [newCustomeradded, ...prevCustomers]);
+    // });
+
+    // socket.on("customerUpdated", (updatedCustomer) => {
+    //   const { date, time } = ConvertToSLT(updatedCustomer.addedDateAndTime);
+
+    //   const newupdatedCustomer = {
+    //     ...updatedCustomer,
+    //     surname: updatedCustomer.surName,
+    //     postalCode: updatedCustomer.postalcode,
+    //     addedDate: date,
+    //     addedTime: time,
+    //     totalSpent: "600", // Example data; replace with real data if needed
+    //   };
+    //   setCustomers((prevCustomers) =>
+    //     prevCustomers.map((customer) =>
+    //       customer.id === updatedCustomer.id ? newupdatedCustomer : customer
+    //     )
+    //   );
+    // });
+
+    // socket.on("customerDeleted", ({ id }) => {
+    //   setCustomers((prevCustomers) =>
+    //     prevCustomers.filter((customer) => customer.id !== id)
+    //   );
+    // });
+
     // return () => {
+
     //   socket.off("ItemAdded");
     //   socket.off("ItemUpdated");
     //   socket.off("ItemDeleted");
 
     //   socket.off("CategoryDeleted");
+
+    // socket.off("customerAdded");
+    // socket.off("customerUpdated");
+    // socket.off("customerDeleted");
     // };
   }, []);
 
