@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Sales.scss";
 import jsPDF from "jspdf";
@@ -9,39 +9,10 @@ import AddProductModal from "./AddProductModal"; // Import your new component
 import ReceiptOptionsModal from "./ReceiptOptionsModal"; // Import the new component
 import PaymentModal from "./PaymentModal"; // Import the new component
 import images from "../../../Assest/receiptImages.json";
-
-const initialProducts = [
-  { id: 1, name: "Shirts", price: 9.99, stoke: 10, gsm: 180, color: "Red" },
-  { id: 2, name: "Pants", price: 14.99, stoke: 10, gsm: 200, color: "Blue" },
-  { id: 3, name: "Dresses", price: 19.99, stoke: 10, gsm: 150, color: "Green" },
-  { id: 4, name: "Shoes", price: 14.99, gsm: null, color: "Black" },
-  { id: 5, name: "Jackets", price: 29.99, gsm: 300, color: "Grey" },
-  { id: 6, name: "T-shirts", price: 7.99, gsm: 170, color: "White" },
-  { id: 7, name: "Shorts", price: 11.99, gsm: 160, color: "Yellow" },
-  { id: 8, name: "Hats", price: 5.99, gsm: null, color: "Red" },
-  { id: 9, name: "Socks", price: 2.99, gsm: 100, color: "Black" },
-  { id: 10, name: "Belts", price: 12.99, gsm: null, color: "Brown" },
-  { id: 11, name: "Skirts", price: 16.99, gsm: 180, color: "Pink" },
-  { id: 12, name: "Scarves", price: 8.99, gsm: 120, color: "Purple" },
-  { id: 13, name: "Gloves", price: 6.99, gsm: null, color: "Blue" },
-  { id: 14, name: "Jeans", price: 24.99, gsm: 250, color: "Dark Blue" },
-  { id: 15, name: "Sweaters", price: 19.99, gsm: 300, color: "Green" },
-  { id: 16, name: "Suits", price: 49.99, gsm: 350, color: "Black" },
-  { id: 17, name: "Ties", price: 9.99, gsm: 90, color: "Red" },
-  { id: 18, name: "Blouses", price: 15.99, gsm: 140, color: "Yellow" },
-  { id: 19, name: "Sandals", price: 13.99, gsm: null, color: "Beige" },
-  { id: 20, name: "Boots", price: 29.99, gsm: null, color: "Brown" },
-  { id: 21, name: "Hoodies", price: 22.99, gsm: 320, color: "Grey" },
-  { id: 22, name: "Caps", price: 7.99, gsm: null, color: "Black" },
-  { id: 23, name: "Vests", price: 14.99, gsm: 200, color: "White" },
-  { id: 24, name: "Coats", price: 39.99, gsm: 400, color: "Navy Blue" },
-  { id: 25, name: "Leggings", price: 10.99, gsm: 160, color: "Black" },
-  { id: 26, name: "Tracksuits", price: 25.99, gsm: 220, color: "Grey" },
-  { id: 27, name: "Swimwear", price: 18.99, gsm: 80, color: "Red" },
-  { id: 28, name: "Sneakers", price: 34.99, gsm: null, color: "White" },
-  { id: 29, name: "Slippers", price: 8.99, gsm: null, color: "Blue" },
-  { id: 30, name: "Blazers", price: 44.99, gsm: 280, color: "Black" },
-];
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
+import _ from "lodash";
+import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
+import axios from "axios";
 
 const initialCustomers = [
   {
@@ -130,7 +101,7 @@ const Sales = () => {
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
-  const [customers] = useState(initialCustomers);
+  const [customers, setCustomers] = useState([]);
   const [transaction, setTransaction] = useState({
     products: [],
     total: 0.0,
@@ -153,31 +124,38 @@ const Sales = () => {
   const navigate = useNavigate(); // Use useNavigate for navigation
 
   const [invoiceNumber, setInvoiceNumber] = useState(null);
-  const [products] = useState(initialProducts);
+  const [products, setProducts] = useState([]);
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const [searchField, setSearchField] = useState("name");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      if (product.stoke > 0) {
-        if (searchField === "name") {
-          return product.name
-            .toLowerCase()
-            .includes(productSearchQuery.toLowerCase());
-        } else if (searchField === "price") {
-          return product.price.toString().includes(productSearchQuery);
-        } else if (searchField === "gsm") {
-          return (
-            product.gsm && product.gsm.toString().includes(productSearchQuery)
-          );
-        } else if (searchField === "color") {
-          return product.color
-            .toLowerCase()
-            .includes(productSearchQuery.toLowerCase());
-        }
-        return true;
-      }
-    });
+    return products
+      .map((category) => {
+        const filteredItems = category.items.filter((item) => {
+          if (searchField === "name") {
+            return item.itemName
+              .toLowerCase()
+              .includes(productSearchQuery.toLowerCase());
+          } else if (searchField === "price") {
+            return item.price.toString().includes(productSearchQuery);
+          } else if (searchField === "gsm") {
+            return item.gsm && item.gsm.includes(productSearchQuery);
+          } else if (searchField === "color") {
+            return item.color
+              .toLowerCase()
+              .includes(productSearchQuery.toLowerCase());
+          }
+          return true; // Include all if no specific searchField is matched
+        });
+
+        // Return the category with filtered items if there are any
+        return filteredItems.length > 0
+          ? { category: category.category, items: filteredItems }
+          : null; // Return null if no items match
+      })
+      .filter((category) => category !== null); // Remove null categories
   }, [productSearchQuery, searchField, products]);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -199,6 +177,167 @@ const Sales = () => {
         .slice(0, 5),
     [customerSearchQuery, customers]
   );
+
+  const calculateSellingPrice = (originalPrice, discountPercentage) => {
+    let discount = discountPercentage / 100; // Convert percentage to decimal
+    let sellingPrice = originalPrice * (1 - discount); // Apply discount
+    return sellingPrice;
+  };
+
+  useEffect(() => {
+    const mapItemData = (category, item) => {
+      const { date, time } = ConvertToSLT(item.addedDateTime);
+      return {
+        categoryid: category.id,
+        Itemid: item.itemId,
+        itemCode: item.itemCode,
+        itemName: item.itemName,
+        category: category.rawMaterialName,
+        color: item.color,
+        qty: category.qty,
+        gsm: category.thickness,
+        buyingPrice: category.buyingPrice,
+        company: category.company,
+        wholesale: item.wholesale,
+        retailPrice: item.retailPrice,
+        size: category.size,
+        discount: item.discount || 0,
+        sellingPrice: calculateSellingPrice(
+          item.retailPrice,
+          item.discount || 0
+        ),
+        addedDateTime: item.addedDateTime,
+      };
+    };
+    const fetchData = async () => {
+      try {
+        const [ItemData, customerData] = await Promise.all([
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/categories/"
+          ),
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/customers/"
+          ),
+        ]);
+
+        const newData = ItemData.data
+          .filter((category) => Number(category.qty) > 0)
+          .map((category) => {
+            const items = category.items
+              .map((item) => mapItemData(category, item))
+              .sort(
+                (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime)
+              );
+
+            return { category: category.rawMaterialName, items };
+          });
+
+        const formattedCustomers = customerData.data.map((customer) => {
+          const { date, time } = ConvertToSLT(customer.addedDateAndTime);
+          return {
+            ...customer,
+            id: customer.id,
+            surname: customer.surName,
+            phone: customer.contactNumber,
+          };
+        });
+
+        setCustomers(formattedCustomers);
+        setProducts(newData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    // // Listen for real-time Item updates
+    // socket.on("ItemAdded", (newItem) => {
+    //   setItems((prevItems) => [
+    //     mapItemData(newItem.category, newItem.newItem),
+    //     ...prevItems,
+    //   ]);
+    // });
+
+    // socket.on("ItemUpdated", (updatedItem) => {
+    //   setItems((prevItems) =>
+    //     prevItems.map((Item) =>
+    //       Item.Itemid === updatedItem.item.itemId
+    //         ? mapItemData(updatedItem.category, updatedItem.item)
+    //         : Item
+    //     )
+    //   );
+    // });
+
+    // socket.on("ItemDeleted", ({ itemId }) => {
+    //   console.log(itemId);
+    //   setItems((prevItems) =>
+    //     prevItems.filter((Item) => Item.Itemid !== itemId)
+    //   );
+    // });
+
+    // socket.on("CategoryDeleted", ({ id }) => {
+    //   setItems((prevItems) =>
+    //     prevItems.filter((Item) => Item.categoryid !== id)
+    //   );
+
+    // });
+
+    // // Listen for real-time customer updates
+    // socket.on("customerAdded", (newCustomer) => {
+    //   const { date, time } = ConvertToSLT(newCustomer.addedDateAndTime);
+    //   const newCustomeradded = {
+    //     ...newCustomer,
+    //     surname: newCustomer.surName,
+    //     phone: newCustomer.contactNumber,
+    //     postalCode: newCustomer.postalcode,
+    //     addedDate: date,
+    //     addedTime: time,
+    //     totalSpent: "500", // Example data; replace with real data if needed
+    //   };
+    //   setCustomers((prevCustomers) => [newCustomeradded, ...prevCustomers]);
+    // });
+
+    // socket.on("customerUpdated", (updatedCustomer) => {
+    //   const { date, time } = ConvertToSLT(updatedCustomer.addedDateAndTime);
+
+    //   const newupdatedCustomer = {
+    //     ...updatedCustomer,
+    //     surname: updatedCustomer.surName,
+    //     postalCode: updatedCustomer.postalcode,
+    //     addedDate: date,
+    //     addedTime: time,
+    //     totalSpent: "600", // Example data; replace with real data if needed
+    //   };
+    //   setCustomers((prevCustomers) =>
+    //     prevCustomers.map((customer) =>
+    //       customer.id === updatedCustomer.id ? newupdatedCustomer : customer
+    //     )
+    //   );
+    // });
+
+    // socket.on("customerDeleted", ({ id }) => {
+    //   setCustomers((prevCustomers) =>
+    //     prevCustomers.filter((customer) => customer.id !== id)
+    //   );
+    // });
+
+    // return () => {
+
+    //   socket.off("ItemAdded");
+    //   socket.off("ItemUpdated");
+    //   socket.off("ItemDeleted");
+
+    //   socket.off("CategoryDeleted");
+
+    // socket.off("customerAdded");
+    // socket.off("customerUpdated");
+    // socket.off("customerDeleted");
+    // };
+  }, []);
 
   const addProductToTransaction = (product) => {
     setTransaction((prevTransaction) => {
@@ -1002,16 +1141,23 @@ const Sales = () => {
               </button>
             </div>
             <div className="product-grid">
-              {filteredProducts.map((product) => (
-                <button
-                  key={product.id}
-                  className="product-button"
-                  onClick={() => addProductToTransaction(product)}
-                >
-                  {product.name}
-                  <span>Rs. {product.price.toFixed(2)}</span>
-                  <span>Stoke. {product.stoke}</span>
-                </button>
+              {/* {console.log(filteredProducts)} */}
+              {filteredProducts.map((data) => (
+                <div>
+                  {" "}
+                  <span>data.category</span>
+                  {data.items.map((item) => (
+                    <button
+                      key={item.Itemid}
+                      className="product-button"
+                      onClick={() => addProductToTransaction(item)}
+                    >
+                      {item.itemName}
+                      {/* <span>Rs. {product.price.toFixed(2)}</span> */}
+                      <span>Stoke. {item.qty}</span>
+                    </button>
+                  ))}
+                </div>
               ))}
             </div>
           </div>
