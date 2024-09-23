@@ -40,6 +40,7 @@ const Sales = () => {
   const [searchField, setSearchField] = useState("name");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [paymentDetailsState, setPaymentDetailsState] = useState(null);
 
   useEffect(() => {
     const mapItemData = (category, item) => {
@@ -385,14 +386,9 @@ const Sales = () => {
     setProductSearchQuery("");
     setSearchField("name");
   };
-
-  const [paymentDetailsState, setPaymentDetailsState] = useState(null); // Add this to store payment details
-
   const handlePaymentSubmit = (values) => {
-    console.log("Payment details:", values); // Log the values for debugging
-
-    let creditBalance = 0; // Define the credit balance
-    let cashChangeDue = 0; // Define cash change due
+    let creditBalance = 0;
+    let cashChangeDue = 0;
 
     // Handle different payment methods
     if (values.paymentMethod === "Cash") {
@@ -436,39 +432,40 @@ const Sales = () => {
       );
     }
 
-    // Save the payment details and credit balance in state
-    setPaymentDetailsState({
+    // Calculate payment details and generate invoice number BEFORE setting state
+    const newPaymentDetailsState = {
       ...values,
-      cashChangeDue: cashChangeDue > 0 ? cashChangeDue : 0, // Store cash change due if there's any
-      creditBalance: creditBalance > 0 ? creditBalance : 0, // Store credit balance if there's any
-    });
+      cashChangeDue: cashChangeDue > 0 ? cashChangeDue : 0,
+      creditBalance: creditBalance > 0 ? creditBalance : 0,
+    };
 
-    // Generate a unique invoice number
-    setInvoiceNumber(generateUniqueInvoiceNumber());
+    const newInvoiceNumber = generateUniqueInvoiceNumber();
 
-    // Ask the user if they want a receipt
+    setPaymentDetailsState(newPaymentDetailsState);
+    setInvoiceNumber(newInvoiceNumber);
+
     const wantsReceipt = window.confirm(
       "Would you like to download a receipt?"
     );
 
-    // Generate PDF if user wants a receipt
     if (wantsReceipt) {
       PdfGenarator(
-        {
-          ...values,
-          cashChangeDue,
-          creditBalance: creditBalance > 0 ? creditBalance : 0, // Pass credit balance to the PDF function
-        },
+        newPaymentDetailsState,
         transaction,
-        invoiceNumber,
+        newInvoiceNumber,
         selectedCustomer
       );
     }
 
+    console.log("Payment details:", newPaymentDetailsState);
+    console.log("Selected customer:", selectedCustomer);
+    console.log("Transaction:", transaction);
+    console.log("Invoice number:", newInvoiceNumber);
+
     // Open the modal to choose download, print, or share
     setIsReceiptOptionsModalOpen(true);
 
-    // Close the modal after handling payment
+    // Close the payment modal
     setIsPaymentModalOpen(false);
   };
 
@@ -779,7 +776,6 @@ const Sales = () => {
           onClose={() => setIsPaymentModalOpen(false)}
           handlePaymentSubmit={handlePaymentSubmit}
         />
-        {/* Use the ReceiptOptionsModal */}
         <ReceiptOptionsModal
           isOpen={isReceiptOptionsModalOpen}
           onClose={() => setIsReceiptOptionsModalOpen(false)}
