@@ -14,70 +14,6 @@ import _ from "lodash";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 import axios from "axios";
 
-const initialCustomers = [
-  {
-    id: 1,
-    name: "The J",
-    surname: "Valoy",
-    email: "valoy@domain.com",
-    phone: "0711093799",
-    totalSpent: "RD $50.00",
-    houseNo: "12B",
-    street: "Maple Street",
-    city: "Santo Domingo",
-    postalCode: "10101",
-  },
-  {
-    id: 2,
-    name: "Maria",
-    surname: "Santiago",
-    email: "maria.santiago@example.com",
-    phone: "0711223344",
-    totalSpent: "RD $200.00",
-    houseNo: "45",
-    street: "Elm Avenue",
-    city: "Santiago",
-    postalCode: "51000",
-  },
-  {
-    id: 3,
-    name: "Pedro",
-    surname: "Gomez",
-    email: "pedro.gomez@example.com",
-    phone: "0722334455",
-    totalSpent: "RD $120.50",
-    houseNo: "89A",
-    street: "Cedar Lane",
-    city: "La Vega",
-    postalCode: "41000",
-  },
-  {
-    id: 4,
-    name: "Laura",
-    surname: "Martinez",
-    email: "laura.martinez@example.com",
-    phone: "0712334455",
-    totalSpent: "RD $75.75",
-    houseNo: "22C",
-    street: "Oak Street",
-    city: "Puerto Plata",
-    postalCode: "57000",
-  },
-  {
-    id: 5,
-    name: "Juan",
-    surname: "Rodriguez",
-    email: "juan.rodriguez@example.com",
-    phone: "0733445566",
-    totalSpent: "RD $300.00",
-    houseNo: "5",
-    street: "Pine Boulevard",
-    city: "Punta Cana",
-    postalCode: "23000",
-  },
-  // Add more customers if needed
-];
-
 const generateUniqueInvoiceNumber = () => {
   const now = new Date();
 
@@ -178,12 +114,6 @@ const Sales = () => {
     [customerSearchQuery, customers]
   );
 
-  const calculateSellingPrice = (originalPrice, discountPercentage) => {
-    let discount = discountPercentage / 100; // Convert percentage to decimal
-    let sellingPrice = originalPrice * (1 - discount); // Apply discount
-    return sellingPrice;
-  };
-
   useEffect(() => {
     const mapItemData = (category, item) => {
       const { date, time } = ConvertToSLT(item.addedDateTime);
@@ -202,10 +132,6 @@ const Sales = () => {
         retailPrice: item.retailPrice,
         size: category.size,
         discount: item.discount || 0,
-        sellingPrice: calculateSellingPrice(
-          item.retailPrice,
-          item.discount || 0
-        ),
         addedDateTime: item.addedDateTime,
       };
     };
@@ -340,28 +266,30 @@ const Sales = () => {
   }, []);
 
   const addProductToTransaction = (product) => {
+    // console.log(product);
     setTransaction((prevTransaction) => {
       const existingProduct = prevTransaction.products.find(
-        (p) => p.id === product.id
+        (p) => p.Itemid === product.Itemid
       );
       let updatedProducts;
 
       if (existingProduct) {
         updatedProducts = prevTransaction.products.map((p) =>
-          p.id === product.id ? { ...p, qty: p.qty + 1 } : p
+          p.Itemid === product.Itemid ? { ...p, qty: p.qty + 1 } : p
         );
       } else {
         updatedProducts = [
           ...prevTransaction.products,
-          { ...product, qty: 1, discount: 0 },
+          { ...product, qty: 1, discount: product.discount },
         ];
       }
 
       const total = updatedProducts.reduce(
         (sum, p) =>
-          sum + Number(p.qty) * (Number(p.price) - Number(p.discount)), // Ensure numbers
+          sum + Number(p.qty) * (Number(p.retailPrice) - Number(p.discount)),
         0
       );
+
       const net = total - prevTransaction.discount;
 
       return { ...prevTransaction, products: updatedProducts, total, net };
@@ -371,13 +299,13 @@ const Sales = () => {
   const updateProductDiscount = (productId, discount) => {
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.map((product) =>
-        product.id === productId
+        product.Itemid === productId
           ? { ...product, discount: Number(discount) }
           : product
       );
 
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * (p.price - p.discount), // Apply Rs discount to each product
+        (sum, p) => sum + p.qty * (p.retailPrice - p.discount), // Apply Rs discount to each product
         0
       );
 
@@ -390,27 +318,12 @@ const Sales = () => {
   const updateProductQty = (productId, qty) => {
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.map((product) =>
-        product.id === productId ? { ...product, qty: Number(qty) } : product
-      );
-      const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.price,
-        0
-      );
-      const net = total - prevTransaction.discount;
-
-      return { ...prevTransaction, products: updatedProducts, total, net };
-    });
-  };
-
-  const updateProductPrice = (productId, price) => {
-    setTransaction((prevTransaction) => {
-      const updatedProducts = prevTransaction.products.map((product) =>
-        product.id === productId
-          ? { ...product, price: Number(price) }
+        product.Itemid === productId
+          ? { ...product, qty: Number(qty) }
           : product
       );
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.price,
+        (sum, p) => sum + p.qty * p.retailPrice,
         0
       );
       const net = total - prevTransaction.discount;
@@ -418,6 +331,23 @@ const Sales = () => {
       return { ...prevTransaction, products: updatedProducts, total, net };
     });
   };
+
+  // const updateProductPrice = (productId, price) => {
+  //   setTransaction((prevTransaction) => {
+  //     const updatedProducts = prevTransaction.products.map((product) =>
+  //       product.id === productId
+  //         ? { ...product, price: Number(price) }
+  //         : product
+  //     );
+  //     const total = updatedProducts.reduce(
+  //       (sum, p) => sum + p.qty * p.price,
+  //       0
+  //     );
+  //     const net = total - prevTransaction.discount;
+
+  //     return { ...prevTransaction, products: updatedProducts, total, net };
+  //   });
+  // };
 
   const updateDiscount = (discount) => {
     setTransaction((prevTransaction) => {
@@ -429,10 +359,10 @@ const Sales = () => {
   const removeProduct = (productId) => {
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.filter(
-        (product) => product.id !== productId
+        (product) => product.Itemid !== productId
       );
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.price,
+        (sum, p) => sum + p.qty * p.retailPrice,
         0
       );
       const net = total - prevTransaction.discount;
@@ -1017,27 +947,30 @@ const Sales = () => {
                   </thead>
                   <tbody>
                     {transaction.products.map((product) => (
-                      <tr key={product.id}>
-                        <td>{product.name}</td>
+                      <tr key={product.Itemid}>
+                        {/* {console.log(transaction)} */}
+
+                        <td>{product.itemName}</td>
                         <td>
                           <input
                             type="number"
                             value={product.qty}
                             min="1"
                             onChange={(e) =>
-                              updateProductQty(product.id, e.target.value)
+                              updateProductQty(product.Itemid, e.target.value)
                             }
                           />
                         </td>
                         <td>
                           <input
                             type="number"
-                            value={product.price}
+                            value={product.retailPrice}
                             min="0"
                             step="0.01"
-                            onChange={(e) =>
-                              updateProductPrice(product.id, e.target.value)
-                            }
+                            disabled
+                            // onChange={(e) =>
+                            //   updateProductPrice(product.id, e.target.value)
+                            // }
                           />
                         </td>
                         <td>
@@ -1047,7 +980,10 @@ const Sales = () => {
                             min="0"
                             step="0.01"
                             onChange={(e) =>
-                              updateProductDiscount(product.id, e.target.value)
+                              updateProductDiscount(
+                                product.Itemid,
+                                e.target.value
+                              )
                             }
                           />
                         </td>
@@ -1055,14 +991,15 @@ const Sales = () => {
                           Rs.{" "}
                           {(
                             Number(product.qty) *
-                            (Number(product.price) - Number(product.discount))
+                            (Number(product.retailPrice) -
+                              Number(product.discount))
                           ).toFixed(2)}{" "}
                           {/* Ensure all inputs are numbers */}
                         </td>
                         <td>
                           <button
                             className="tableremovebtn"
-                            onClick={() => removeProduct(product.id)}
+                            onClick={() => removeProduct(product.Itemid)}
                           >
                             Remove
                           </button>
@@ -1145,7 +1082,7 @@ const Sales = () => {
               {filteredProducts.map((data) => (
                 <div>
                   {" "}
-                  <span>data.category</span>
+                  <span>{data.category}</span>
                   {data.items.map((item) => (
                     <button
                       key={item.Itemid}
