@@ -52,10 +52,10 @@ const PdfGenarator = (
     const discountX = 48; // Discount X-position
     const totalX = 63; // Total price X-position
 
-    const { name = "", qty = 0, price = 0, discount = 0 } = product; // Avoid undefined errors
+    const { itemName = "", qty = 0, price = 0, discount = 0 } = product; // Avoid undefined errors
 
     // Add product details
-    doc.text(name, productNameX, y); // Product Name
+    doc.text(itemName, productNameX, y); // Product Name
     doc.text(`${qty}`, qtyX, y); // Quantity
     doc.text(`Rs.${price.toFixed(2)}`, priceX, y); // Unit Price
     doc.text(`Rs.${discount.toFixed(2)}`, discountX, y); // Discount
