@@ -355,6 +355,8 @@ const Sales = () => {
   };
 
   const removeProduct = (productId) => {
+    console.log(productId);
+    console.log(transaction);
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.filter(
         (product) => product.Itemid !== productId
