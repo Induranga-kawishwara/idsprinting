@@ -299,13 +299,13 @@ const Sales = () => {
   const updateProductDiscount = (productId, discount) => {
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.map((product) =>
-        product.id === productId
+        product.Itemid === productId
           ? { ...product, discount: Number(discount) }
           : product
       );
 
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * (p.price - p.discount), // Apply Rs discount to each product
+        (sum, p) => sum + p.qty * (p.retailPrice - p.discount), // Apply Rs discount to each product
         0
       );
 
@@ -318,27 +318,12 @@ const Sales = () => {
   const updateProductQty = (productId, qty) => {
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.map((product) =>
-        product.id === productId ? { ...product, qty: Number(qty) } : product
-      );
-      const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.price,
-        0
-      );
-      const net = total - prevTransaction.discount;
-
-      return { ...prevTransaction, products: updatedProducts, total, net };
-    });
-  };
-
-  const updateProductPrice = (productId, price) => {
-    setTransaction((prevTransaction) => {
-      const updatedProducts = prevTransaction.products.map((product) =>
-        product.id === productId
-          ? { ...product, price: Number(price) }
+        product.Itemid === productId
+          ? { ...product, qty: Number(qty) }
           : product
       );
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.price,
+        (sum, p) => sum + p.qty * p.retailPrice,
         0
       );
       const net = total - prevTransaction.discount;
@@ -346,6 +331,23 @@ const Sales = () => {
       return { ...prevTransaction, products: updatedProducts, total, net };
     });
   };
+
+  // const updateProductPrice = (productId, price) => {
+  //   setTransaction((prevTransaction) => {
+  //     const updatedProducts = prevTransaction.products.map((product) =>
+  //       product.id === productId
+  //         ? { ...product, price: Number(price) }
+  //         : product
+  //     );
+  //     const total = updatedProducts.reduce(
+  //       (sum, p) => sum + p.qty * p.price,
+  //       0
+  //     );
+  //     const net = total - prevTransaction.discount;
+
+  //     return { ...prevTransaction, products: updatedProducts, total, net };
+  //   });
+  // };
 
   const updateDiscount = (discount) => {
     setTransaction((prevTransaction) => {
@@ -355,14 +357,12 @@ const Sales = () => {
   };
 
   const removeProduct = (productId) => {
-    console.log(productId);
-    console.log(transaction);
     setTransaction((prevTransaction) => {
       const updatedProducts = prevTransaction.products.filter(
         (product) => product.Itemid !== productId
       );
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.price,
+        (sum, p) => sum + p.qty * p.retailPrice,
         0
       );
       const net = total - prevTransaction.discount;
@@ -957,7 +957,7 @@ const Sales = () => {
                             value={product.qty}
                             min="1"
                             onChange={(e) =>
-                              updateProductQty(product.itemName, e.target.value)
+                              updateProductQty(product.Itemid, e.target.value)
                             }
                           />
                         </td>
@@ -967,9 +967,10 @@ const Sales = () => {
                             value={product.retailPrice}
                             min="0"
                             step="0.01"
-                            onChange={(e) =>
-                              updateProductPrice(product.id, e.target.value)
-                            }
+                            disabled
+                            // onChange={(e) =>
+                            //   updateProductPrice(product.id, e.target.value)
+                            // }
                           />
                         </td>
                         <td>
@@ -980,7 +981,7 @@ const Sales = () => {
                             step="0.01"
                             onChange={(e) =>
                               updateProductDiscount(
-                                product.itemName,
+                                product.Itemid,
                                 e.target.value
                               )
                             }
