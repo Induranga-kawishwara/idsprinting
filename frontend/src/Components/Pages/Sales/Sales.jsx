@@ -114,12 +114,6 @@ const Sales = () => {
     [customerSearchQuery, customers]
   );
 
-  const calculateSellingPrice = (originalPrice, discountPercentage) => {
-    let discount = discountPercentage / 100; // Convert percentage to decimal
-    let sellingPrice = originalPrice * (1 - discount); // Apply discount
-    return sellingPrice;
-  };
-
   useEffect(() => {
     const mapItemData = (category, item) => {
       const { date, time } = ConvertToSLT(item.addedDateTime);
@@ -138,10 +132,6 @@ const Sales = () => {
         retailPrice: item.retailPrice,
         size: category.size,
         discount: item.discount || 0,
-        sellingPrice: calculateSellingPrice(
-          item.retailPrice,
-          item.discount || 0
-        ),
         addedDateTime: item.addedDateTime,
       };
     };
@@ -276,6 +266,7 @@ const Sales = () => {
   }, []);
 
   const addProductToTransaction = (product) => {
+    // console.log(product);
     setTransaction((prevTransaction) => {
       const existingProduct = prevTransaction.products.find(
         (p) => p.Itemid === product.Itemid
@@ -295,11 +286,10 @@ const Sales = () => {
 
       const total = updatedProducts.reduce(
         (sum, p) =>
-          sum + Number(p.qty) * (Number(p.sellingPrice) - Number(p.discount)),
+          sum + Number(p.qty) * (Number(p.retailPrice) - Number(p.discount)),
         0
       );
 
-      console.log(total);
       const net = total - prevTransaction.discount;
 
       return { ...prevTransaction, products: updatedProducts, total, net };
@@ -972,7 +962,7 @@ const Sales = () => {
                         <td>
                           <input
                             type="number"
-                            value={product.sellingPrice}
+                            value={product.retailPrice}
                             min="0"
                             step="0.01"
                             onChange={(e) =>
@@ -998,7 +988,8 @@ const Sales = () => {
                           Rs.{" "}
                           {(
                             Number(product.qty) *
-                            (Number(product.price) - Number(product.discount))
+                            (Number(product.retailPrice) -
+                              Number(product.discount))
                           ).toFixed(2)}{" "}
                           {/* Ensure all inputs are numbers */}
                         </td>
