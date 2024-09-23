@@ -69,7 +69,7 @@ const Login = () => {
             id="flexSwitchCheckDefault"
           />
           <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
-            If you are admin trun on this button
+            If you are admin turn on this button
           </label>
         </div>
       </div>
