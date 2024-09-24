@@ -484,16 +484,6 @@ const Sales = () => {
     setPaymentDetailsState(newPaymentDetailsState);
     setInvoiceNumber(newInvoiceNumber);
 
-    // Offer receipt generation option
-    // if (window.confirm("Would you like to download a receipt?")) {
-    //   PdfGenarator(
-    //     newPaymentDetailsState,
-    //     transaction,
-    //     newInvoiceNumber,
-    //     selectedCustomer
-    //   );
-    // }
-
     // Submit payment details to backend
     try {
       const response = await axios.post(
@@ -659,14 +649,22 @@ const Sales = () => {
                     onChange={(e) => setCustomerSearchQuery(e.target.value)}
                   />
                   <ul className="customer-search-list">
-                    {filteredCustomers.map((customer) => (
-                      <li
-                        key={customer.id}
-                        onClick={() => handleSelectCustomer(customer)}
-                      >
-                        {customer.name} {customer.surname} - {customer.phone}
-                      </li>
-                    ))}
+                    {loading || error || _.isEmpty(filteredCustomers) ? (
+                      <TableChecker
+                        loading={loading}
+                        error={error}
+                        hasData={filteredCustomers.length > 0}
+                      />
+                    ) : (
+                      filteredCustomers.map((customer) => (
+                        <li
+                          key={customer.id}
+                          onClick={() => handleSelectCustomer(customer)}
+                        >
+                          {customer.name} {customer.surname} - {customer.phone}
+                        </li>
+                      ))
+                    )}
                   </ul>
                 </>
               )}
@@ -815,24 +813,31 @@ const Sales = () => {
               </button>
             </div>
             <div className="product-grid">
-              {/* {console.log(filteredProducts)} */}
-              {filteredProducts.map((data) => (
-                <div>
-                  {" "}
-                  <span>{data.category}</span>
-                  {data.items.map((item) => (
-                    <button
-                      key={item.Itemid}
-                      className="product-button"
-                      onClick={() => addProductToTransaction(item)}
-                    >
-                      {item.itemName}
-                      {/* <span>Rs. {product.price.toFixed(2)}</span> */}
-                      <span>Stoke. {item.qty}</span>
-                    </button>
-                  ))}
-                </div>
-              ))}
+              {loading || error || _.isEmpty(filteredProducts) ? (
+                <TableChecker
+                  loading={loading}
+                  error={error}
+                  hasData={filteredProducts.length > 0}
+                />
+              ) : (
+                filteredProducts.map((data) => (
+                  <div>
+                    {" "}
+                    <span>{data.category}</span>
+                    {data.items.map((item) => (
+                      <button
+                        key={item.Itemid}
+                        className="product-button"
+                        onClick={() => addProductToTransaction(item)}
+                      >
+                        {item.itemName}
+                        {/* <span>Rs. {product.price.toFixed(2)}</span> */}
+                        <span>Stoke. {item.qty}</span>
+                      </button>
+                    ))}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
