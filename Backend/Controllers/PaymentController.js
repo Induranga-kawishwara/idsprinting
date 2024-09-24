@@ -16,16 +16,16 @@ export const createPayment = async (req, res) => {
     if (!customerSnapshot.exists) {
       return res.status(404).send({ message: "Customer not found." });
     }
-    const { Payments = [], ...customerDetails } = customerSnapshot.data();
+    const { payments = [], ...customerDetails } = customerSnapshot.data();
     const newPayment = {
-      PaymentId: uuidv4(),
+      paymentId: uuidv4(),
       paymentDetails,
       transaction,
       invoicenumber,
       lastUpdatedDate,
     };
     // Update the document with the new Payment
-    await customerDoc.update({ Payments: [...Payments, newPayment] });
+    await customerDoc.update({ payments: [...payments, newPayment] });
     const result = {
       category: { id: customerId, ...customerDetails },
       newPayment,
@@ -42,7 +42,7 @@ export const createPayment = async (req, res) => {
 
 // Get a Payment by ID
 export const getCustomerAndPaymentDetails = async (req, res) => {
-  const { customerId, PaymentId } = req.params;
+  const { customerId, paymentId } = req.params;
 
   try {
     const categoryRef = PaymentCollection.doc(customerId);
@@ -54,9 +54,9 @@ export const getCustomerAndPaymentDetails = async (req, res) => {
     }
 
     const categoryData = customerSnapshot.data();
-    const { Payments = [], ...customerDetails } = categoryData;
+    const { payments = [], ...customerDetails } = categoryData;
 
-    const Payment = Payments.find((Payment) => Payment.PaymentId === PaymentId);
+    const Payment = payments.find((Payment) => Payment.paymentId === paymentId);
 
     if (!Payment) {
       return res
@@ -77,7 +77,7 @@ export const getCustomerAndPaymentDetails = async (req, res) => {
 };
 
 export const updatePaymentByPaymentId = async (req, res) => {
-  const { customerId, PaymentId } = req.params;
+  const { customerId, paymentId } = req.params;
   const {
     PaymentCode,
     PaymentName,
@@ -98,10 +98,10 @@ export const updatePaymentByPaymentId = async (req, res) => {
       return res.status(404).send({ message: "Category not found." });
     }
 
-    const { Payments = [], ...customerDetails } = customerSnapshot.data();
+    const { payments = [], ...customerDetails } = customerSnapshot.data();
 
-    const updatedPayments = Payments.map((Payment) => {
-      if (Payment.PaymentId === PaymentId) {
+    const updatedPayments = payments.map((Payment) => {
+      if (Payment.paymentId === paymentId) {
         return {
           ...Payment,
           PaymentCode,
@@ -122,7 +122,7 @@ export const updatePaymentByPaymentId = async (req, res) => {
     const result = {
       category: { id: customerId, ...customerDetails },
       Payment: {
-        PaymentId,
+        paymentId,
         PaymentCode,
         PaymentName,
         color,
@@ -146,8 +146,8 @@ export const updatePaymentByPaymentId = async (req, res) => {
 };
 
 // Delete a Payment's stock detail
-export const deletePaymentByPaymentId = async (req, res) => {
-  const { customerId, PaymentId } = req.params;
+export const deletePaymentBypaymentId = async (req, res) => {
+  const { customerId, paymentId } = req.params;
 
   try {
     const categoryRef = PaymentCollection.doc(customerId);
@@ -158,16 +158,16 @@ export const deletePaymentByPaymentId = async (req, res) => {
       return res.status(404).send({ message: "Category not found." });
     }
 
-    const { Payments = [] } = customerSnapshot.data();
+    const { payments = [] } = customerSnapshot.data();
 
-    const updatedPayments = Payments.filter(
-      (Payment) => Payment.PaymentId !== PaymentId
+    const updatedPayments = payments.filter(
+      (Payment) => Payment.paymentId !== paymentId
     );
 
     // await updateDoc(categoryRef, { Payments: updatedPayments });
     await categoryRef.update({ Payments: updatedPayments });
 
-    broadcastCustomerChanges("PaymentDeleted", { PaymentId });
+    broadcastCustomerChanges("PaymentDeleted", { paymentId });
 
     return res.status(200).send({ message: "Payment deleted successfully." });
   } catch (error) {

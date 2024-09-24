@@ -3,7 +3,7 @@ import {
   createPayment,
   getCustomerAndPaymentDetails,
   updatePaymentByPaymentId,
-  deletePaymentByPaymentId,
+  deletePaymentBypaymentId,
 } from "../Controllers/PaymentController.js";
 
 const router = express.Router();
@@ -11,6 +11,6 @@ const router = express.Router();
 router.post("/:customerId", createPayment);
 router.get("/:customerId/:paymentId", getCustomerAndPaymentDetails);
 router.put("/:customerId/:paymentId", updatePaymentByPaymentId);
-router.delete("/:customerId/:paymentId", deletePaymentByPaymentId);
+router.delete("/:customerId/:paymentId", deletePaymentBypaymentId);
 
 export default router;
