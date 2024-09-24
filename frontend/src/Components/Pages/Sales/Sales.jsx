@@ -484,16 +484,6 @@ const Sales = () => {
     setPaymentDetailsState(newPaymentDetailsState);
     setInvoiceNumber(newInvoiceNumber);
 
-    // Offer receipt generation option
-    // if (window.confirm("Would you like to download a receipt?")) {
-    //   PdfGenarator(
-    //     newPaymentDetailsState,
-    //     transaction,
-    //     newInvoiceNumber,
-    //     selectedCustomer
-    //   );
-    // }
-
     // Submit payment details to backend
     try {
       const response = await axios.post(
