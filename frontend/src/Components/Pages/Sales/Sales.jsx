@@ -10,7 +10,6 @@ import PaymentModal from "./PaymentModal"; // Import the new component
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
 import axios from "axios";
-import PdfGenarator from "../../Reusable/PdfGenarator/PdfGenarator.js";
 import {
   ShareReceipt,
   PrintReceipt,
@@ -486,14 +485,14 @@ const Sales = () => {
     setInvoiceNumber(newInvoiceNumber);
 
     // Offer receipt generation option
-    if (window.confirm("Would you like to download a receipt?")) {
-      PdfGenarator(
-        newPaymentDetailsState,
-        transaction,
-        newInvoiceNumber,
-        selectedCustomer
-      );
-    }
+    // if (window.confirm("Would you like to download a receipt?")) {
+    //   PdfGenarator(
+    //     newPaymentDetailsState,
+    //     transaction,
+    //     newInvoiceNumber,
+    //     selectedCustomer
+    //   );
+    // }
 
     // Submit payment details to backend
     try {

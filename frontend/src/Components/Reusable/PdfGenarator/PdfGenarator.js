@@ -7,8 +7,6 @@ const PdfGenarator = (
   invoiceNumber,
   selectedCustomer
 ) => {
-  console.log("Generating PDF with payment details:", paymentDetails); // Log payment details
-
   // Calculate the position based on the number of products
   const lastProductY = 62 + transaction.products.length * 6; // Y position after the last product
 
@@ -52,15 +50,15 @@ const PdfGenarator = (
     const discountX = 48; // Discount X-position
     const totalX = 63; // Total price X-position
 
-    const { itemName = "", qty = 0, price = 0, discount = 0 } = product; // Avoid undefined errors
+    const { itemName = "", qty = 0, retailPrice = 0, discount = 0 } = product; // Avoid undefined errors
 
     // Add product details
     doc.text(itemName, productNameX, y); // Product Name
     doc.text(`${qty}`, qtyX, y); // Quantity
-    doc.text(`Rs.${price.toFixed(2)}`, priceX, y); // Unit Price
+    doc.text(`Rs.${retailPrice.toFixed(2)}`, priceX, y); // Unit Price
     doc.text(`Rs.${discount.toFixed(2)}`, discountX, y); // Discount
 
-    const total = qty * (price - discount);
+    const total = qty * (retailPrice - discount);
     const totalText = `Rs.${total.toFixed(2)}`;
     const totalTextWidth = doc.getTextWidth(totalText); // Align total text to the right
     doc.text(totalText, totalX - totalTextWidth, y); // Total price
@@ -95,11 +93,11 @@ const PdfGenarator = (
   // Cash Given and Change Due (if Cash payment)
   if (paymentDetails.paymentMethod === "Cash") {
     doc.text(`Cash Given: Rs.`, 4.5, lastProductY + 15);
-    const cashGivenText = `Rs.${paymentDetails.cashGiven}`;
+    const cashGivenText = `Rs.${paymentDetails.onlyCashGiven}`;
     const cashGivenTextWidth = doc.getTextWidth(cashGivenText);
     doc.text(cashGivenText, 71.8 - cashGivenTextWidth - 4.5, lastProductY + 15);
 
-    const changeDue = paymentDetails.cashGiven - transaction.net;
+    const changeDue = paymentDetails.onlyCashGiven - transaction.net;
     const changeDueText = `Rs.${changeDue.toFixed(2)}`;
     const changeDueTextWidth = doc.getTextWidth(changeDueText);
     doc.text(`Change Due: Rs.`, 4.5, lastProductY + 19);
