@@ -200,7 +200,7 @@ const Expenses = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `https://candied-chartreuse-concavenator.glitch.me/expenses/expenses/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/expenses/${id}`
         );
 
         alert(response.data.message);
@@ -260,7 +260,7 @@ const Expenses = () => {
         const isoDateString = dateObject.toISOString();
 
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/expenses/expenses/${editingExpense.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/expenses/${editingExpense.id}`,
           { ...data, dateAndTime: isoDateString }
         );
 

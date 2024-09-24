@@ -106,7 +106,7 @@ const Customer = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/customers/${id}`
         );
 
         alert(response.data.message);
@@ -132,7 +132,7 @@ const Customer = () => {
     if (editingCustomer) {
       try {
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/customers/customer/${editingCustomer.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/customers/${editingCustomer.id}`,
           data
         );
 
@@ -144,7 +144,7 @@ const Customer = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
+          "https://candied-chartreuse-concavenator.glitch.me/customers",
           data
         );
 

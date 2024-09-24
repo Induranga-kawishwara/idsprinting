@@ -498,7 +498,7 @@ const Sales = () => {
     // Submit payment details to backend
     try {
       const response = await axios.post(
-        `http://localhost:8080/payment/${selectedCustomer.id}`,
+        `https://candied-chartreuse-concavenator.glitch.me/payment/${selectedCustomer.id}`,
         {
           paymentDetails: newPaymentDetailsState,
           transaction: {

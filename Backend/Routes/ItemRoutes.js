@@ -9,10 +9,10 @@ import {
 
 const router = express.Router();
 
-router.post("/item/:categoryId", createItem);
-router.get("/item/:categoryId/:itemId", getCategoryAndItemDetails);
-router.put("/item/:categoryId/:itemId", updateItemByItemId);
-router.put("/item/:prevCategoryId/:newCategoryId/:itemId", deleteAndUpdate);
-router.delete("/item/:categoryId/:itemId", deleteItemByItemId);
+router.post("/:categoryId", createItem);
+router.get("/:categoryId/:itemId", getCategoryAndItemDetails);
+router.put("/:categoryId/:itemId", updateItemByItemId);
+router.put("/:prevCategoryId/:newCategoryId/:itemId", deleteAndUpdate);
+router.delete("/:categoryId/:itemId", deleteItemByItemId);
 
 export default router;

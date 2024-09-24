@@ -11,8 +11,8 @@ const router = express.Router();
 
 router.get("/", getAllExpensess);
 router.post("/expenses", createExpenses);
-router.get("/expenses/:id", getExpensesById);
-router.put("/expenses/:id", updateExpenses);
-router.delete("/expenses/:id", deleteExpenses);
+router.get("/:id", getExpensesById);
+router.put("/:id", updateExpenses);
+router.delete("/:id", deleteExpenses);
 
 export default router;
