@@ -386,7 +386,7 @@ const Sales = () => {
     setProductSearchQuery("");
     setSearchField("name");
   };
-  const handlePaymentSubmit = (values) => {
+  const handlePaymentSubmit = async (values) => {
     let creditBalance = 0;
     let cashChangeDue = 0;
 
@@ -456,11 +456,36 @@ const Sales = () => {
         selectedCustomer
       );
     }
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/payment/payment/${selectedCustomer.id}`,
+        {
+          paymentDetails: newPaymentDetailsState,
+          transaction: {
+            ...transaction,
+            products: transaction.products.map((product) => ({
+              categoryid: product.categoryid,
+              Itemid: product.Itemid,
+              qty: product.qty,
+              discount: product.discount,
+              retailPrice: product.retailPrice,
+              preItemsellingprice: product.retailPrice - product.discount,
+            })),
+          },
+          invoicenumber: newInvoiceNumber,
+          lastUpdatedDate: new Date(),
+        }
+      );
 
-    console.log("Payment details:", newPaymentDetailsState);
-    console.log("Selected customer:", selectedCustomer);
-    console.log("Transaction:", transaction);
-    console.log("Invoice number:", newInvoiceNumber);
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Error processing item:", error);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to process the request. Please try again.";
+      alert(`Error: ${errorMessage}`);
+    }
 
     // Open the modal to choose download, print, or share
     setIsReceiptOptionsModalOpen(true);

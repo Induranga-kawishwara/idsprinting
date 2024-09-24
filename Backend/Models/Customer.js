@@ -10,7 +10,7 @@ class Customer {
     postalCode,
     customerType,
     addedDateAndTime,
-    purchaseHistory = []
+    Payments = []
   ) {
     this.name = name;
     this.surName = surName;
@@ -22,7 +22,7 @@ class Customer {
     this.postalCode = postalCode;
     this.customerType = customerType;
     this.addedDateAndTime = addedDateAndTime;
-    this.purchaseHistory = purchaseHistory;
+    this.Payments = Payments;
   }
 }
 
