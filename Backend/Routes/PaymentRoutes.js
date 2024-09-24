@@ -8,9 +8,9 @@ import {
 
 const router = express.Router();
 
-router.post("/payment/:customerId", createPayment);
-router.get("/payment/:customerId/:paymentId", getCustomerAndPaymentDetails);
-router.put("/payment/:customerId/:paymentId", updatePaymentByPaymentId);
-router.delete("/payment/:customerId/:paymentId", deletePaymentByPaymentId);
+router.post("/:customerId", createPayment);
+router.get("/:customerId/:paymentId", getCustomerAndPaymentDetails);
+router.put("/:customerId/:paymentId", updatePaymentByPaymentId);
+router.delete("/:customerId/:paymentId", deletePaymentByPaymentId);
 
 export default router;

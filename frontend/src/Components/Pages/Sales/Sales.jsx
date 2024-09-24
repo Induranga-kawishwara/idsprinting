@@ -343,7 +343,7 @@ const Sales = () => {
           : product
       );
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.retailPrice,
+        (sum, p) => sum + p.qty * (p.retailPrice - p.discount),
         0
       );
       const net = total - prevTransaction.discount;
@@ -365,7 +365,7 @@ const Sales = () => {
         (product) => product.Itemid !== productId
       );
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * p.retailPrice,
+        (sum, p) => sum + p.qty * (p.retailPrice - p.discount),
         0
       );
       const net = total - prevTransaction.discount;
@@ -386,57 +386,98 @@ const Sales = () => {
     setProductSearchQuery("");
     setSearchField("name");
   };
+
   const handlePaymentSubmit = async (values) => {
     let creditBalance = 0;
     let cashChangeDue = 0;
 
-    // Handle different payment methods
-    if (values.paymentMethod === "Cash") {
-      const balance = values.cashGiven - transaction.net;
-      alert(`Transaction completed. Change due: Rs.${balance.toFixed(2)}`);
-    } else if (values.paymentMethod === "Card") {
-      alert(
-        `Transaction completed using card. Details saved: ${values.cardDetails}`
-      );
-    } else if (values.paymentMethod === "Card and Cash") {
-      const cashPart = values.cashGiven || 0;
-      const remainingAmount = transaction.net - cashPart;
-      cashChangeDue = cashPart - transaction.net;
+    // Helper function for showing alerts
+    const showAlert = (message) => alert(message);
 
-      if (cashPart >= transaction.net) {
-        alert(
-          `Transaction completed. Change due: Rs.${cashChangeDue.toFixed(2)}`
-        );
-      } else {
-        alert(
-          `Transaction partially completed with cash (Rs.${cashPart}) and remaining amount (Rs.${remainingAmount.toFixed(
-            2
-          )}) covered by card.`
-        );
+    // Helper function to handle different payment methods
+    const handlePaymentMethod = () => {
+      const {
+        paymentMethod,
+        cashGiven,
+        onlyCashGiven,
+        cardDetails,
+        bankTransferNumber,
+        chequeNumber,
+        creditAmount,
+      } = values;
+
+      switch (paymentMethod) {
+        case "Cash":
+          const balance = onlyCashGiven
+            ? onlyCashGiven - transaction.net
+            : cashGiven - transaction.net;
+
+          showAlert(
+            `Transaction completed. Change due: Rs.${balance.toFixed(2)}`
+          );
+          break;
+
+        case "Card":
+          showAlert(
+            `Transaction completed using card. Details saved: ${cardDetails}`
+          );
+          break;
+
+        case "Card and Cash":
+          const cashPart = cashGiven || 0;
+          const remainingAmount = transaction.net - cashPart;
+          cashChangeDue = cashPart - transaction.net;
+
+          if (cashPart >= transaction.net) {
+            showAlert(
+              `Transaction completed. Change due: Rs.${cashChangeDue.toFixed(
+                2
+              )}`
+            );
+          } else {
+            showAlert(
+              `Transaction partially completed with cash (Rs.${cashPart}) and remaining amount (Rs.${remainingAmount.toFixed(
+                2
+              )}) covered by card.`
+            );
+          }
+          break;
+
+        case "Bank Transfer":
+          showAlert(
+            `Transaction completed using bank transfer. Number: ${bankTransferNumber}`
+          );
+          break;
+
+        case "Cheque":
+          showAlert(
+            `Transaction completed using cheque. Number: ${chequeNumber}`
+          );
+          break;
+
+        case "Credit":
+          creditBalance = transaction.net - creditAmount;
+          showAlert(
+            `Credit payment of Rs.${creditAmount} recorded. Remaining balance: Rs.${creditBalance.toFixed(
+              2
+            )}`
+          );
+          break;
+
+        default:
+          showAlert("Invalid payment method.");
+          break;
       }
-    } else if (values.paymentMethod === "Bank Transfer") {
-      alert(
-        `Transaction completed using bank transfer. Number: ${values.bankTransferNumber}`
-      );
-    } else if (values.paymentMethod === "Cheque") {
-      alert(
-        `Transaction completed using cheque. Number: ${values.chequeNumber}`
-      );
-    } else if (values.paymentMethod === "Credit") {
-      // Calculate credit balance (outstanding amount)
-      creditBalance = transaction.net - values.creditAmount;
-      alert(
-        `Credit payment of Rs.${
-          values.creditAmount
-        } recorded. Remaining balance: Rs.${creditBalance.toFixed(2)}`
-      );
-    }
+    };
 
-    // Calculate payment details and generate invoice number BEFORE setting state
+    // Call the payment method handler
+    handlePaymentMethod();
+
+    // Prepare payment details and invoice number
     const newPaymentDetailsState = {
       ...values,
-      cashChangeDue: cashChangeDue > 0 ? cashChangeDue : 0,
-      creditBalance: creditBalance > 0 ? creditBalance : 0,
+      cashChangeDue: Math.max(cashChangeDue, 0),
+      creditBalance: Math.max(creditBalance, 0),
     };
 
     const newInvoiceNumber = generateUniqueInvoiceNumber();
@@ -444,11 +485,8 @@ const Sales = () => {
     setPaymentDetailsState(newPaymentDetailsState);
     setInvoiceNumber(newInvoiceNumber);
 
-    const wantsReceipt = window.confirm(
-      "Would you like to download a receipt?"
-    );
-
-    if (wantsReceipt) {
+    // Offer receipt generation option
+    if (window.confirm("Would you like to download a receipt?")) {
       PdfGenarator(
         newPaymentDetailsState,
         transaction,
@@ -456,35 +494,38 @@ const Sales = () => {
         selectedCustomer
       );
     }
+
+    // Submit payment details to backend
     try {
       const response = await axios.post(
-        `http://localhost:8080/payment/payment/${selectedCustomer.id}`,
+        `http://localhost:8080/payment/${selectedCustomer.id}`,
         {
           paymentDetails: newPaymentDetailsState,
           transaction: {
             ...transaction,
-            products: transaction.products.map((product) => ({
-              categoryid: product.categoryid,
-              Itemid: product.Itemid,
-              qty: product.qty,
-              discount: product.discount,
-              retailPrice: product.retailPrice,
-              preItemsellingprice: product.retailPrice - product.discount,
-            })),
+            products: transaction.products.map(
+              ({ categoryid, Itemid, qty, discount, retailPrice }) => ({
+                categoryid,
+                Itemid,
+                qty,
+                discount,
+                retailPrice,
+                preItemsellingprice: retailPrice - discount,
+              })
+            ),
           },
           invoicenumber: newInvoiceNumber,
           lastUpdatedDate: new Date(),
         }
       );
 
-      alert(response.data.message);
+      showAlert(response.data.message);
     } catch (error) {
-      console.error("Error processing item:", error);
-
       const errorMessage =
         error.response?.data?.message ||
         "Failed to process the request. Please try again.";
-      alert(`Error: ${errorMessage}`);
+      showAlert(`Error: ${errorMessage}`);
+      console.error("Error processing item:", error);
     }
 
     // Open the modal to choose download, print, or share
@@ -506,7 +547,7 @@ const Sales = () => {
     setTransaction((prevTransaction) => {
       const updatedProducts = [...prevTransaction.products, newProduct];
       const total = updatedProducts.reduce(
-        (sum, p) => sum + p.qty * (p.price - p.discount), // Subtract discount from price
+        (sum, p) => sum + p.qty * (p.retailPrice - p.discount), // Subtract discount from price
         0
       );
       const net = total - prevTransaction.discount;
@@ -796,11 +837,14 @@ const Sales = () => {
             </div>
           </div>
         </div>
-        <PaymentModal
-          isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
-          handlePaymentSubmit={handlePaymentSubmit}
-        />
+        {isPaymentModalOpen && (
+          <PaymentModal
+            isOpen={isPaymentModalOpen}
+            onClose={() => setIsPaymentModalOpen(false)}
+            handlePaymentSubmit={handlePaymentSubmit}
+            networth={transaction.net}
+          />
+        )}
         <ReceiptOptionsModal
           isOpen={isReceiptOptionsModalOpen}
           onClose={() => setIsReceiptOptionsModalOpen(false)}
