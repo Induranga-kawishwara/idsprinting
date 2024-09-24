@@ -160,7 +160,7 @@ const Cashup = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `https://candied-chartreuse-concavenator.glitch.me/cashup/Cashup/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/cashup/${id}`
         );
 
         alert(response.data.message);
@@ -184,7 +184,7 @@ const Cashup = () => {
         const isoDateString = dateObject.toISOString();
 
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/cashup/Cashup/${editingCashup.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/cashup/${editingCashup.id}`,
           { ...values, addedDateAndTime: isoDateString }
         );
 
@@ -196,7 +196,7 @@ const Cashup = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/cashup/Cashup",
+          "https://candied-chartreuse-concavenator.glitch.me/cashup",
           { ...values, addedDateAndTime: currentDate }
         );
 

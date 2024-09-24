@@ -166,7 +166,7 @@ const Category = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `https://candied-chartreuse-concavenator.glitch.me/categories/Category/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/categories/${id}`
         );
 
         alert(response.data.message);
@@ -189,7 +189,7 @@ const Category = () => {
     if (editingCategory) {
       try {
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/categories/Category/${editingCategory.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/categories/${editingCategory.id}`,
           data
         );
 

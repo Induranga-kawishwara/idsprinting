@@ -189,7 +189,7 @@ const RegEmp = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `https://candied-chartreuse-concavenator.glitch.me/users/user/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/users/${id}`
         );
 
         alert(response.data.message);
@@ -322,7 +322,7 @@ const RegEmp = () => {
         };
 
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/users/user/${editingEmployee.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/users/${editingEmployee.id}`,
           updatedUserData
         );
         alert(response.data.message);

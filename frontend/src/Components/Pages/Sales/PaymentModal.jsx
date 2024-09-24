@@ -3,47 +3,54 @@ import { Modal, Button } from "@mui/material";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 
-const PaymentSchema = Yup.object().shape({
-  paymentMethod: Yup.string().required("Payment method is required"),
-  cashGiven: Yup.number().when("paymentMethod", {
-    is: "Cash",
-    then: (schema) => schema.required("Cash given is required").min(0),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  cardDetails: Yup.string().when("paymentMethod", {
-    is: "Card",
-    then: (schema) => schema.required("Card details are required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  bankTransferNumber: Yup.string().when("paymentMethod", {
-    is: "Bank Transfer",
-    then: (schema) => schema.required("Bank transfer number is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  chequeNumber: Yup.string().when("paymentMethod", {
-    is: "Cheque",
-    then: (schema) => schema.required("Cheque number is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  creditAmount: Yup.number().when("paymentMethod", {
-    is: "Credit",
-    then: (schema) => schema.required("Credit amount is required").min(0),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  paymentMethod: Yup.string().required("Payment method is required"),
-  cashGiven: Yup.number().when("paymentMethod", {
-    is: (value) => value === "Cash" || value === "Card and Cash",
-    then: (schema) => schema.required("Cash given is required").min(0),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  cardDetails: Yup.string().when("paymentMethod", {
-    is: (value) => value === "Card" || value === "Card and Cash",
-    then: (schema) => schema.required("Card details or amount are required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-});
+const PaymentSchema = (networth) =>
+  Yup.object().shape({
+    paymentMethod: Yup.string().required("Payment method is required"),
 
-const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
+    onlyCashGiven: Yup.number().when("paymentMethod", {
+      is: "Cash",
+      then: (schema) =>
+        schema
+          .required("Cash given is required")
+          .min(networth, `Cash given must be at least Rs.${networth}`), // Use backticks
+      otherwise: (schema) => schema.notRequired(),
+    }),
+
+    cashGiven: Yup.number().when("paymentMethod", {
+      is: "Card and Cash",
+      then: (schema) =>
+        schema
+          .required("Cash given is required")
+          .min(1, "Cash given must be more than Rs.0")
+          .max(networth - 1, `Cash given must be less than Rs.${networth}`),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    cardDetails: Yup.string().when("paymentMethod", {
+      is: (value) => value === "Card" || value === "Card and Cash",
+      then: (schema) => schema.required("Card details are required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    bankTransferNumber: Yup.string().when("paymentMethod", {
+      is: "Bank Transfer",
+      then: (schema) => schema.required("Bank transfer number is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    chequeNumber: Yup.string().when("paymentMethod", {
+      is: "Cheque",
+      then: (schema) => schema.required("Cheque number is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    creditAmount: Yup.number().when("paymentMethod", {
+      is: "Credit",
+      then: (schema) =>
+        schema
+          .required("Credit amount is required")
+          .min(0, "Credit amount must be at least Rs.0"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+  });
+
+const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit, networth }) => {
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
@@ -61,13 +68,14 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
             <Formik
               initialValues={{
                 paymentMethod: "",
+                onlyCashGiven: "",
                 cashGiven: "",
                 cardDetails: "",
                 bankTransferNumber: "",
                 chequeNumber: "",
                 creditAmount: "",
               }}
-              validationSchema={PaymentSchema}
+              validationSchema={PaymentSchema(networth)}
               onSubmit={handlePaymentSubmit}
             >
               {({ values, errors, touched }) => (
@@ -92,35 +100,50 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
                     ) : null}
                   </div>
 
-                  {values.paymentMethod === "Cash" ||
-                  values.paymentMethod === "Card and Cash" ? (
+                  {values.paymentMethod === "Cash" && (
                     <div className="mb-3">
                       <label>Cash Given</label>
                       <Field
-                        name="cashGiven"
+                        name="onlyCashGiven"
                         type="number"
                         className="form-control"
                       />
-                      {errors.cashGiven && touched.cashGiven ? (
-                        <div className="text-danger">{errors.cashGiven}</div>
+                      {errors.onlyCashGiven && touched.onlyCashGiven ? (
+                        <div className="text-danger">
+                          {errors.onlyCashGiven}
+                        </div>
                       ) : null}
                     </div>
-                  ) : null}
+                  )}
 
-                  {values.paymentMethod === "Card" ||
-                  values.paymentMethod === "Card and Cash" ? (
-                    <div className="mb-3">
-                      <label>Card Details</label>
-                      <Field
-                        name="cardDetails"
-                        className="form-control"
-                        placeholder="Card Holder's Name or Last 4 Digits"
-                      />
-                      {errors.cardDetails && touched.cardDetails ? (
-                        <div className="text-danger">{errors.cardDetails}</div>
-                      ) : null}
-                    </div>
-                  ) : null}
+                  {values.paymentMethod === "Card and Cash" && (
+                    <>
+                      <div className="mb-3">
+                        <label>Cash Given</label>
+                        <Field
+                          name="cashGiven"
+                          type="number"
+                          className="form-control"
+                        />
+                        {errors.cashGiven && touched.cashGiven ? (
+                          <div className="text-danger">{errors.cashGiven}</div>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                        <label>Card Details</label>
+                        <Field
+                          name="cardDetails"
+                          className="form-control"
+                          placeholder="Card Holder's Name or Last 4 Digits"
+                        />
+                        {errors.cardDetails && touched.cardDetails ? (
+                          <div className="text-danger">
+                            {errors.cardDetails}
+                          </div>
+                        ) : null}
+                      </div>
+                    </>
+                  )}
 
                   {values.paymentMethod === "Bank Transfer" && (
                     <div className="mb-3">
@@ -137,6 +160,7 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
                       ) : null}
                     </div>
                   )}
+
                   {values.paymentMethod === "Cheque" && (
                     <div className="mb-3">
                       <label>Cheque Number</label>
@@ -146,6 +170,7 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
                       ) : null}
                     </div>
                   )}
+
                   {values.paymentMethod === "Credit" && (
                     <div className="mb-3">
                       <label>Paying Amount</label>
@@ -159,6 +184,7 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit }) => {
                       ) : null}
                     </div>
                   )}
+
                   <div className="modal-footer">
                     <button
                       type="submit"

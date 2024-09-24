@@ -112,7 +112,7 @@ const Supplier = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `https://candied-chartreuse-concavenator.glitch.me/suppliers/supplier/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/suppliers/${id}`
         );
 
         alert(response.data.message);
@@ -135,7 +135,7 @@ const Supplier = () => {
     if (editingSupplier) {
       try {
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/suppliers/supplier/${editingSupplier.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/suppliers/${editingSupplier.id}`,
           data
         );
 
