@@ -22,9 +22,14 @@ const ItemSchema = Yup.object().shape({
   buyingPrice: Yup.number(),
   wholesale: Yup.number(),
   company: Yup.string(),
-  discount: Yup.number()
-    .min(0, "Discount must be at least 0")
-    .max(100, "Discount cannot be more than 100"),
+  discount: Yup.number().test(
+    "is-less-than-retail",
+    "Discount must be less than Retail Price",
+    function (value) {
+      const { retailPrice } = this.parent;
+      return value < retailPrice;
+    }
+  ),
   retailPrice: Yup.number().required("Retail Price is required"),
 });
 
@@ -205,9 +210,12 @@ const Item = () => {
     };
   }, []);
 
-  const calculateSellingPrice = (originalPrice, discountPercentage) => {
-    let discount = discountPercentage / 100; // Convert percentage to decimal
-    let sellingPrice = originalPrice * (1 - discount); // Apply discount
+  const calculateSellingPrice = (originalPrice, discount) => {
+    // let discount = discountPercentage / 100; // Convert percentage to decimal
+    // let sellingPrice = originalPrice * (1 - discount); // Apply discount
+
+    let sellingPrice = originalPrice - discount; // Apply discount
+
     return sellingPrice;
   };
 
@@ -285,7 +293,7 @@ const Item = () => {
     const isNameMatch =
       item.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.itemCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.retailPrice.toLowerCase().includes(searchQuery.toLowerCase());
+      item.retailPrice.toString().includes(searchQuery);
 
     const isSizeMatch = sizeFilter ? item.size === sizeFilter : true;
 
@@ -444,11 +452,11 @@ const Item = () => {
               </button>
             </div>
             <div className="table-responsive">
-              {loading || error || _.isEmpty(items) ? (
+              {loading || error || _.isEmpty(paginatedItems) ? (
                 <TableChecker
                   loading={loading}
                   error={error}
-                  hasData={items.length > 0}
+                  hasData={paginatedItems.length > 0}
                 />
               ) : (
                 <table {...getTableProps()} className="table mt-3 custom-table">
@@ -735,6 +743,11 @@ const Item = () => {
                                 className="form-control"
                                 onChange={handlePriceChange} // Call custom handler
                               />
+                              {errors.discount && touched.discount && (
+                                <div className="text-danger">
+                                  {errors.discount}
+                                </div>
+                              )}
                             </div>
                             <div className="mb-3">
                               <label>Selling Price</label>
