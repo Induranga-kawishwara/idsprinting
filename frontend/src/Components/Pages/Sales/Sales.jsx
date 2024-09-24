@@ -9,7 +9,6 @@ import ReceiptOptionsModal from "./ReceiptOptionsModal"; // Import the new compo
 import PaymentModal from "./PaymentModal"; // Import the new component
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
-import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 import axios from "axios";
 import PdfGenarator from "../../Reusable/PdfGenarator/PdfGenarator.js";
 import {
@@ -21,7 +20,6 @@ import {
 const Sales = () => {
   const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] =
     useState(false);
-
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
   const [customers, setCustomers] = useState([]);
@@ -31,79 +29,21 @@ const Sales = () => {
     discount: 0.0,
     net: 0.0,
   });
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleSubmit = (values) => {
-    // Logic for handling form submission
-    setIsModalOpen(false);
-  };
-
   const [daySales, setDaySales] = useState(0); // State to track day sales
-  const [salesHistory, setSalesHistory] = useState([]); // State to track sales history
-
   const navigate = useNavigate(); // Use useNavigate for navigation
-
   const [invoiceNumber, setInvoiceNumber] = useState(null);
   const [products, setProducts] = useState([]);
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const [searchField, setSearchField] = useState("name");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const filteredProducts = useMemo(() => {
-    return products
-      .map((category) => {
-        const filteredItems = category.items.filter((item) => {
-          if (searchField === "name") {
-            return item.itemName
-              .toLowerCase()
-              .includes(productSearchQuery.toLowerCase());
-          } else if (searchField === "price") {
-            return item.price.toString().includes(productSearchQuery);
-          } else if (searchField === "gsm") {
-            return item.gsm && item.gsm.includes(productSearchQuery);
-          } else if (searchField === "color") {
-            return item.color
-              .toLowerCase()
-              .includes(productSearchQuery.toLowerCase());
-          }
-          return true; // Include all if no specific searchField is matched
-        });
-
-        // Return the category with filtered items if there are any
-        return filteredItems.length > 0
-          ? { category: category.category, items: filteredItems }
-          : null; // Return null if no items match
-      })
-      .filter((category) => category !== null); // Remove null categories
-  }, [productSearchQuery, searchField, products]);
-
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
-
-  const filteredCustomers = useMemo(
-    () =>
-      customers
-        .filter(
-          (customer) =>
-            customer.surname
-              .toLowerCase()
-              .includes(customerSearchQuery.toLowerCase()) ||
-            customer.name
-              .toLowerCase()
-              .includes(customerSearchQuery.toLowerCase()) ||
-            customer.phone.includes(customerSearchQuery)
-        )
-        .slice(0, 5),
-    [customerSearchQuery, customers]
-  );
+  const [paymentDetailsState, setPaymentDetailsState] = useState(null);
 
   useEffect(() => {
     const mapItemData = (category, item) => {
-      const { date, time } = ConvertToSLT(item.addedDateTime);
       return {
         categoryid: category.id,
         Itemid: item.itemId,
@@ -146,7 +86,6 @@ const Sales = () => {
           });
 
         const formattedCustomers = customerData.data.map((customer) => {
-          const { date, time } = ConvertToSLT(customer.addedDateAndTime);
           return {
             ...customer,
             id: customer.id,
@@ -251,6 +190,83 @@ const Sales = () => {
     // socket.off("customerDeleted");
     // };
   }, []);
+
+  const handleSubmit = async (values) => {
+    try {
+      const response = await axios.post(
+        "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
+        {
+          ...values,
+          surName: values.surname,
+          contactNumber: values.phone,
+          addedDateAndTime: new Date().toISOString(),
+        }
+      );
+
+      alert(response.data.message);
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        alert(`Error: ${error.response.data.message}`);
+      } else {
+        // Show a generic error message
+        alert("Failed to add the customer. Please try again.");
+      }
+    }
+    setIsModalOpen(false);
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const filteredProducts = useMemo(() => {
+    return products
+      .map((category) => {
+        const filteredItems = category.items.filter((item) => {
+          if (searchField === "name") {
+            return item.itemName
+              .toLowerCase()
+              .includes(productSearchQuery.toLowerCase());
+          } else if (searchField === "price") {
+            return item.price.toString().includes(productSearchQuery);
+          } else if (searchField === "gsm") {
+            return item.gsm && item.gsm.includes(productSearchQuery);
+          } else if (searchField === "color") {
+            return item.color
+              .toLowerCase()
+              .includes(productSearchQuery.toLowerCase());
+          }
+          return true; // Include all if no specific searchField is matched
+        });
+
+        // Return the category with filtered items if there are any
+        return filteredItems.length > 0
+          ? { category: category.category, items: filteredItems }
+          : null; // Return null if no items match
+      })
+      .filter((category) => category !== null); // Remove null categories
+  }, [productSearchQuery, searchField, products]);
+
+  const filteredCustomers = useMemo(
+    () =>
+      customers
+        .filter(
+          (customer) =>
+            customer.surname
+              .toLowerCase()
+              .includes(customerSearchQuery.toLowerCase()) ||
+            customer.name
+              .toLowerCase()
+              .includes(customerSearchQuery.toLowerCase()) ||
+            customer.phone.includes(customerSearchQuery)
+        )
+        .slice(0, 5),
+    [customerSearchQuery, customers]
+  );
 
   const generateUniqueInvoiceNumber = () => {
     const now = new Date();
@@ -370,14 +386,9 @@ const Sales = () => {
     setProductSearchQuery("");
     setSearchField("name");
   };
-
-  const [paymentDetailsState, setPaymentDetailsState] = useState(null); // Add this to store payment details
-
-  const handlePaymentSubmit = (values) => {
-    console.log("Payment details:", values); // Log the values for debugging
-
-    let creditBalance = 0; // Define the credit balance
-    let cashChangeDue = 0; // Define cash change due
+  const handlePaymentSubmit = async (values) => {
+    let creditBalance = 0;
+    let cashChangeDue = 0;
 
     // Handle different payment methods
     if (values.paymentMethod === "Cash") {
@@ -421,39 +432,65 @@ const Sales = () => {
       );
     }
 
-    // Save the payment details and credit balance in state
-    setPaymentDetailsState({
+    // Calculate payment details and generate invoice number BEFORE setting state
+    const newPaymentDetailsState = {
       ...values,
-      cashChangeDue: cashChangeDue > 0 ? cashChangeDue : 0, // Store cash change due if there's any
-      creditBalance: creditBalance > 0 ? creditBalance : 0, // Store credit balance if there's any
-    });
+      cashChangeDue: cashChangeDue > 0 ? cashChangeDue : 0,
+      creditBalance: creditBalance > 0 ? creditBalance : 0,
+    };
 
-    // Generate a unique invoice number
-    setInvoiceNumber(generateUniqueInvoiceNumber());
+    const newInvoiceNumber = generateUniqueInvoiceNumber();
 
-    // Ask the user if they want a receipt
+    setPaymentDetailsState(newPaymentDetailsState);
+    setInvoiceNumber(newInvoiceNumber);
+
     const wantsReceipt = window.confirm(
       "Would you like to download a receipt?"
     );
 
-    // Generate PDF if user wants a receipt
     if (wantsReceipt) {
       PdfGenarator(
-        {
-          ...values,
-          cashChangeDue,
-          creditBalance: creditBalance > 0 ? creditBalance : 0, // Pass credit balance to the PDF function
-        },
+        newPaymentDetailsState,
         transaction,
-        invoiceNumber,
+        newInvoiceNumber,
         selectedCustomer
       );
+    }
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/payment/payment/${selectedCustomer.id}`,
+        {
+          paymentDetails: newPaymentDetailsState,
+          transaction: {
+            ...transaction,
+            products: transaction.products.map((product) => ({
+              categoryid: product.categoryid,
+              Itemid: product.Itemid,
+              qty: product.qty,
+              discount: product.discount,
+              retailPrice: product.retailPrice,
+              preItemsellingprice: product.retailPrice - product.discount,
+            })),
+          },
+          invoicenumber: newInvoiceNumber,
+          lastUpdatedDate: new Date(),
+        }
+      );
+
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Error processing item:", error);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to process the request. Please try again.";
+      alert(`Error: ${errorMessage}`);
     }
 
     // Open the modal to choose download, print, or share
     setIsReceiptOptionsModalOpen(true);
 
-    // Close the modal after handling payment
+    // Close the payment modal
     setIsPaymentModalOpen(false);
   };
 
@@ -631,9 +668,6 @@ const Sales = () => {
                             min="0"
                             step="0.01"
                             disabled
-                            // onChange={(e) =>
-                            //   updateProductPrice(product.id, e.target.value)
-                            // }
                           />
                         </td>
                         <td>
@@ -767,8 +801,6 @@ const Sales = () => {
           onClose={() => setIsPaymentModalOpen(false)}
           handlePaymentSubmit={handlePaymentSubmit}
         />
-        {/* Use the ReceiptOptionsModal */}
-        {/* {isReceiptOptionsModalOpen && ( */}
         <ReceiptOptionsModal
           isOpen={isReceiptOptionsModalOpen}
           onClose={() => setIsReceiptOptionsModalOpen(false)}
@@ -797,7 +829,6 @@ const Sales = () => {
             )
           }
         />
-        {/* )} */}
       </div>
     </div>
   );
