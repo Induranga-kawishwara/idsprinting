@@ -27,12 +27,16 @@ const Customer = () => {
 
         const formattedCustomers = customerData.data.map((customer) => {
           const { date, time } = ConvertToSLT(customer.addedDateAndTime);
+          console.log(customer);
           return {
             ...customer,
             id: customer.id,
             surname: customer.surName,
             phone: customer.contactNumber,
-            totalSpent: "100", // Example data; replace with real data if needed
+            totalSpent: (customer.payments || []).reduce(
+              (sum, payment) => sum + (payment.transaction?.total || 0),
+              0
+            ),
             addedDate: date,
             addedTime: time,
           };
@@ -59,7 +63,10 @@ const Customer = () => {
         postalCode: newCustomer.postalcode,
         addedDate: date,
         addedTime: time,
-        totalSpent: "500", // Example data; replace with real data if needed
+        totalSpent: (newCustomer.payments || []).reduce(
+          (sum, payment) => sum + (payment.transaction?.total || 0),
+          0
+        ),
       };
       setCustomers((prevCustomers) => [newCustomeradded, ...prevCustomers]);
     });
@@ -73,7 +80,10 @@ const Customer = () => {
         postalCode: updatedCustomer.postalcode,
         addedDate: date,
         addedTime: time,
-        totalSpent: "600", // Example data; replace with real data if needed
+        totalSpent: (updatedCustomer.payments || []).reduce(
+          (sum, payment) => sum + (payment.transaction?.total || 0),
+          0
+        ),
       };
       setCustomers((prevCustomers) =>
         prevCustomers.map((customer) =>
