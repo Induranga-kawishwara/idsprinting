@@ -15,6 +15,7 @@ import {
   PrintReceipt,
   DownloadReceipt,
 } from "../../Reusable/ShareReceipt/ShareReceipt.js";
+import socket from "../../Utility/SocketConnection.js";
 
 const Sales = () => {
   const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] =
@@ -61,16 +62,24 @@ const Sales = () => {
         addedDateTime: item.addedDateTime,
       };
     };
+
+    const customerDetails = (customer) => {
+      return {
+        ...customer,
+        id: customer.id,
+        surname: customer.surName,
+        phone: customer.contactNumber,
+      };
+    };
+
     const fetchData = async () => {
       try {
-        const [ItemData, customerData] = await Promise.all([
-          axios.get(
-            "https://candied-chartreuse-concavenator.glitch.me/categories/"
-          ),
-          axios.get(
-            "https://candied-chartreuse-concavenator.glitch.me/customers/"
-          ),
-        ]);
+        const ItemData = await axios.get(
+          "https://candied-chartreuse-concavenator.glitch.me/categories/"
+        );
+        const customerData = await axios.get(
+          "https://candied-chartreuse-concavenator.glitch.me/customers/"
+        );
 
         const newData = ItemData.data
           .filter((category) => Number(category.qty) > 0)
@@ -84,14 +93,9 @@ const Sales = () => {
             return { category: category.rawMaterialName, items };
           });
 
-        const formattedCustomers = customerData.data.map((customer) => {
-          return {
-            ...customer,
-            id: customer.id,
-            surname: customer.surName,
-            phone: customer.contactNumber,
-          };
-        });
+        const formattedCustomers = customerData.data.map((customer) =>
+          customerDetails(customer)
+        );
 
         setCustomers(formattedCustomers);
         setProducts(newData);
@@ -105,89 +109,99 @@ const Sales = () => {
 
     fetchData();
 
-    // // Listen for real-time Item updates
-    // socket.on("ItemAdded", (newItem) => {
-    //   setItems((prevItems) => [
-    //     mapItemData(newItem.category, newItem.newItem),
-    //     ...prevItems,
-    //   ]);
-    // });
+    // Listen for real-time Item updates
+    socket.on("ItemAdded", (newItem) => {
+      const newproduct = mapItemData(newItem.category, newItem.newItem);
+      setProducts((prevItems) => [newproduct, ...prevItems]);
+    });
 
-    // socket.on("ItemUpdated", (updatedItem) => {
-    //   setItems((prevItems) =>
-    //     prevItems.map((Item) =>
-    //       Item.Itemid === updatedItem.item.itemId
-    //         ? mapItemData(updatedItem.category, updatedItem.item)
-    //         : Item
-    //     )
-    //   );
-    // });
+    socket.on("ItemUpdated", (updatedItem) => {
+      setProducts((prevItems) =>
+        prevItems.map((Item) =>
+          Item.Itemid === updatedItem.item.itemId
+            ? mapItemData(updatedItem.category, updatedItem.item)
+            : Item
+        )
+      );
+    });
 
-    // socket.on("ItemDeleted", ({ itemId }) => {
-    //   console.log(itemId);
-    //   setItems((prevItems) =>
-    //     prevItems.filter((Item) => Item.Itemid !== itemId)
-    //   );
-    // });
+    socket.on("ItemDeleted", ({ itemId }) => {
+      setProducts((prevItems) =>
+        prevItems.filter((Item) => Item.Itemid !== itemId)
+      );
+    });
 
-    // socket.on("CategoryDeleted", ({ id }) => {
-    //   setItems((prevItems) =>
-    //     prevItems.filter((Item) => Item.categoryid !== id)
-    //   );
+    socket.on("CategoryUpdated", (updatedCategory) => {
+      setProducts((prevProducts) => {
+        const updatedProducts = prevProducts.map((category) => {
+          if (category.categoryid === updatedCategory.id) {
+            return {
+              ...category,
+              category: updatedCategory.rawMaterialName, // Update the category name
+              items: category.items.map((item) => {
+                return {
+                  ...item,
+                  size: updatedCategory.size, // Update item size
+                  gsm: updatedCategory.thickness, // Update item thickness
+                  qty: updatedCategory.qty, // Update item qty
+                  buyingPrice: updatedCategory.buyingPrice, // Update item buying price
+                  company: updatedCategory.company, // Update item company
+                };
+              }),
+            };
+          }
+          return category; // If no match, return the category as is
+        });
 
-    // });
+        // Log the updated products array
+        console.log("Updated Products:", updatedProducts);
+
+        return updatedProducts;
+      });
+    });
+
+    socket.on("CategoryDeleted", ({ id }) => {
+      setProducts((prevItems) =>
+        prevItems.filter((Item) => Item.categoryid !== id)
+      );
+    });
 
     // // Listen for real-time customer updates
-    // socket.on("customerAdded", (newCustomer) => {
-    //   const { date, time } = ConvertToSLT(newCustomer.addedDateAndTime);
-    //   const newCustomeradded = {
-    //     ...newCustomer,
-    //     surname: newCustomer.surName,
-    //     phone: newCustomer.contactNumber,
-    //     postalCode: newCustomer.postalcode,
-    //     addedDate: date,
-    //     addedTime: time,
-    //     totalSpent: "500", // Example data; replace with real data if needed
-    //   };
-    //   setCustomers((prevCustomers) => [newCustomeradded, ...prevCustomers]);
-    // });
+    socket.on("customerAdded", (newCustomer) => {
+      setCustomers((prevCustomers) => [
+        customerDetails(newCustomer),
+        ...prevCustomers,
+      ]);
+    });
 
-    // socket.on("customerUpdated", (updatedCustomer) => {
-    //   const { date, time } = ConvertToSLT(updatedCustomer.addedDateAndTime);
+    socket.on("customerUpdated", (updatedCustomer) => {
+      setCustomers((prevCustomers) =>
+        prevCustomers.map((customer) =>
+          customer.id === updatedCustomer.id
+            ? customerDetails(updatedCustomer)
+            : customer
+        )
+      );
+    });
 
-    //   const newupdatedCustomer = {
-    //     ...updatedCustomer,
-    //     surname: updatedCustomer.surName,
-    //     postalCode: updatedCustomer.postalcode,
-    //     addedDate: date,
-    //     addedTime: time,
-    //     totalSpent: "600", // Example data; replace with real data if needed
-    //   };
-    //   setCustomers((prevCustomers) =>
-    //     prevCustomers.map((customer) =>
-    //       customer.id === updatedCustomer.id ? newupdatedCustomer : customer
-    //     )
-    //   );
-    // });
+    socket.on("customerDeleted", ({ id }) => {
+      setCustomers((prevCustomers) =>
+        prevCustomers.filter((customer) => customer.id !== id)
+      );
+    });
 
-    // socket.on("customerDeleted", ({ id }) => {
-    //   setCustomers((prevCustomers) =>
-    //     prevCustomers.filter((customer) => customer.id !== id)
-    //   );
-    // });
+    return () => {
+      socket.off("ItemAdded");
+      socket.off("ItemUpdated");
+      socket.off("ItemDeleted");
 
-    // return () => {
+      socket.off("CategoryUpdated");
+      socket.off("CategoryDeleted");
 
-    //   socket.off("ItemAdded");
-    //   socket.off("ItemUpdated");
-    //   socket.off("ItemDeleted");
-
-    //   socket.off("CategoryDeleted");
-
-    // socket.off("customerAdded");
-    // socket.off("customerUpdated");
-    // socket.off("customerDeleted");
-    // };
+      socket.off("customerAdded");
+      socket.off("customerUpdated");
+      socket.off("customerDeleted");
+    };
   }, []);
 
   const handleSubmit = async (values) => {
@@ -223,6 +237,8 @@ const Sales = () => {
   };
 
   const filteredProducts = useMemo(() => {
+    console.log(products);
+
     return products
       .map((category) => {
         const filteredItems = category.items.filter((item) => {

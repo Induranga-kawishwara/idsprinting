@@ -22,14 +22,16 @@ const ItemSchema = Yup.object().shape({
   buyingPrice: Yup.number(),
   wholesale: Yup.number(),
   company: Yup.string(),
-  discount: Yup.number().test(
-    "is-less-than-retail",
-    "Discount must be less than Retail Price",
-    function (value) {
-      const { retailPrice } = this.parent;
-      return value < retailPrice;
-    }
-  ),
+  discount: Yup.number()
+    .test(
+      "is-less-than-retail",
+      "Discount must be less than Retail Price",
+      function (value) {
+        const { retailPrice } = this.parent;
+        return value < retailPrice;
+      }
+    )
+    .notRequired(),
   retailPrice: Yup.number().required("Retail Price is required"),
 });
 
