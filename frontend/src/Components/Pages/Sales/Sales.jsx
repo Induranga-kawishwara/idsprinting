@@ -703,7 +703,7 @@ const Sales = () => {
                       <th>Name</th>
                       <th>Qty</th>
                       <th>Price</th>
-                      <th>Discount (Rs)</th> {/* Changed from (%) to (Rs) */}
+                      <th>Discount (Rs)</th>
                       <th>Total</th>
                       <th>Action</th>
                     </tr>
@@ -711,8 +711,6 @@ const Sales = () => {
                   <tbody>
                     {transaction.products.map((product) => (
                       <tr key={product.Itemid}>
-                        {/* {console.log(transaction)} */}
-
                         <td>{product.itemName}</td>
                         <td>
                           <input
