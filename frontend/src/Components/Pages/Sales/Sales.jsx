@@ -113,36 +113,54 @@ const Sales = () => {
     };
 
     fetchData();
-
-    // Listen for real-time Item updates
   }, []);
 
   useEffect(() => {
     socket.on("ItemAdded", (newItem) => {
-      const newproduct = mapItemData(newItem.category, newItem.newItem);
-      setAllProducts((prevItems) => [newproduct, ...prevItems]);
+      const newProduct = mapItemData(newItem.category, newItem.newItem);
+      setAllProducts((prevProducts) =>
+        prevProducts.map((category) => {
+          if (category.categoryid === newItem.category.id) {
+            return {
+              ...category,
+              items: [newProduct, ...category.items],
+            };
+          }
+          return category;
+        })
+      );
     });
 
     socket.on("ItemUpdated", (updatedItem) => {
-      setAllProducts((prevItems) =>
-        prevItems.map((Item) =>
-          Item.Itemid === updatedItem.item.itemId
-            ? mapItemData(updatedItem.category, updatedItem.item)
-            : Item
-        )
+      setAllProducts((prevProducts) =>
+        prevProducts.map((category) => {
+          if (category.categoryid === updatedItem.category.id) {
+            return {
+              ...category,
+              items: category.items.map((item) =>
+                item.Itemid === updatedItem.item.itemId
+                  ? mapItemData(updatedItem.category, updatedItem.item)
+                  : item
+              ),
+            };
+          }
+          return category;
+        })
       );
     });
 
     socket.on("ItemDeleted", ({ itemId }) => {
-      setAllProducts((prevItems) =>
-        prevItems.filter((Item) => Item.Itemid !== itemId)
-      );
+      setAllProducts((prevProducts) => {
+        return prevProducts.map((category) => {
+          return {
+            ...category,
+            items: category.items.filter((item) => item.Itemid !== itemId),
+          };
+        });
+      });
     });
 
     socket.on("CategoryUpdated", (updatedCategory) => {
-      console.log("awa");
-      console.log(updatedCategory);
-      console.log(allProducts);
       setAllProducts((prevProducts) => {
         const updatedProducts = prevProducts.map((category) => {
           if (category.categoryid === updatedCategory.id) {
@@ -169,8 +187,8 @@ const Sales = () => {
     });
 
     socket.on("CategoryDeleted", ({ id }) => {
-      setAllProducts((prevItems) =>
-        prevItems.filter((Item) => Item.categoryid !== id)
+      setAllProducts((prevCategory) =>
+        prevCategory.filter((Category) => Category.categoryid !== id)
       );
     });
 
