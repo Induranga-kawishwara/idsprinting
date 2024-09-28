@@ -35,51 +35,52 @@ const Sales = () => {
   const [daySales, setDaySales] = useState(0); // State to track day sales
   const navigate = useNavigate(); // Use useNavigate for navigation
   const [invoiceNumber, setInvoiceNumber] = useState(null);
-  const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   const [productSearchQuery, setProductSearchQuery] = useState("");
   const [searchField, setSearchField] = useState("name");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [paymentDetailsState, setPaymentDetailsState] = useState(null);
+  const mapItemData = (category, item) => {
+    return {
+      categoryid: category.id,
+      Itemid: item.itemId,
+      itemCode: item.itemCode,
+      itemName: item.itemName,
+      category: category.rawMaterialName,
+      color: item.color,
+      qty: category.qty,
+      gsm: category.thickness,
+      buyingPrice: category.buyingPrice,
+      company: category.company,
+      wholesale: item.wholesale,
+      retailPrice: item.retailPrice,
+      size: category.size,
+      discount: item.discount || 0,
+      addedDateTime: item.addedDateTime,
+    };
+  };
+
+  const customerDetails = (customer) => {
+    return {
+      ...customer,
+      id: customer.id,
+      surname: customer.surName,
+      phone: customer.contactNumber,
+    };
+  };
 
   useEffect(() => {
-    const mapItemData = (category, item) => {
-      return {
-        categoryid: category.id,
-        Itemid: item.itemId,
-        itemCode: item.itemCode,
-        itemName: item.itemName,
-        category: category.rawMaterialName,
-        color: item.color,
-        qty: category.qty,
-        gsm: category.thickness,
-        buyingPrice: category.buyingPrice,
-        company: category.company,
-        wholesale: item.wholesale,
-        retailPrice: item.retailPrice,
-        size: category.size,
-        discount: item.discount || 0,
-        addedDateTime: item.addedDateTime,
-      };
-    };
-
-    const customerDetails = (customer) => {
-      return {
-        ...customer,
-        id: customer.id,
-        surname: customer.surName,
-        phone: customer.contactNumber,
-      };
-    };
-
     const fetchData = async () => {
       try {
-        const ItemData = await axios.get(
-          "https://candied-chartreuse-concavenator.glitch.me/categories/"
-        );
-        const customerData = await axios.get(
-          "https://candied-chartreuse-concavenator.glitch.me/customers/"
-        );
+        const [ItemData, customerData] = await Promise.all([
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/categories/"
+          ),
+          axios.get(
+            "https://candied-chartreuse-concavenator.glitch.me/customers/"
+          ),
+        ]);
 
         const newData = ItemData.data
           .filter((category) => Number(category.qty) > 0)
@@ -90,7 +91,11 @@ const Sales = () => {
                 (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime)
               );
 
-            return { category: category.rawMaterialName, items };
+            return {
+              category: category.rawMaterialName,
+              categoryid: category.id,
+              items,
+            };
           });
 
         const formattedCustomers = customerData.data.map((customer) =>
@@ -98,7 +103,7 @@ const Sales = () => {
         );
 
         setCustomers(formattedCustomers);
-        setProducts(newData);
+        setAllProducts(newData);
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -110,13 +115,16 @@ const Sales = () => {
     fetchData();
 
     // Listen for real-time Item updates
+  }, []);
+
+  useEffect(() => {
     socket.on("ItemAdded", (newItem) => {
       const newproduct = mapItemData(newItem.category, newItem.newItem);
-      setProducts((prevItems) => [newproduct, ...prevItems]);
+      setAllProducts((prevItems) => [newproduct, ...prevItems]);
     });
 
     socket.on("ItemUpdated", (updatedItem) => {
-      setProducts((prevItems) =>
+      setAllProducts((prevItems) =>
         prevItems.map((Item) =>
           Item.Itemid === updatedItem.item.itemId
             ? mapItemData(updatedItem.category, updatedItem.item)
@@ -126,42 +134,42 @@ const Sales = () => {
     });
 
     socket.on("ItemDeleted", ({ itemId }) => {
-      setProducts((prevItems) =>
+      setAllProducts((prevItems) =>
         prevItems.filter((Item) => Item.Itemid !== itemId)
       );
     });
 
     socket.on("CategoryUpdated", (updatedCategory) => {
-      setProducts((prevProducts) => {
+      console.log("awa");
+      console.log(updatedCategory);
+      console.log(allProducts);
+      setAllProducts((prevProducts) => {
         const updatedProducts = prevProducts.map((category) => {
           if (category.categoryid === updatedCategory.id) {
             return {
               ...category,
-              category: updatedCategory.rawMaterialName, // Update the category name
+              category: updatedCategory.rawMaterialName,
               items: category.items.map((item) => {
                 return {
                   ...item,
-                  size: updatedCategory.size, // Update item size
-                  gsm: updatedCategory.thickness, // Update item thickness
-                  qty: updatedCategory.qty, // Update item qty
-                  buyingPrice: updatedCategory.buyingPrice, // Update item buying price
-                  company: updatedCategory.company, // Update item company
+                  category: updatedCategory.rawMaterialName,
+                  size: updatedCategory.size,
+                  gsm: updatedCategory.thickness,
+                  qty: updatedCategory.qty,
+                  buyingPrice: updatedCategory.buyingPrice,
+                  company: updatedCategory.company,
                 };
               }),
             };
           }
-          return category; // If no match, return the category as is
+          return category;
         });
-
-        // Log the updated products array
-        console.log("Updated Products:", updatedProducts);
-
         return updatedProducts;
       });
     });
 
     socket.on("CategoryDeleted", ({ id }) => {
-      setProducts((prevItems) =>
+      setAllProducts((prevItems) =>
         prevItems.filter((Item) => Item.categoryid !== id)
       );
     });
@@ -189,7 +197,6 @@ const Sales = () => {
         prevCustomers.filter((customer) => customer.id !== id)
       );
     });
-
     return () => {
       socket.off("ItemAdded");
       socket.off("ItemUpdated");
@@ -202,7 +209,7 @@ const Sales = () => {
       socket.off("customerUpdated");
       socket.off("customerDeleted");
     };
-  }, []);
+  }, [customers, allProducts]);
 
   const handleSubmit = async (values) => {
     try {
@@ -237,9 +244,7 @@ const Sales = () => {
   };
 
   const filteredProducts = useMemo(() => {
-    console.log(products);
-
-    return products
+    return allProducts
       .map((category) => {
         const filteredItems = category.items.filter((item) => {
           if (searchField === "name") {
@@ -260,11 +265,15 @@ const Sales = () => {
 
         // Return the category with filtered items if there are any
         return filteredItems.length > 0
-          ? { category: category.category, items: filteredItems }
+          ? {
+              category: category.category,
+              categoryid: category.categoryid,
+              items: filteredItems,
+            }
           : null; // Return null if no items match
       })
       .filter((category) => category !== null); // Remove null categories
-  }, [productSearchQuery, searchField, products]);
+  }, [productSearchQuery, searchField, allProducts]);
 
   const filteredCustomers = useMemo(
     () =>
@@ -694,7 +703,7 @@ const Sales = () => {
                       <th>Name</th>
                       <th>Qty</th>
                       <th>Price</th>
-                      <th>Discount (Rs)</th> {/* Changed from (%) to (Rs) */}
+                      <th>Discount (Rs)</th>
                       <th>Total</th>
                       <th>Action</th>
                     </tr>
@@ -702,8 +711,6 @@ const Sales = () => {
                   <tbody>
                     {transaction.products.map((product) => (
                       <tr key={product.Itemid}>
-                        {/* {console.log(transaction)} */}
-
                         <td>{product.itemName}</td>
                         <td>
                           <input
