@@ -111,7 +111,9 @@ const Expenses = () => {
 
     // Call fetchData once
     fetchData();
+  }, []);
 
+  useEffect(() => {
     // Listen for real-time expenses updates
     socket.on("expensesAdded", (newexpenses) => {
       const { date, time } = ConvertToSLT(newexpenses.dateAndTime);
@@ -185,7 +187,7 @@ const Expenses = () => {
       socket.off("supplierUpdated");
       socket.off("supplierDeleted");
     };
-  }, []);
+  }, [expenses, supplier]);
 
   const handleEdit = (expense) => {
     setEditingExpense(expense);

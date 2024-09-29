@@ -108,7 +108,9 @@ const Cashup = () => {
     };
 
     fetchData();
+  }, []);
 
+  useEffect(() => {
     // Listen for real-time Cashup updates
     socket.on("CashupAdded", (newCashup) => {
       const { date, time } = ConvertToSLT(newCashup.addedDateAndTime);
@@ -147,7 +149,7 @@ const Cashup = () => {
       socket.off("CashupUpdated");
       socket.off("CashupDeleted");
     };
-  }, []);
+  }, [cashups]);
 
   const handleEdit = (cashup) => {
     setEditingCashup(cashup);

@@ -51,26 +51,26 @@ const RegEmp = () => {
   const [error, setError] = useState(null);
   const [loadingpage, setLoadingpage] = useState(false);
 
-  useEffect(() => {
-    const mapEmp = (dataset) => {
-      const { date, time } = ConvertToSLT(dataset.dateAndTime);
-      return {
-        ...dataset,
-        id: dataset.id,
-        uid: dataset.uid,
-        surname: dataset.surName,
-        birthDate: dataset.birthDay,
-        nicPhoto: dataset.nicFront,
-        nicBackPhoto: dataset.nicBack,
-        employeePhoto: dataset.employeePic,
-        contactNumber: dataset.contactNum,
-        refContactNumber: dataset.referenceConNum,
-        EtfNumber: dataset.etfNUmber,
-        updatedDate: date,
-        updatedTime: time,
-      };
+  const mapEmp = (dataset) => {
+    const { date, time } = ConvertToSLT(dataset.dateAndTime);
+    return {
+      ...dataset,
+      id: dataset.id,
+      uid: dataset.uid,
+      surname: dataset.surName,
+      birthDate: dataset.birthDay,
+      nicPhoto: dataset.nicFront,
+      nicBackPhoto: dataset.nicBack,
+      employeePhoto: dataset.employeePic,
+      contactNumber: dataset.contactNum,
+      refContactNumber: dataset.referenceConNum,
+      EtfNumber: dataset.etfNUmber,
+      updatedDate: date,
+      updatedTime: time,
     };
+  };
 
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const userData = await axios.get(
@@ -89,7 +89,9 @@ const RegEmp = () => {
     };
 
     fetchData();
+  }, []);
 
+  useEffect(() => {
     // Listen for real-time user updates
     socket.on("UserAdded", (newuser) => {
       setEmployees((prevusers) => [mapEmp(newuser), ...prevusers]);
@@ -121,7 +123,7 @@ const RegEmp = () => {
       socket.off("updateUserAccessibility");
       socket.off("UserDeleted");
     };
-  }, []);
+  }, [employees]);
 
   // Reusable component for displaying file links
   const FileViewer = ({ fileUrl, fileLabel }) => (

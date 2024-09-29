@@ -52,48 +52,46 @@ const Item = () => {
   const [error, setError] = useState(null);
   const [loadingpage, setLoadingpage] = useState(false);
 
-  useEffect(() => {
-    const mapCategoryData = (category) => ({
-      id: category.id,
-      name: category.rawMaterialName,
-      buyingPrice: category.buyingPrice,
-      size: category.size,
+  const mapCategoryData = (category) => ({
+    id: category.id,
+    name: category.rawMaterialName,
+    buyingPrice: category.buyingPrice,
+    size: category.size,
+    qty: category.qty,
+    company: category.company,
+  });
+
+  const mapSizeCategoryData = (category) => ({
+    id: category.id,
+    value: category.size,
+    label: category.size,
+  });
+
+  const mapItemData = (category, item) => {
+    const { date, time } = ConvertToSLT(item.addedDateTime);
+    return {
+      categoryid: category.id,
+      Itemid: item.itemId,
+      itemCode: item.itemCode,
+      itemName: item.itemName,
+      category: category.rawMaterialName,
+      color: item.color,
       qty: category.qty,
+      buyingPrice: category.buyingPrice,
       company: category.company,
-    });
-
-    const mapSizeCategoryData = (category) => ({
-      id: category.id,
-      value: category.size,
-      label: category.size,
-    });
-
-    const mapItemData = (category, item) => {
-      const { date, time } = ConvertToSLT(item.addedDateTime);
-      return {
-        categoryid: category.id,
-        Itemid: item.itemId,
-        itemCode: item.itemCode,
-        itemName: item.itemName,
-        category: category.rawMaterialName,
-        color: item.color,
-        qty: category.qty,
-        buyingPrice: category.buyingPrice,
-        company: category.company,
-        wholesale: item.wholesale,
-        retailPrice: item.retailPrice,
-        addedDate: date,
-        addedTime: time,
-        addedBy: category.addedBy,
-        size: category.size,
-        discount: item.discount || 0,
-        sellingPrice: calculateSellingPrice(
-          item.retailPrice,
-          item.discount || 0
-        ),
-        addedDateTime: item.addedDateTime,
-      };
+      wholesale: item.wholesale,
+      retailPrice: item.retailPrice,
+      addedDate: date,
+      addedTime: time,
+      addedBy: category.addedBy,
+      size: category.size,
+      discount: item.discount || 0,
+      sellingPrice: calculateSellingPrice(item.retailPrice, item.discount || 0),
+      addedDateTime: item.addedDateTime,
     };
+  };
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const ItemData = await axios.get(
@@ -131,7 +129,9 @@ const Item = () => {
     };
 
     fetchData();
+  }, []);
 
+  useEffect(() => {
     // Listen for real-time Item updates
     socket.on("ItemAdded", (newItem) => {
       setItems((prevItems) => [
@@ -210,7 +210,7 @@ const Item = () => {
       socket.off("CategoryUpdated");
       socket.off("CategoryDeleted");
     };
-  }, []);
+  }, [categoryOptions, items]);
 
   const calculateSellingPrice = (originalPrice, discount) => {
     // let discount = discountPercentage / 100; // Convert percentage to decimal

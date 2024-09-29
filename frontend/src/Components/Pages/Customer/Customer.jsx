@@ -52,7 +52,9 @@ const Customer = () => {
     };
 
     fetchData();
+  }, []);
 
+  useEffect(() => {
     // Listen for real-time customer updates
     socket.on("customerAdded", (newCustomer) => {
       const { date, time } = ConvertToSLT(newCustomer.addedDateAndTime);
@@ -103,7 +105,7 @@ const Customer = () => {
       socket.off("customerUpdated");
       socket.off("customerDeleted");
     };
-  }, []);
+  }, [customers]);
 
   const handleEdit = (customer) => {
     setEditingCustomer(customer);
