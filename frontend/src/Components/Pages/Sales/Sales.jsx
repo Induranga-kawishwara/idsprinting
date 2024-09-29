@@ -581,7 +581,7 @@ const Sales = () => {
   const handleAddProductSubmit = (values) => {
     const newProduct = {
       id: new Date().getTime(),
-      name: values.name,
+      itemName: values.name,
       price: Number(values.price),
       qty: Number(values.qty),
       discount: Number(values.discount) || 0, // Include discount
