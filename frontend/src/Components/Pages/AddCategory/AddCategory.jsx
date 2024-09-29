@@ -83,7 +83,9 @@ const Category = () => {
 
     // Call fetchData once
     fetchData();
+  }, []);
 
+  useEffect(() => {
     // Listen for real-time Category updates
     socket.on("CategoryAdded", (newCategory) => {
       const { date, time } = ConvertToSLT(newCategory.dateAndTime);
@@ -151,7 +153,7 @@ const Category = () => {
       socket.off("supplierUpdated");
       socket.off("supplierDeleted");
     };
-  }, []);
+  }, [suppliers, categories]);
 
   const handleEdit = (Category) => {
     setEditingCategory(Category);

@@ -60,7 +60,9 @@ const Supplier = () => {
     };
 
     fetchData();
+  }, []);
 
+  useEffect(() => {
     // Listen for real-time supplier updates
     socket.on("supplierAdded", (newsupplier) => {
       const { date, time } = ConvertToSLT(newsupplier.dateAndTime);
@@ -99,7 +101,7 @@ const Supplier = () => {
       socket.off("supplierUpdated");
       socket.off("supplierDeleted");
     };
-  }, []);
+  }, [suppliers]);
 
   const handleEdit = (supplier) => {
     setEditingSupplier(supplier);
