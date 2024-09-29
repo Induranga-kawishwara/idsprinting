@@ -16,6 +16,7 @@ import {
   DownloadReceipt,
 } from "../../Reusable/ShareReceipt/ShareReceipt.js";
 import socket from "../../Utility/SocketConnection.js";
+import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 
 const Sales = () => {
   const [isReceiptOptionsModalOpen, setIsReceiptOptionsModalOpen] =
@@ -41,6 +42,8 @@ const Sales = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [paymentDetailsState, setPaymentDetailsState] = useState(null);
+  const [loadingpage, setLoadingpage] = useState(false);
+
   const mapItemData = (category, item) => {
     return {
       categoryid: category.id,
@@ -230,6 +233,7 @@ const Sales = () => {
   }, [customers, allProducts]);
 
   const handleSubmit = async (values) => {
+    setLoadingpage(true);
     try {
       const response = await axios.post(
         "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
@@ -254,6 +258,7 @@ const Sales = () => {
         alert("Failed to add the customer. Please try again.");
       }
     }
+    setLoadingpage(false);
     setIsModalOpen(false);
   };
 
@@ -417,8 +422,10 @@ const Sales = () => {
   };
 
   const completeSale = () => {
-    if (selectedCustomer) {
+    if (selectedCustomer && transaction.products.length !== 0) {
       setIsPaymentModalOpen(true);
+    } else if (transaction.products.length === 0) {
+      alert("Please select products before proceeding to payment.");
     } else {
       alert("Please select a customer before proceeding to payment.");
     }
@@ -600,325 +607,339 @@ const Sales = () => {
   };
 
   return (
-    <div className="sales-page">
-      <div className="sales-dashboard">
-        <br />
-        <br />
-        <div className="sales-body">
-          <div className="left-panel">
-            {/* Display Day Sales */}
-            <div className="day-sales-box">
-              <h3>Day's Sale Rs. {daySales.toFixed(2)}</h3>
-            </div>
+    <div>
+      {loadingpage ? (
+        <div>
+          <Loading />
+        </div>
+      ) : (
+        <div className="sales-page">
+          <div className="sales-dashboard">
+            <br />
+            <br />
+            <div className="sales-body">
+              <div className="left-panel">
+                {/* Display Day Sales */}
+                <div className="day-sales-box">
+                  <h3>Day's Sale Rs. {daySales.toFixed(2)}</h3>
+                </div>
 
-            {/* Net Amount Box */}
-            <div className="net-amount-box">
-              <h2>Net Amount</h2>
-              <p>Rs. {transaction.net.toFixed(2)}</p>
-            </div>
+                {/* Net Amount Box */}
+                <div className="net-amount-box">
+                  <h2>Net Amount</h2>
+                  <p>Rs. {transaction.net.toFixed(2)}</p>
+                </div>
 
-            <div className="d-flex align-items-center mb-3 buttoncontainer">
-              <button
-                variant="contained"
-                onClick={handleOpenModal}
-                className="newcustomerbtn"
-              >
-                New Customer
-              </button>
-
-              <button
-                variant="contained"
-                onClick={() => navigate("/sales-history")} // Navigate to SalesHistory.jsx
-                className="saleshistorybtn"
-              >
-                Sales History
-              </button>
-              <button
-                variant="contained"
-                onClick={() => navigate("/credit-customers")}
-                className="creditcustomersbtn"
-              >
-                Credit Customers
-              </button>
-            </div>
-            {/* Use the modal component */}
-            <CustomerFormModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              onSubmit={handleSubmit}
-              initialValues={{
-                name: "",
-                surname: "",
-                email: "",
-                phone: "",
-                houseNo: "",
-                street: "",
-                city: "",
-                postalCode: "",
-                customerType: "",
-              }}
-            />
-
-            <div className="customer-info">
-              {selectedCustomer ? (
-                <div className="customer-selected">
-                  <div className="customer-details">
-                    <h3>
-                      {selectedCustomer.name} {selectedCustomer.surname}
-                    </h3>
-                    <p>
-                      {selectedCustomer.loyaltyStatus || "Regular Customer"}
-                    </p>
-                    <div className="customer-metrics">
-                      <span>Email: {selectedCustomer.email}</span>
-
-                      <span>Phone: {selectedCustomer.phone}</span>
-                    </div>
-                  </div>
+                <div className="d-flex align-items-center mb-3 buttoncontainer">
                   <button
-                    onClick={handleRemoveCustomer}
+                    variant="contained"
+                    onClick={handleOpenModal}
+                    className="newcustomerbtn"
+                  >
+                    New Customer
+                  </button>
+
+                  <button
+                    variant="contained"
+                    onClick={() => navigate("/sales-history")} // Navigate to SalesHistory.jsx
+                    className="saleshistorybtn"
+                  >
+                    Sales History
+                  </button>
+                  <button
+                    variant="contained"
+                    onClick={() => navigate("/credit-customers")}
                     className="creditcustomersbtn"
                   >
-                    Remove Customer
+                    Credit Customers
                   </button>
                 </div>
-              ) : (
-                <>
+                {/* Use the modal component */}
+                <CustomerFormModal
+                  isOpen={isModalOpen}
+                  onClose={() => setIsModalOpen(false)}
+                  onSubmit={handleSubmit}
+                  initialValues={{
+                    name: "",
+                    surname: "",
+                    email: "",
+                    phone: "",
+                    houseNo: "",
+                    street: "",
+                    city: "",
+                    postalCode: "",
+                    customerType: "",
+                  }}
+                />
+
+                <div className="customer-info">
+                  {selectedCustomer ? (
+                    <div className="customer-selected">
+                      <div className="customer-details">
+                        <h3>
+                          {selectedCustomer.name} {selectedCustomer.surname}
+                        </h3>
+                        <p>
+                          {selectedCustomer.loyaltyStatus || "Regular Customer"}
+                        </p>
+                        <div className="customer-metrics">
+                          <span>Email: {selectedCustomer.email}</span>
+
+                          <span>Phone: {selectedCustomer.phone}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleRemoveCustomer}
+                        className="creditcustomersbtn"
+                      >
+                        Remove Customer
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search customer by name, surname, or phone"
+                        value={customerSearchQuery}
+                        onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                      />
+                      <ul className="customer-search-list">
+                        {loading || error || _.isEmpty(filteredCustomers) ? (
+                          <TableChecker
+                            loading={loading}
+                            error={error}
+                            hasData={filteredCustomers.length > 0}
+                          />
+                        ) : (
+                          filteredCustomers.map((customer) => (
+                            <li
+                              key={customer.id}
+                              onClick={() => handleSelectCustomer(customer)}
+                            >
+                              {customer.name} {customer.surname} -{" "}
+                              {customer.phone}
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    </>
+                  )}
+                </div>
+
+                <div className="transaction-summary">
+                  <div class="custom-table-sale table-responsive">
+                    <table className="table mt-3 custom-table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Qty</th>
+                          <th>Price</th>
+                          <th>Discount (Rs)</th>
+                          <th>Total</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transaction.products.map((product) => (
+                          <tr key={product.Itemid}>
+                            <td>{product.itemName}</td>
+                            <td>
+                              <input
+                                type="number"
+                                value={product.qty}
+                                min="1"
+                                onChange={(e) =>
+                                  updateProductQty(
+                                    product.Itemid,
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                value={product.retailPrice}
+                                min="0"
+                                step="0.01"
+                                disabled
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                value={product.discount || 0}
+                                min="0"
+                                step="0.01"
+                                onChange={(e) =>
+                                  updateProductDiscount(
+                                    product.Itemid,
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              Rs.{" "}
+                              {(
+                                Number(product.qty) *
+                                (Number(product.retailPrice) -
+                                  Number(product.discount))
+                              ).toFixed(2)}{" "}
+                              {/* Ensure all inputs are numbers */}
+                            </td>
+                            <td>
+                              <button
+                                className="tableremovebtn"
+                                onClick={() => removeProduct(product.Itemid)}
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="d-flex align-items-center mb-3">
+                    {/* Plus Button to Add Products Manually */}
+                    <div className="add-product-button-container">
+                      <button
+                        onClick={() => setIsAddProductModalOpen(true)}
+                        className="button-add-product"
+                      >
+                        + Add Product
+                      </button>
+                      <AddProductModal
+                        isOpen={isAddProductModalOpen}
+                        onClose={() => setIsAddProductModalOpen(false)}
+                        onSubmit={handleAddProductSubmit}
+                      />
+                    </div>
+                    <div className="totals">
+                      <p>
+                        Discount:{" "}
+                        <input
+                          type="number"
+                          value={transaction.discount}
+                          min="0"
+                          step="0.01"
+                          onChange={(e) => updateDiscount(e.target.value)}
+                          classname="searchfunctions me-2"
+                        />
+                      </p>
+                    </div>{" "}
+                    {/* <p>Net: Rs. {transaction.net.toFixed(2)}</p> */}
+                  </div>
+                </div>
+                <div className="action-buttons">
+                  <button
+                    onClick={completeSale}
+                    className="button-pay"
+                    disabled={
+                      !selectedCustomer || transaction.products.length === 0
+                    }
+                  >
+                    Pay
+                  </button>
+                </div>
+              </div>
+
+              <div className="right-panel">
+                {/* Product Search and Filter */}
+                <div className="d-flex align-items-center mb-3">
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Search customer by name, surname, or phone"
-                    value={customerSearchQuery}
-                    onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                    placeholder={`Search by ${searchField}`}
+                    value={productSearchQuery}
+                    onChange={(e) => setProductSearchQuery(e.target.value)}
                   />
-                  <ul className="customer-search-list">
-                    {loading || error || _.isEmpty(filteredCustomers) ? (
-                      <TableChecker
-                        loading={loading}
-                        error={error}
-                        hasData={filteredCustomers.length > 0}
-                      />
-                    ) : (
-                      filteredCustomers.map((customer) => (
-                        <li
-                          key={customer.id}
-                          onClick={() => handleSelectCustomer(customer)}
-                        >
-                          {customer.name} {customer.surname} - {customer.phone}
-                        </li>
-                      ))
-                    )}
-                  </ul>
-                </>
-              )}
-            </div>
 
-            <div className="transaction-summary">
-              <div class="custom-table-sale table-responsive">
-                <table className="table mt-3 custom-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Qty</th>
-                      <th>Price</th>
-                      <th>Discount (Rs)</th>
-                      <th>Total</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transaction.products.map((product) => (
-                      <tr key={product.Itemid}>
-                        <td>{product.itemName}</td>
-                        <td>
-                          <input
-                            type="number"
-                            value={product.qty}
-                            min="1"
-                            onChange={(e) =>
-                              updateProductQty(product.Itemid, e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            value={product.retailPrice}
-                            min="0"
-                            step="0.01"
-                            disabled
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            value={product.discount || 0}
-                            min="0"
-                            step="0.01"
-                            onChange={(e) =>
-                              updateProductDiscount(
-                                product.Itemid,
-                                e.target.value
-                              )
-                            }
-                          />
-                        </td>
-                        <td>
-                          Rs.{" "}
-                          {(
-                            Number(product.qty) *
-                            (Number(product.retailPrice) -
-                              Number(product.discount))
-                          ).toFixed(2)}{" "}
-                          {/* Ensure all inputs are numbers */}
-                        </td>
-                        <td>
-                          <button
-                            className="tableremovebtn"
-                            onClick={() => removeProduct(product.Itemid)}
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="d-flex align-items-center mb-3">
-                {/* Plus Button to Add Products Manually */}
-                <div className="add-product-button-container">
-                  <button
-                    onClick={() => setIsAddProductModalOpen(true)}
-                    className="button-add-product"
+                  <select
+                    className="form-control"
+                    value={searchField}
+                    onChange={(e) => setSearchField(e.target.value)}
                   >
-                    + Add Product
+                    <option value="name">Name</option>
+                    <option value="price">Price</option>
+                    <option value="gsm">GSM</option>
+                    <option value="color">Color</option>
+                  </select>
+                  <button className="prevbutton2" onClick={clearSearch}>
+                    Clear
                   </button>
-                  <AddProductModal
-                    isOpen={isAddProductModalOpen}
-                    onClose={() => setIsAddProductModalOpen(false)}
-                    onSubmit={handleAddProductSubmit}
-                  />
                 </div>
-                <div className="totals">
-                  <p>
-                    Discount:{" "}
-                    <input
-                      type="number"
-                      value={transaction.discount}
-                      min="0"
-                      step="0.01"
-                      onChange={(e) => updateDiscount(e.target.value)}
-                      classname="searchfunctions me-2"
+                <div className="product-grid">
+                  {loading || error || _.isEmpty(filteredProducts) ? (
+                    <TableChecker
+                      loading={loading}
+                      error={error}
+                      hasData={filteredProducts.length > 0}
                     />
-                  </p>
-                </div>{" "}
-                {/* <p>Net: Rs. {transaction.net.toFixed(2)}</p> */}
+                  ) : (
+                    filteredProducts.map((data) => (
+                      <div>
+                        {" "}
+                        <span>{data.category}</span>
+                        {data.items.map((item) => (
+                          <button
+                            key={item.Itemid}
+                            className="product-button"
+                            onClick={() => addProductToTransaction(item)}
+                          >
+                            {item.itemName}
+                            {/* <span>Rs. {product.price.toFixed(2)}</span> */}
+                            <span>Stoke. {item.qty}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-            <div className="action-buttons">
-              <button
-                onClick={completeSale}
-                className="button-pay"
-                disabled={!selectedCustomer}
-              >
-                Pay
-              </button>
-            </div>
-          </div>
-
-          <div className="right-panel">
-            {/* Product Search and Filter */}
-            <div className="d-flex align-items-center mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder={`Search by ${searchField}`}
-                value={productSearchQuery}
-                onChange={(e) => setProductSearchQuery(e.target.value)}
+            {isPaymentModalOpen && (
+              <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                handlePaymentSubmit={handlePaymentSubmit}
+                networth={transaction.net}
               />
-
-              <select
-                className="form-control"
-                value={searchField}
-                onChange={(e) => setSearchField(e.target.value)}
-              >
-                <option value="name">Name</option>
-                <option value="price">Price</option>
-                <option value="gsm">GSM</option>
-                <option value="color">Color</option>
-              </select>
-              <button className="prevbutton2" onClick={clearSearch}>
-                Clear
-              </button>
-            </div>
-            <div className="product-grid">
-              {loading || error || _.isEmpty(filteredProducts) ? (
-                <TableChecker
-                  loading={loading}
-                  error={error}
-                  hasData={filteredProducts.length > 0}
-                />
-              ) : (
-                filteredProducts.map((data) => (
-                  <div>
-                    {" "}
-                    <span>{data.category}</span>
-                    {data.items.map((item) => (
-                      <button
-                        key={item.Itemid}
-                        className="product-button"
-                        onClick={() => addProductToTransaction(item)}
-                      >
-                        {item.itemName}
-                        {/* <span>Rs. {product.price.toFixed(2)}</span> */}
-                        <span>Stoke. {item.qty}</span>
-                      </button>
-                    ))}
-                  </div>
-                ))
-              )}
-            </div>
+            )}
+            <ReceiptOptionsModal
+              isOpen={isReceiptOptionsModalOpen}
+              onClose={() => setIsReceiptOptionsModalOpen(false)}
+              downloadReceipt={() =>
+                DownloadReceipt(
+                  selectedCustomer,
+                  paymentDetailsState,
+                  transaction,
+                  invoiceNumber
+                )
+              }
+              printReceipt={() =>
+                PrintReceipt(
+                  selectedCustomer,
+                  paymentDetailsState,
+                  transaction,
+                  invoiceNumber
+                )
+              }
+              shareReceipt={() =>
+                ShareReceipt(
+                  selectedCustomer,
+                  paymentDetailsState,
+                  transaction,
+                  invoiceNumber
+                )
+              }
+            />
           </div>
         </div>
-        {isPaymentModalOpen && (
-          <PaymentModal
-            isOpen={isPaymentModalOpen}
-            onClose={() => setIsPaymentModalOpen(false)}
-            handlePaymentSubmit={handlePaymentSubmit}
-            networth={transaction.net}
-          />
-        )}
-        <ReceiptOptionsModal
-          isOpen={isReceiptOptionsModalOpen}
-          onClose={() => setIsReceiptOptionsModalOpen(false)}
-          downloadReceipt={() =>
-            DownloadReceipt(
-              selectedCustomer,
-              paymentDetailsState,
-              transaction,
-              invoiceNumber
-            )
-          }
-          printReceipt={() =>
-            PrintReceipt(
-              selectedCustomer,
-              paymentDetailsState,
-              transaction,
-              invoiceNumber
-            )
-          }
-          shareReceipt={() =>
-            ShareReceipt(
-              selectedCustomer,
-              paymentDetailsState,
-              transaction,
-              invoiceNumber
-            )
-          }
-        />
-      </div>
+      )}
     </div>
   );
 };
