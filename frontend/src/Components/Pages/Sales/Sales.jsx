@@ -422,7 +422,7 @@ const Sales = () => {
   };
 
   const completeSale = () => {
-    setLoadingpage(true);
+    // setLoadingpage(true);
 
     if (selectedCustomer && transaction.products.length !== 0) {
       setIsPaymentModalOpen(true);
@@ -578,7 +578,7 @@ const Sales = () => {
     }
 
     // Open the modal to choose download, print, or share
-    setLoadingpage(false);
+    // setLoadingpage(false);
 
     setIsReceiptOptionsModalOpen(true);
 
