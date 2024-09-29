@@ -33,7 +33,6 @@ const Sales = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [daySales, setDaySales] = useState(0); // State to track day sales
   const navigate = useNavigate(); // Use useNavigate for navigation
   const [invoiceNumber, setInvoiceNumber] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
@@ -631,11 +630,6 @@ const Sales = () => {
             <br />
             <div className="sales-body">
               <div className="left-panel">
-                {/* Display Day Sales */}
-                <div className="day-sales-box">
-                  <h3>Day's Sale Rs. {daySales.toFixed(2)}</h3>
-                </div>
-
                 {/* Net Amount Box */}
                 <div className="net-amount-box">
                   <h2>Net Amount</h2>
