@@ -422,6 +422,8 @@ const Sales = () => {
   };
 
   const completeSale = () => {
+    setLoadingpage(true);
+
     if (selectedCustomer && transaction.products.length !== 0) {
       setIsPaymentModalOpen(true);
     } else if (transaction.products.length === 0) {
@@ -568,6 +570,8 @@ const Sales = () => {
     }
 
     // Open the modal to choose download, print, or share
+    setLoadingpage(false);
+
     setIsReceiptOptionsModalOpen(true);
 
     // Close the payment modal
@@ -901,45 +905,45 @@ const Sales = () => {
                 </div>
               </div>
             </div>
-            {isPaymentModalOpen && (
-              <PaymentModal
-                isOpen={isPaymentModalOpen}
-                onClose={() => setIsPaymentModalOpen(false)}
-                handlePaymentSubmit={handlePaymentSubmit}
-                networth={transaction.net}
-              />
-            )}
-            <ReceiptOptionsModal
-              isOpen={isReceiptOptionsModalOpen}
-              onClose={() => setIsReceiptOptionsModalOpen(false)}
-              downloadReceipt={() =>
-                DownloadReceipt(
-                  selectedCustomer,
-                  paymentDetailsState,
-                  transaction,
-                  invoiceNumber
-                )
-              }
-              printReceipt={() =>
-                PrintReceipt(
-                  selectedCustomer,
-                  paymentDetailsState,
-                  transaction,
-                  invoiceNumber
-                )
-              }
-              shareReceipt={() =>
-                ShareReceipt(
-                  selectedCustomer,
-                  paymentDetailsState,
-                  transaction,
-                  invoiceNumber
-                )
-              }
-            />
           </div>
         </div>
       )}
+      {isPaymentModalOpen && (
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          handlePaymentSubmit={handlePaymentSubmit}
+          networth={transaction.net}
+        />
+      )}
+      <ReceiptOptionsModal
+        isOpen={isReceiptOptionsModalOpen}
+        onClose={() => setIsReceiptOptionsModalOpen(false)}
+        downloadReceipt={() =>
+          DownloadReceipt(
+            selectedCustomer,
+            paymentDetailsState,
+            transaction,
+            invoiceNumber
+          )
+        }
+        printReceipt={() =>
+          PrintReceipt(
+            selectedCustomer,
+            paymentDetailsState,
+            transaction,
+            invoiceNumber
+          )
+        }
+        shareReceipt={() =>
+          ShareReceipt(
+            selectedCustomer,
+            paymentDetailsState,
+            transaction,
+            invoiceNumber
+          )
+        }
+      />
     </div>
   );
 };
