@@ -545,7 +545,15 @@ const Sales = () => {
           transaction: {
             ...transaction,
             products: transaction.products.map(
-              ({ categoryid, Itemid, qty, discount, retailPrice }) => ({
+              ({
+                itemName,
+                categoryid,
+                Itemid,
+                qty,
+                discount,
+                retailPrice,
+              }) => ({
+                itemName,
                 categoryid,
                 Itemid,
                 qty,
