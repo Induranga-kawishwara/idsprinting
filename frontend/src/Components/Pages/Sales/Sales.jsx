@@ -422,7 +422,7 @@ const Sales = () => {
   };
 
   const completeSale = () => {
-    setLoadingpage(true);
+    // setLoadingpage(true);
 
     if (selectedCustomer && transaction.products.length !== 0) {
       setIsPaymentModalOpen(true);
@@ -545,7 +545,15 @@ const Sales = () => {
           transaction: {
             ...transaction,
             products: transaction.products.map(
-              ({ categoryid, Itemid, qty, discount, retailPrice }) => ({
+              ({
+                itemName,
+                categoryid,
+                Itemid,
+                qty,
+                discount,
+                retailPrice,
+              }) => ({
+                itemName,
                 categoryid,
                 Itemid,
                 qty,
@@ -570,7 +578,7 @@ const Sales = () => {
     }
 
     // Open the modal to choose download, print, or share
-    setLoadingpage(false);
+    // setLoadingpage(false);
 
     setIsReceiptOptionsModalOpen(true);
 
@@ -582,7 +590,7 @@ const Sales = () => {
     const newProduct = {
       id: new Date().getTime(),
       itemName: values.name,
-      price: Number(values.price),
+      retailPrice: Number(values.price),
       qty: Number(values.qty),
       discount: Number(values.discount) || 0, // Include discount
     };
