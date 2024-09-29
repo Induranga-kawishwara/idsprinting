@@ -582,7 +582,7 @@ const Sales = () => {
     const newProduct = {
       id: new Date().getTime(),
       itemName: values.name,
-      price: Number(values.price),
+      retailPrice: Number(values.price),
       qty: Number(values.qty),
       discount: Number(values.discount) || 0, // Include discount
     };

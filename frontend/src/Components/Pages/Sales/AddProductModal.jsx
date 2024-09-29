@@ -12,7 +12,7 @@ const ProductSchema = Yup.object().shape({
     .required("Quantity is required")
     .min(1, "Quantity must be at least 1"),
   discount: Yup.number()
-    .required("Discount is required")
+    .notRequired()
     .min(0, "Discount must be a positive number")
     .max(100, "Discount can't exceed 100%"),
 });
