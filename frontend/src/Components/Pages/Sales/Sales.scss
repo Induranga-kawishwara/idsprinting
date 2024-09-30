@@ -245,39 +245,168 @@ $box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.1);
     .customer-search-list li:hover {
       background-color: #f1f1f1;
     }
-  }
-  /* Product Grid */
-  .product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 10px;
-    justify-content: flex-end;
-  }
+   }
+// /* Product Grid */
+//     .product-grid {
+//     display: grid;
+//     grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+//     gap: 10px;
+//     justify-content: flex-end;
+//     font-size: 18px;
 
-  .product-button {
-    background-color: $primary-color;
-    color: $white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px;
-    text-align: center;
-    font-size: 12px;
-    cursor: pointer;
-    height: 70px;
+//     // Optional: Add padding and background for the grid
+//     padding: 10px;
+//     background-color: lighten($primary-color, 50%); // Lighten for contrast
+//     }
+
+// /* Product Button */
+//   .product-button {
+//     background-color: $primary-color;
+//     color: $white;
+//     border: none;
+//     border-radius: 10px;
+//     padding: 15px;
+//     text-align: center;
+//     font-size: 12px;
+//     cursor: pointer;
+//     height: 70px;
+//     display: flex;
+//     flex-direction: column;
+//     justify-content: center;
+//     transition: background-color 0.3s ease, transform 0.3s ease;
+
+//     &:hover {
+//       background-color: darken($primary-color, 10%);
+//       transform: translateY(-2px);
+//     }
+
+//     span {
+//       margin-top: 5px;
+//     }
+//   }
+
+// Base styles
+$product-grid-padding: 20px;
+$button-bg-color: #4CAF50;
+$button-text-color: white;
+$button-hover-bg-color: #45a049;
+$button-border-radius: 5px;
+$category-text-color: #333;
+$product-border: 1px solid #e0e0e0;
+$product-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+// Main grid container - ROW LAYOUT
+.product-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: $product-grid-padding;
+  background-color: #f9f9f9;
+
+  // Individual category row
+  > div {
+    background-color: #fff;
+    border: $product-border;
+    border-radius: $button-border-radius;
+    box-shadow: $product-box-shadow;
+    padding: 15px;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto; // Enable horizontal scroll for mobile
 
-    &:hover {
-      background-color: darken($primary-color, 10%);
-      transform: translateY(-2px);
+    // Scrollbar styling for webkit browsers
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #888;
+      border-radius: 10px;
     }
 
+    // Category label (aligned to the top-left of each row)
     span {
-      margin-top: 5px;
+      font-size: 12px;
+      font-weight: bold;
+      color: $category-text-color;
+      margin-right: 15px;
     }
   }
+}
+
+// Row layout for products (inside each category row)
+.product-button {
+  background-color: $button-bg-color;
+  border: none;
+  color: $button-text-color;
+  padding: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: $button-border-radius;
+  cursor: pointer;
+  margin: 0 10px;
+  white-space: nowrap; // Ensures text doesn’t wrap
+  flex-shrink: 0; // Ensures buttons stay in a row, preventing shrinking
+
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: $button-hover-bg-color;
+  }
+
+  // Styling for item details inside the button
+  span {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    color: #fff;
+  }
+}
+
+// Responsive adjustments
+@media (min-width: 768px) {
+  .product-grid {
+    padding: 25px;
+  }
+
+  // Larger paddings for product cards on bigger screens
+  .product-grid > div {
+    padding: 20px;
+  }
+}
+
+// Table checker (for loading, error, no data)
+.table-checker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $product-grid-padding;
+  font-size: 18px;
+  color: #777;
+}
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   .button-add-product {
     background-color: #4d7cff; /* Green */

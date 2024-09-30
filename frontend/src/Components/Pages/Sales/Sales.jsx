@@ -898,7 +898,7 @@ const Sales = () => {
                           >
                             {item.itemName}
                             {/* <span>Rs. {product.price.toFixed(2)}</span> */}
-                            <span>Stoke. {item.qty}</span>
+                            <span>Stock. {item.qty}</span>
                           </button>
                         ))}
                       </div>
