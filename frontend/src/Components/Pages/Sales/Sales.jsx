@@ -548,6 +548,7 @@ const Sales = () => {
                 itemName,
                 categoryid,
                 Itemid,
+                color,
                 qty,
                 discount,
                 retailPrice,
@@ -555,6 +556,7 @@ const Sales = () => {
                 itemName,
                 categoryid,
                 Itemid,
+                color,
                 qty,
                 discount,
                 retailPrice,
@@ -587,8 +589,9 @@ const Sales = () => {
 
   const handleAddProductSubmit = (values) => {
     const newProduct = {
-      id: new Date().getTime(),
+      Itemid: Date.now() + "-" + Math.random().toString(36).substr(2, 9),
       itemName: values.name,
+      color: values.color,
       retailPrice: Number(values.price),
       qty: Number(values.qty),
       discount: Number(values.discount) || 0, // Include discount
@@ -740,6 +743,7 @@ const Sales = () => {
                         <tr>
                           <th>Name</th>
                           <th>Qty</th>
+                          <th>Color</th>
                           <th>Price</th>
                           <th>Discount (Rs)</th>
                           <th>Total</th>
@@ -763,6 +767,7 @@ const Sales = () => {
                                 }
                               />
                             </td>
+                            <td>{product.color}</td>
                             <td>
                               <input
                                 type="number"

@@ -5,6 +5,7 @@ import * as Yup from "yup";
 
 const ProductSchema = Yup.object().shape({
   name: Yup.string().required("Product name is required"),
+  color: Yup.string(),
   price: Yup.number()
     .required("Price is required")
     .min(0, "Price must be a positive number"),
@@ -42,6 +43,13 @@ const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
                     ) : null}
                   </div>
                   <div className="mb-3">
+                    <label>Color</label>
+                    <Field name="color" className="form-control" />
+                    {errors.color && touched.color ? (
+                      <div className="text-danger">{errors.color}</div>
+                    ) : null}
+                  </div>
+                  <div className="mb-3">
                     <label>Price</label>
                     <Field
                       name="price"
@@ -60,7 +68,7 @@ const AddProductModal = ({ isOpen, onClose, onSubmit }) => {
                     ) : null}
                   </div>
                   <div className="mb-3">
-                    <label>Discount (%)</label>
+                    <label>Discount</label>
                     <Field
                       name="discount"
                       type="number"
