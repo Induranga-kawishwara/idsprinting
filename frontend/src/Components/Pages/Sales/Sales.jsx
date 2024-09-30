@@ -904,6 +904,8 @@ const Sales = () => {
                             <span>{item.itemCode}</span>
 
                             <span>Item Name. {item.itemName}</span>
+                            <span>Color. {item.color}</span>
+
                             <span>
                               Discount Price RS.
                               {item.discount.toFixed(2) + "/="}
