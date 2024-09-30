@@ -896,8 +896,17 @@ const Sales = () => {
                             className="product-button"
                             onClick={() => addProductToTransaction(item)}
                           >
-                            {item.itemName}
-                            {/* <span>Rs. {product.price.toFixed(2)}</span> */}
+                            <span>{item.itemCode}</span>
+
+                            <span>Item Name. {item.itemName}</span>
+                            <span>
+                              Discount Price RS.
+                              {item.discount.toFixed(2) + "/="}
+                            </span>
+                            <span>
+                              Selling parice Rs.{" "}
+                              {(item.retailPrice - item.discount).toFixed(2)}
+                            </span>
                             <span>Stock. {item.qty}</span>
                           </button>
                         ))}
