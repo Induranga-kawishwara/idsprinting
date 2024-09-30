@@ -294,6 +294,7 @@ $button-border-radius: 5px;
 $category-text-color: #333;
 $product-border: 1px solid #e0e0e0;
 $product-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+$price-color: #FFD700; // For price styling
 
 // Main grid container - ROW LAYOUT
 .product-grid {
@@ -311,42 +312,56 @@ $product-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     box-shadow: $product-box-shadow;
     padding: 15px;
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto; // Enable horizontal scroll for mobile
-
-    // Scrollbar styling for webkit browsers
-    &::-webkit-scrollbar {
-      height: 8px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background-color: #888;
-      border-radius: 10px;
-    }
-
+    flex-direction: column;
+    
     // Category label (aligned to the top-left of each row)
     span {
-      font-size: 12px;
+      font-size: 14px;
       font-weight: bold;
       color: $category-text-color;
-      margin-right: 15px;
+      margin-bottom: 10px;
+      text-align: left; // Align text to the left
     }
+
+    // Product buttons row
+    .product-buttons-row {
+      display: flex;            // Align buttons horizontally
+      flex-direction: row;       // Make sure it's row-based layout
+      gap: 15px;                 // Spacing between buttons
+      overflow-x: auto;          // Enable horizontal scroll for mobile
+      white-space: nowrap;       // Prevent buttons from wrapping
+    }
+  }
+
+  // Scrollbar styling for webkit browsers
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
   }
 }
 
-// Row layout for products (inside each category row)
+// Product button styles (in horizontal row under title)
 .product-button {
   background-color: $button-bg-color;
   border: none;
   color: $button-text-color;
-  padding: 10px;
-  font-size: 18px;
-  font-weight: bold;
+  padding: 15px;
+  font-size: 16px;
   border-radius: $button-border-radius;
   cursor: pointer;
-  margin: 0 10px;
-  white-space: nowrap; // Ensures text doesn’t wrap
-  flex-shrink: 0; // Ensures buttons stay in a row, preventing shrinking
+  white-space: normal;          // Allow content inside button to wrap
+  flex-shrink: 0;               // Prevent buttons from shrinking
+  width: 200px;                 // Ensure consistent button width
+  text-align: center;
+
+  // Use flexbox to center content
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
   transition: background-color 0.3s ease;
 
@@ -354,11 +369,29 @@ $product-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     background-color: $button-hover-bg-color;
   }
 
-  // Styling for item details inside the button
-  span {
-    display: block;
+  // First span (itemCode) - Styling for item code
+  span:nth-child(1) {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  // Second span (itemName) - Styling for item name
+  span:nth-child(2) {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+
+  // Third span (retailPrice) - Styling for price display
+  span:nth-child(3) {
+    font-size: 16px;
+    color: $price-color; // Highlighted price color
+    margin-bottom: 5px;
+  }
+
+  // Fourth span (Stock) - Styling for stock display
+  span:nth-child(4) {
     font-size: 12px;
-    margin-top: 5px;
     color: #fff;
   }
 }
@@ -373,6 +406,10 @@ $product-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   .product-grid > div {
     padding: 20px;
   }
+
+  .product-button {
+    width: 220px; // Slightly wider on desktop
+  }
 }
 
 // Table checker (for loading, error, no data)
@@ -384,10 +421,6 @@ $product-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-size: 18px;
   color: #777;
 }
-
-
-    
-
 
 
 

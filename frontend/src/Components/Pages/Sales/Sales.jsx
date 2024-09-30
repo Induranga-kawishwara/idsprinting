@@ -898,13 +898,13 @@ const Sales = () => {
                           >
                             <span>{item.itemCode}</span>
 
-                            <span>Item Name. {item.itemName}</span>
-                            <span>
+                            <span>IN- {item.itemName}</span>
+                            {/* <span>
                               Discount Price RS.
                               {item.discount.toFixed(2) + "/="}
-                            </span>
+                            </span> */}
                             <span>
-                              Selling parice Rs.{" "}
+                              Rs.{" "}
                               {(item.retailPrice - item.discount).toFixed(2)}
                             </span>
                             <span>Stock. {item.qty}</span>
