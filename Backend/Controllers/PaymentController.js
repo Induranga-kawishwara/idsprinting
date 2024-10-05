@@ -4,6 +4,36 @@ import { v4 as uuidv4 } from "uuid";
 
 const PaymentCollection = db.collection("Customers");
 
+// Get all SalesHistorys
+export const getAllPaymentHistory = async (req, res) => {
+  try {
+    const snapshot = await PaymentCollection.get();
+    const SalesHistorys = snapshot.docs.flatMap((doc) => {
+      const payments = (doc.data().payments || [])
+        .map((payment) => ({
+          id: doc.id,
+          name: doc.data().name || "",
+          surName: doc.data().surName || "",
+          contactNumber: doc.data().contactNumber || "",
+          invoicenumber: payment.invoicenumber || "",
+          paymentId: payment.paymentId || "",
+          transaction: payment.transaction || {},
+          paymentDetails: payment.paymentDetails || {},
+          lastUpdatedDate: new Date(payment.lastUpdatedDate),
+        }))
+        .filter((payment) => payment.lastUpdatedDate);
+
+      payments.sort((a, b) => b.lastUpdatedDate - a.lastUpdatedDate);
+
+      return payments.length > 0 ? payments : [];
+    });
+
+    return res.status(200).send(SalesHistorys);
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+
 export const createPayment = async (req, res) => {
   const { customerId } = req.params;
   const { paymentDetails, transaction, invoicenumber, lastUpdatedDate } =
