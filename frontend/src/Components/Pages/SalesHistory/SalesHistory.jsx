@@ -29,7 +29,7 @@ const SalesHistory = () => {
     const fetchData = async () => {
       try {
         const SalesHistoryDetails = await axios.get(
-          "https://candied-chartreuse-concavenator.glitch.me/salesHistory"
+          "https://candied-chartreuse-concavenator.glitch.me/payment"
         );
 
         setSalesHistory(SalesHistoryDetails.data);
