@@ -56,10 +56,19 @@ export const createPayment = async (req, res) => {
     };
     // Update the document with the new Payment
     await customerDoc.update({ payments: [...payments, newPayment] });
+
     const result = {
-      category: { id: customerId, ...customerDetails },
-      newPayment,
+      id: customerId,
+      name: customerDetails.name,
+      surName: customerDetails.surName,
+      contactNumber: customerDetails.contactNumber,
+      invoicenumber,
+      paymentId: newPayment.paymentId,
+      transaction,
+      paymentDetails,
+      lastUpdatedDate,
     };
+
     broadcastCustomerChanges("PaymentAdded", result);
     return res
       .status(200)
