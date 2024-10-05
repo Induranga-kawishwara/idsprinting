@@ -10,6 +10,7 @@ import {
 } from "../../Reusable/ShareReceipt/ShareReceipt.js";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import _ from "lodash";
+import socket from "../../Utility/SocketConnection.js";
 
 const SalesHistory = () => {
   const [salesHistory, setSalesHistory] = useState([]);
@@ -43,6 +44,23 @@ const SalesHistory = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    socket.on("PaymentAdded", (newsale) => {
+      setSalesHistory((prevSales) => [newsale, ...prevSales]);
+    });
+
+    socket.on("customerDeleted", ({ id }) => {
+      setSalesHistory((prevSales) =>
+        prevSales.filter((sale) => sale.id !== id)
+      );
+    });
+    return () => {
+      socket.off("PaymentAdded");
+
+      socket.off("customerDeleted");
+    };
+  }, [salesHistory]);
 
   // Function to handle delete sale after admin authentication
   const handleDeleteSale = () => {

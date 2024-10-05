@@ -56,10 +56,19 @@ export const createPayment = async (req, res) => {
     };
     // Update the document with the new Payment
     await customerDoc.update({ payments: [...payments, newPayment] });
+
     const result = {
-      category: { id: customerId, ...customerDetails },
-      newPayment,
+      id: customerId,
+      name: customerDetails.name,
+      surName: customerDetails.surName,
+      contactNumber: customerDetails.contactNumber,
+      invoicenumber,
+      paymentId: newPayment.paymentId,
+      transaction,
+      paymentDetails,
+      lastUpdatedDate,
     };
+
     broadcastCustomerChanges("PaymentAdded", result);
     return res
       .status(200)
@@ -125,7 +134,7 @@ export const updatePaymentByPaymentId = async (req, res) => {
     const customerSnapshot = await categoryRef.get();
 
     if (!customerSnapshot.exists) {
-      return res.status(404).send({ message: "Category not found." });
+      return res.status(404).send({ message: "Customer not found." });
     }
 
     const { payments = [], ...customerDetails } = customerSnapshot.data();
@@ -185,7 +194,7 @@ export const deletePaymentBypaymentId = async (req, res) => {
     const customerSnapshot = await categoryRef.get();
 
     if (!customerSnapshot.exists) {
-      return res.status(404).send({ message: "Category not found." });
+      return res.status(404).send({ message: "Customer not found." });
     }
 
     const { payments = [] } = customerSnapshot.data();
