@@ -115,6 +115,19 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit, networth }) => {
                       ) : null}
                     </div>
                   )}
+                  {values.paymentMethod === "Card" && (
+                    <div className="mb-3">
+                      <label>Card Details</label>
+                      <Field
+                        name="cardDetails"
+                        className="form-control"
+                        placeholder="Card Holder's Name or Last 4 Digits"
+                      />
+                      {errors.cardDetails && touched.cardDetails ? (
+                        <div className="text-danger">{errors.cardDetails}</div>
+                      ) : null}
+                    </div>
+                  )}
 
                   {values.paymentMethod === "Card and Cash" && (
                     <>
