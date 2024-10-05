@@ -11,6 +11,7 @@ import { app, server } from "./SocketIO/socketIO.js";
 import Categories from "./Routes/CategoryRoutes.js";
 import User from "./Routes/UserRoutes.js";
 import Payment from "./Routes/PaymentRoutes.js";
+import SalesHistory from "./Routes/SalesHistoryRoutes.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use("/cashup", Cashup);
 app.use("/categories", Categories);
 app.use("/users", User);
 app.use("/payment", Payment);
+app.use("/salesHistory", SalesHistory);
 
 server.listen(PORT, () =>
   console.log(`App is listening on url http://localhost:${PORT}`)

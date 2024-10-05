@@ -1,26 +1,44 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Modal, TextField } from "@mui/material";
-import jsPDF from "jspdf"; // Import jsPDF for PDF generation
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
+import {
+  ShareReceipt,
+  PrintReceipt,
+  DownloadReceipt,
+} from "../../Reusable/ShareReceipt/ShareReceipt.js";
 
 const SalesHistory = () => {
-  const [salesHistory, setSalesHistory] = useState([
-    {
-      date: "2024-08-29",
-      customerName: "John Doe",
-      contactNumber: "0778178584",
-      total: 1000,
-      paymentDetails: { paymentMethod: "Cash" },
-      invoiceNumber: "INV-12345",
-      products: [
-        { name: "Shirts", qty: 2, price: 200 },
-        { name: "Pants", qty: 1, price: 300 },
-      ],
-      addedBy: "Admin", // New field for 'who added'
-    },
-    // Add more sales records as needed
-  ]);
+  const [salesHistory, setSalesHistory] = useState([]);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedSale, setSelectedSale] = useState(null);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const SalesHistoryDetails = await axios.get(
+          "https://candied-chartreuse-concavenator.glitch.me/salesHistory"
+        );
+
+        setSalesHistory(SalesHistoryDetails.data);
+        // setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        // setError(error);
+        // setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Function to handle delete sale after admin authentication
   const handleDeleteSale = () => {
@@ -45,21 +63,11 @@ const SalesHistory = () => {
     }
   };
 
-  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedSale, setSelectedSale] = useState(null);
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [deleteError, setDeleteError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterType, setFilterType] = useState("");
-  const [dateRange, setDateRange] = useState({ start: null, end: null });
-
   // Filter sales based on search, type, and date range
   const filteredSales = useMemo(() => {
     return salesHistory.filter((sale) => {
       const matchesSearch =
-        sale.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sale.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         sale.contactNumber.includes(searchQuery);
 
       const matchesType = filterType
@@ -67,8 +75,9 @@ const SalesHistory = () => {
         : true;
 
       const matchesDateRange =
-        (!dateRange.start || new Date(sale.date) >= dateRange.start) &&
-        (!dateRange.end || new Date(sale.date) <= dateRange.end);
+        (!dateRange.start ||
+          new Date(sale.lastUpdatedDate) >= dateRange.start) &&
+        (!dateRange.end || new Date(sale.lastUpdatedDate) <= dateRange.end);
 
       return matchesSearch && matchesType && matchesDateRange;
     });
@@ -81,42 +90,6 @@ const SalesHistory = () => {
     setDateRange({ start: null, end: null });
   };
 
-  // Function to generate a PDF receipt
-  const generatePDFReceipt = (sale) => {
-    const doc = new jsPDF();
-    const formattedDate = new Date(sale.date).toLocaleDateString();
-    const formattedTime = new Date(sale.date).toLocaleTimeString();
-
-    doc.setFontSize(18);
-    doc.text("Transaction Receipt", 14, 22);
-    doc.setFontSize(12);
-    doc.text(`Invoice Number: ${sale.invoiceNumber}`, 14, 30);
-    doc.text(`Date: ${formattedDate}`, 14, 36);
-    doc.text(`Time: ${formattedTime}`, 14, 42);
-
-    doc.text("Customer:", 14, 50);
-    doc.text(`Name: ${sale.customerName}`, 14, 56);
-    doc.text(`Contact: ${sale.contactNumber}`, 14, 62);
-
-    doc.text("Products:", 14, 74);
-    sale.products.forEach((product, index) => {
-      const y = 80 + index * 6;
-      doc.text(
-        `${product.name} - ${product.qty} x Rs.${product.price.toFixed(
-          2
-        )} = Rs.${(product.qty * product.price).toFixed(2)}`,
-        14,
-        y
-      );
-    });
-
-    doc.text(`Total: Rs.${sale.total.toFixed(2)}`, 14, 100);
-    doc.text(`Payment Method: ${sale.paymentDetails.paymentMethod}`, 14, 106);
-    doc.text(`Added By: ${sale.addedBy}`, 14, 112); // New Field for PDF
-
-    return doc; // Make sure to return the document
-  };
-
   const handleOpenReceiptModal = (sale) => {
     setSelectedSale(sale);
     setIsReceiptModalOpen(true);
@@ -125,12 +98,6 @@ const SalesHistory = () => {
   const handleCloseReceiptModal = () => {
     setIsReceiptModalOpen(false);
     setSelectedSale(null);
-  };
-
-  const downloadReceipt = () => {
-    if (!selectedSale) return;
-    const doc = generatePDFReceipt(selectedSale); // Ensure generatePDFReceipt returns the doc
-    doc.save(`receipt_${selectedSale.invoiceNumber}.pdf`); // Now this will work correctly
   };
 
   // Function to handle opening the delete modal
@@ -146,71 +113,12 @@ const SalesHistory = () => {
     setDeleteError("");
   };
 
-  // Function to print the receipt
-  const printReceipt = () => {
-    if (!selectedSale) return;
-    const doc = generatePDFReceipt(selectedSale);
-    const pdfBlob = doc.output("blob");
-    const pdfURL = URL.createObjectURL(pdfBlob);
-
-    const printWindow = window.open(pdfURL, "_blank");
-    printWindow.onload = () => {
-      printWindow.print();
-    };
-  };
-
-  // Function to share the receipt via WhatsApp and email
-  const shareReceipt = () => {
-    if (!selectedSale) return;
-
-    const formattedDate = new Date(selectedSale.date).toLocaleDateString();
-    const formattedTime = new Date(selectedSale.date).toLocaleTimeString();
-
-    // Construct the text message for sharing, including 'who added'
-    const textMessage = `IDS Printing House\nTransaction Receipt\nInvoice Number: ${
-      selectedSale.invoiceNumber
-    }\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: ${
-      selectedSale.customerName
-    }\nContact: ${
-      selectedSale.contactNumber
-    }\n\nProducts:\n${selectedSale.products
-      .map(
-        (product) =>
-          `${product.name} - ${product.qty} x Rs.${product.price.toFixed(
-            2
-          )} = Rs.${(product.qty * product.price).toFixed(2)}`
-      )
-      .join("\n")}\n\nTotal: Rs.${selectedSale.total.toFixed(
-      2
-    )}\nPayment Method: ${
-      selectedSale.paymentDetails.paymentMethod
-    }\n\nAdded By: ${selectedSale.addedBy}`; // Include 'Who Added'
-
-    // Construct the WhatsApp and Email URLs with the text message
-    const whatsappURL = `https://wa.me/+94${
-      selectedSale.contactNumber
-    }?text=${encodeURIComponent(textMessage)}`;
-    const emailSubject = `Receipt for ${selectedSale.customerName}`;
-    const emailBody = textMessage;
-    const mailtoURL = `mailto:?subject=${encodeURIComponent(
-      emailSubject
-    )}&body=${encodeURIComponent(emailBody)}`;
-
-    // Open the share options
-    window.open(whatsappURL, "_blank"); // Open WhatsApp
-    window.open(mailtoURL, "_blank"); // Open Email
-  };
-
   const ROWS_PER_PAGE = 100; // Maximum rows per page
   const [currentPage, setCurrentPage] = useState(0);
 
   // Calculate total pages based on sales history
   const totalPages = Math.ceil(filteredSales.length / ROWS_PER_PAGE);
 
-  const paginatedSales = filteredSales.slice(
-    currentPage * ROWS_PER_PAGE,
-    (currentPage + 1) * ROWS_PER_PAGE
-  );
   return (
     <div className="bodyofpage">
       <div className="container">
@@ -283,20 +191,22 @@ const SalesHistory = () => {
                   <th>Total Amount (Rs.)</th>
                   <th>Payment Method</th>
                   <th>Invoice Number</th>
-                  <th>Who Added</th>
+                  {/* <th>Who Added</th> */}
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody className="custom-table">
                 {filteredSales.map((sale, index) => (
                   <tr key={index}>
-                    <td>{new Date(sale.date).toLocaleDateString()}</td>
-                    <td>{sale.customerName}</td>
+                    <td>
+                      {new Date(sale.lastUpdatedDate).toLocaleDateString()}
+                    </td>
+                    <td>{`${sale.name || ""} ${sale.surName || ""}`}</td>
                     <td>{sale.contactNumber}</td>
-                    <td>{sale.total.toFixed(2)}</td>
+                    <td>{Number(sale.transaction.total).toFixed(2)}</td>
                     <td>{sale.paymentDetails.paymentMethod}</td>
-                    <td>{sale.invoiceNumber}</td>
-                    <td>{sale.addedBy}</td> {/* New Field */}
+                    <td>{sale.invoicenumber}</td>
+                    {/* <td>{sale.addedBy}</td> New Field */}
                     <td>
                       <button
                         variant="contained"
@@ -368,18 +278,23 @@ const SalesHistory = () => {
                 <div className="modal-body" id="receipt-modal-description">
                   <p>
                     <strong>Invoice Number:</strong>{" "}
-                    {selectedSale.invoiceNumber}
+                    {selectedSale.invoicenumber}
                   </p>
                   <p>
                     <strong>Date:</strong>{" "}
-                    {new Date(selectedSale.date).toLocaleDateString()}
+                    {new Date(
+                      selectedSale.lastUpdatedDate
+                    ).toLocaleDateString()}
                   </p>
                   <p>
                     <strong>Time:</strong>{" "}
-                    {new Date(selectedSale.date).toLocaleTimeString()}
+                    {new Date(
+                      selectedSale.lastUpdatedDate
+                    ).toLocaleTimeString()}
                   </p>
                   <p>
-                    <strong>Customer:</strong> {selectedSale.customerName}
+                    <strong>Customer:</strong>{" "}
+                    {`${selectedSale.name || ""} ${selectedSale.surName || ""}`}
                   </p>
                   <p>
                     <strong>Contact:</strong> {selectedSale.contactNumber}
@@ -388,39 +303,77 @@ const SalesHistory = () => {
                     <strong>Products:</strong>
                   </p>
                   <ul>
-                    {selectedSale.products.map((product, index) => (
+                    {selectedSale.transaction.products.map((product, index) => (
                       <li key={index}>
-                        {product.name} - {product.qty} x Rs.
-                        {product.price.toFixed(2)} = Rs.
-                        {(product.qty * product.price).toFixed(2)}
+                        {product.itemName} - {product.qty} x Rs.
+                        {Number(product.preItemsellingprice).toFixed(2)} = Rs.
+                        {(
+                          Number(product.qty) *
+                          Number(product.preItemsellingprice)
+                        ).toFixed(2)}
                       </li>
                     ))}
                   </ul>
                   <p>
-                    <strong>Total:</strong> Rs.{selectedSale.total.toFixed(2)}
+                    <strong>Total:</strong> Rs.
+                    {Number(selectedSale.transaction.total).toFixed(2)}
                   </p>
                   <p>
                     <strong>Payment Method:</strong>{" "}
                     {selectedSale.paymentDetails.paymentMethod}
                   </p>
+
                   <div className="d-flex justify-content-end">
                     <button
                       variant="contained"
-                      onClick={downloadReceipt}
+                      onClick={() =>
+                        DownloadReceipt(
+                          {
+                            name: selectedSale.name,
+                            surname: selectedSale.surname,
+                            phone: selectedSale.contactNumber,
+                          },
+                          selectedSale.paymentDetails,
+                          selectedSale.transaction,
+                          selectedSale.invoicenumber
+                        )
+                      }
                       className="sharebutton"
                     >
                       Download PDF
                     </button>
                     <button
                       variant="contained"
-                      onClick={printReceipt}
+                      onClick={() =>
+                        PrintReceipt(
+                          {
+                            name: selectedSale.name,
+                            surname: selectedSale.surName,
+                            phone: selectedSale.contactNumber,
+                          },
+                          selectedSale.paymentDetails,
+                          selectedSale.transaction,
+                          selectedSale.invoicenumber
+                        )
+                      }
                       className="sharebutton"
                     >
                       Print Receipt
                     </button>
                     <button
                       variant="contained"
-                      onClick={shareReceipt}
+                      onClick={() =>
+                        ShareReceipt(
+                          {
+                            name: selectedSale.name,
+                            surname: selectedSale.surname,
+                            phone: selectedSale.contactNumber,
+                          },
+                          selectedSale.paymentDetails,
+                          selectedSale.transaction,
+                          selectedSale.invoicenumber
+                        )
+                      }
                       className="sharebutton"
                     >
                       Share

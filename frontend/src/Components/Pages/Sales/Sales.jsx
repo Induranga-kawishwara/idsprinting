@@ -903,7 +903,6 @@ const Sales = () => {
                           >
                             <span>{item.itemCode}</span>
 
-
                             <span>IN- {item.itemName}</span>
                             {/* <span>
 
