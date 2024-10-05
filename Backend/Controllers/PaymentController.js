@@ -125,7 +125,7 @@ export const updatePaymentByPaymentId = async (req, res) => {
     const customerSnapshot = await categoryRef.get();
 
     if (!customerSnapshot.exists) {
-      return res.status(404).send({ message: "Category not found." });
+      return res.status(404).send({ message: "Customer not found." });
     }
 
     const { payments = [], ...customerDetails } = customerSnapshot.data();
@@ -185,7 +185,7 @@ export const deletePaymentBypaymentId = async (req, res) => {
     const customerSnapshot = await categoryRef.get();
 
     if (!customerSnapshot.exists) {
-      return res.status(404).send({ message: "Category not found." });
+      return res.status(404).send({ message: "Customer not found." });
     }
 
     const { payments = [] } = customerSnapshot.data();
