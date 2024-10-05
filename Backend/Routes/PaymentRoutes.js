@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getAllPaymentHistory,
   createPayment,
   getCustomerAndPaymentDetails,
   updatePaymentByPaymentId,
@@ -8,6 +9,7 @@ import {
 
 const router = express.Router();
 
+router.get("/", getAllPaymentHistory);
 router.post("/:customerId", createPayment);
 router.get("/:customerId/:paymentId", getCustomerAndPaymentDetails);
 router.put("/:customerId/:paymentId", updatePaymentByPaymentId);
