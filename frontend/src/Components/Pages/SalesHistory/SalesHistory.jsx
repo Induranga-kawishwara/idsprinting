@@ -8,6 +8,8 @@ import {
   PrintReceipt,
   DownloadReceipt,
 } from "../../Reusable/ShareReceipt/ShareReceipt.js";
+import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
+import _ from "lodash";
 
 const SalesHistory = () => {
   const [salesHistory, setSalesHistory] = useState([]);
@@ -20,6 +22,8 @@ const SalesHistory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("");
   const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,11 +33,11 @@ const SalesHistory = () => {
         );
 
         setSalesHistory(SalesHistoryDetails.data);
-        // setLoading(false);
+        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        // setError(error);
-        // setLoading(false);
+        setError(error);
+        setLoading(false);
       }
     };
 
@@ -181,77 +185,88 @@ const SalesHistory = () => {
           >
             Back to Sales
           </button>
-          <div className="table-responsive">
-            <table className="table mt-3 custom-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Customer</th>
-                  <th>Contact Number</th>
-                  <th>Total Amount (Rs.)</th>
-                  <th>Payment Method</th>
-                  <th>Invoice Number</th>
-                  {/* <th>Who Added</th> */}
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody className="custom-table">
-                {filteredSales.map((sale, index) => (
-                  <tr key={index}>
-                    <td>
-                      {new Date(sale.lastUpdatedDate).toLocaleDateString()}
-                    </td>
-                    <td>{`${sale.name || ""} ${sale.surName || ""}`}</td>
-                    <td>{sale.contactNumber}</td>
-                    <td>{Number(sale.transaction.total).toFixed(2)}</td>
-                    <td>{sale.paymentDetails.paymentMethod}</td>
-                    <td>{sale.invoicenumber}</td>
-                    {/* <td>{sale.addedBy}</td> New Field */}
-                    <td>
-                      <button
-                        variant="contained"
-                        size="small"
-                        className="editbtn"
-                        onClick={() => handleOpenReceiptModal(sale)}
-                      >
-                        View Receipt
-                      </button>
-                      <button
-                        variant="contained"
-                        size="small"
-                        color="secondary"
-                        className="deletebtn"
-                        onClick={() => handleOpenDeleteModal(sale)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="pagination">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-            disabled={currentPage === 0}
-          >
-            Previous
-          </button>
-          <span>
-            Page {currentPage + 1} of {totalPages}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
-            }
-            disabled={currentPage === totalPages - 1}
-          >
-            Next
-          </button>
+          {loading || error || _.isEmpty(filteredSales) ? (
+            <TableChecker
+              loading={loading}
+              error={error}
+              hasData={filteredSales.length > 0}
+            />
+          ) : (
+            <div>
+              <div className="table-responsive">
+                <table className="table mt-3 custom-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Customer</th>
+                      <th>Contact Number</th>
+                      <th>Total Amount (Rs.)</th>
+                      <th>Payment Method</th>
+                      <th>Invoice Number</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="custom-table">
+                    {filteredSales.map((sale) => (
+                      <tr key={sale.id}>
+                        <td>
+                          {new Date(sale.lastUpdatedDate).toLocaleDateString()}
+                        </td>
+                        <td>{`${sale.name || ""} ${sale.surName || ""}`}</td>
+                        <td>{sale.contactNumber}</td>
+                        <td>{Number(sale.transaction.total).toFixed(2)}</td>
+                        <td>{sale.paymentDetails.paymentMethod}</td>
+                        <td>{sale.invoicenumber}</td>
+                        <td>
+                          <button
+                            variant="contained"
+                            size="small"
+                            className="editbtn"
+                            onClick={() => handleOpenReceiptModal(sale)}
+                            aria-label={`View receipt for ${sale.name} ${sale.surName}`}
+                          >
+                            View Receipt
+                          </button>
+                          <button
+                            variant="contained"
+                            size="small"
+                            color="secondary"
+                            className="deletebtn"
+                            onClick={() => handleOpenDeleteModal(sale)}
+                            aria-label={`Delete sale for ${sale.name} ${sale.surName}`}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>{" "}
+              {/* Pagination Controls */}
+              <div className="pagination">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 0))
+                  }
+                  disabled={currentPage === 0}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {currentPage + 1} of {totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+                  }
+                  disabled={currentPage === totalPages - 1}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Receipt Modal */}
