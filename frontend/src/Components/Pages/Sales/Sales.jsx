@@ -228,15 +228,14 @@ const Sales = () => {
           if (match) {
             return {
               ...category,
-              items: category.items
-                .map((item) => {
-                  const updatedQty = item.qty - match.qty;
-                  return {
-                    ...item,
-                    qty: updatedQty > 0 ? updatedQty : 0,
-                  };
-                })
-                .filter((item) => item.qty > 0),
+              items: category.items.map((item) => {
+                const updatedQty = item.qty - match.qty;
+                return {
+                  ...item,
+                  qty: updatedQty > 0 ? updatedQty : 0,
+                };
+              }),
+              // .filter((item) => item.qty > 0),
             };
           }
           return category;
@@ -938,33 +937,36 @@ const Sales = () => {
                       hasData={filteredProducts.length > 0}
                     />
                   ) : (
-                    filteredProducts.map(
-                      (data) =>
-                        data.items.length > 0 && (
-                          <div key={data.categoryid}>
-                            <span>{data.category}</span>
-                            {data.items.map((item) =>
-                              item.qty > 0 ? (
-                                <button
-                                  key={item.Itemid}
-                                  className="product-button"
-                                  onClick={() => addProductToTransaction(item)}
-                                >
-                                  <span>{item.itemCode}</span>
-                                  <span>IN- {item.itemName}</span>
-                                  <span>
-                                    Rs.{" "}
-                                    {(item.retailPrice - item.discount).toFixed(
-                                      2
-                                    )}
-                                  </span>
-                                  <span>Stock. {item.qty}</span>
-                                </button>
-                              ) : null
-                            )}
-                          </div>
-                        )
-                    )
+                    filteredProducts.map((data) => {
+                      const hasAvailableItems = data.items.some(
+                        (item) => item.qty > 0
+                      );
+
+                      return hasAvailableItems ? (
+                        <div key={data.categoryid}>
+                          <span>{data.category}</span>
+                          {data.items.map((item) =>
+                            item.qty > 0 ? (
+                              <button
+                                key={item.Itemid}
+                                className="product-button"
+                                onClick={() => addProductToTransaction(item)}
+                              >
+                                <span>{item.itemCode}</span>
+                                <span>IN- {item.itemName}</span>
+                                <span>
+                                  Rs.{" "}
+                                  {(item.retailPrice - item.discount).toFixed(
+                                    2
+                                  )}
+                                </span>
+                                <span>Stock. {item.qty}</span>
+                              </button>
+                            ) : null
+                          )}
+                        </div>
+                      ) : null;
+                    })
                   )}
                 </div>
               </div>
