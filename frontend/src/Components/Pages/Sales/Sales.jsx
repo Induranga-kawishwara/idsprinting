@@ -169,17 +169,19 @@ const Sales = () => {
             return {
               ...category,
               category: updatedCategory.rawMaterialName,
-              items: category.items.map((item) => {
-                return {
-                  ...item,
-                  category: updatedCategory.rawMaterialName,
-                  size: updatedCategory.size,
-                  gsm: updatedCategory.thickness,
-                  qty: updatedCategory.qty,
-                  buyingPrice: updatedCategory.buyingPrice,
-                  company: updatedCategory.company,
-                };
-              }),
+              items: category.items
+                .map((item) => {
+                  return {
+                    ...item,
+                    category: updatedCategory.rawMaterialName,
+                    size: updatedCategory.size,
+                    gsm: updatedCategory.thickness,
+                    qty: Math.max(updatedCategory.qty, 0),
+                    buyingPrice: updatedCategory.buyingPrice,
+                    company: updatedCategory.company,
+                  };
+                })
+                .filter((item) => item.qty > 0),
             };
           }
           return category;
