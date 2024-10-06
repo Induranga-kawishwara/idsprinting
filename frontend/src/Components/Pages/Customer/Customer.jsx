@@ -65,7 +65,7 @@ const Customer = () => {
         addedDate: date,
         addedTime: time,
         totalSpent: (newCustomer.payments || []).reduce(
-          (sum, payment) => sum + (payment.transaction?.total || 0),
+          (sum, payment) => sum + (payment.transaction?.net || 0),
           0
         ),
       };
@@ -82,7 +82,7 @@ const Customer = () => {
         addedDate: date,
         addedTime: time,
         totalSpent: (updatedCustomer.payments || []).reduce(
-          (sum, payment) => sum + (payment.transaction?.total || 0),
+          (sum, payment) => sum + (payment.transaction?.net || 0),
           0
         ),
       };
@@ -99,10 +99,63 @@ const Customer = () => {
       );
     });
 
+    socket.on("PaymentAdded", (newsale) => {
+      setCustomers((prevCustomers) =>
+        prevCustomers.map((customer) => {
+          if (customer.id === newsale.id) {
+            return {
+              ...customer,
+              payments: [
+                ...customer.payments,
+                {
+                  invoicenumber: newsale.invoicenumber,
+                  paymentId: newsale.paymentId,
+                  transaction: newsale.transaction,
+                  paymentDetails: newsale.paymentDetails,
+                  lastUpdatedDate: newsale.lastUpdatedDate,
+                },
+              ],
+              totalSpent:
+                (customer.totalSpent || 0) + (newsale.transaction?.net || 0),
+            };
+          }
+          return customer;
+        })
+      );
+    });
+
+    socket.on("PaymentDeleted", ({ customerId, paymentId }) => {
+      setCustomers((prevCustomers) =>
+        prevCustomers.map((customer) => {
+          if (customer.id === customerId) {
+            const paymentToDelete = customer.payments.find(
+              (payment) => payment.paymentId === paymentId
+            );
+
+            const updatedPayments = customer.payments.filter(
+              (payment) => payment.paymentId !== paymentId
+            );
+
+            return {
+              ...customer,
+              payments: updatedPayments,
+              totalSpent:
+                (customer.totalSpent || 0) -
+                (paymentToDelete?.transaction?.net || 0),
+            };
+          }
+          return customer;
+        })
+      );
+    });
+
     return () => {
       socket.off("customerAdded");
       socket.off("customerUpdated");
       socket.off("customerDeleted");
+
+      socket.off("PaymentAdded");
+      socket.off("PaymentDeleted");
     };
   }, [customers]);
 
