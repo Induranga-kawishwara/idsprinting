@@ -237,9 +237,15 @@ const Sales = () => {
       const response = await axios.post(
         "https://candied-chartreuse-concavenator.glitch.me/customers/",
         {
-          ...values,
+          name: values.name,
           surName: values.surname,
           contactNumber: values.phone,
+          email: values.email,
+          houseNo: values.houseNo,
+          street: values.street,
+          city: values.city,
+          postalCode: values.postalCode,
+          customerType: values.customerType,
           addedDateAndTime: new Date().toISOString(),
         }
       );
