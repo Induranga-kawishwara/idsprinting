@@ -149,7 +149,7 @@ const Supplier = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/suppliers/supplier",
+          "https://candied-chartreuse-concavenator.glitch.me/suppliers/",
           data
         );
 

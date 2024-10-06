@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 router.get("/", getAllCashups);
-router.post("/Cashup", createCashup);
+router.post("/", createCashup);
 router.get("/:id", getCashupById);
 router.put("/:id", updateCashup);
 router.delete("/:id", deleteCashup);

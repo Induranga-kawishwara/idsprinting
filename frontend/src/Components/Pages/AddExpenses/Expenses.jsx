@@ -270,7 +270,7 @@ const Expenses = () => {
       } else {
         // Create new expense
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/expenses/expenses",
+          "https://candied-chartreuse-concavenator.glitch.me/expenses/",
           { ...data, dateAndTime: currentDate }
         );
 

@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 router.get("/", getAllSuppliers);
-router.post("/supplier", createSupplier);
+router.post("/", createSupplier);
 router.get("/:id", getSupplierById);
 router.put("/:id", updateSupplier);
 router.delete("/:id", deleteSupplier);

@@ -235,7 +235,7 @@ const Sales = () => {
     setLoadingpage(true);
     try {
       const response = await axios.post(
-        "https://candied-chartreuse-concavenator.glitch.me/customers/customer",
+        "https://candied-chartreuse-concavenator.glitch.me/customers/",
         {
           ...values,
           surName: values.surname,

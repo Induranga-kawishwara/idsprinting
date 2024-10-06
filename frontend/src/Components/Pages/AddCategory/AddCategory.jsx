@@ -203,7 +203,7 @@ const Category = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/categories/Category",
+          "https://candied-chartreuse-concavenator.glitch.me/categories/",
           data
         );
         alert(response.data.message);
