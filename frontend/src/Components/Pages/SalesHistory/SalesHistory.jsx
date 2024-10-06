@@ -383,7 +383,7 @@ const SalesHistory = () => {
                         DownloadReceipt(
                           {
                             name: selectedSale.name,
-                            surname: selectedSale.surname,
+                            surname: selectedSale.surName,
                             phone: selectedSale.contactNumber,
                           },
                           selectedSale.paymentDetails,
@@ -419,7 +419,7 @@ const SalesHistory = () => {
                         ShareReceipt(
                           {
                             name: selectedSale.name,
-                            surname: selectedSale.surname,
+                            surname: selectedSale.surName,
                             phone: selectedSale.contactNumber,
                           },
                           selectedSale.paymentDetails,
