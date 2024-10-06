@@ -56,9 +56,9 @@ const SalesHistory = () => {
       );
     });
 
-    socket.on("PaymentDeleted", ({ id }) => {
+    socket.on("PaymentDeleted", ({ paymentId }) => {
       setSalesHistory((prevSales) =>
-        prevSales.filter((sale) => sale.paymentId !== id)
+        prevSales.filter((sale) => sale.paymentId !== paymentId)
       );
     });
     return () => {
