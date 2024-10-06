@@ -217,6 +217,30 @@ const Sales = () => {
         prevCustomers.filter((customer) => customer.id !== id)
       );
     });
+
+    socket.on("ReduceQty", (reduceQty) => {
+      setAllProducts((prevCategories) =>
+        prevCategories.map((category) => {
+          const match = reduceQty.find(
+            (reduced) => reduced.categoryid === category.categoryid
+          );
+
+          if (match) {
+            return {
+              ...category,
+              items: category.items.map((item) => {
+                return {
+                  ...item,
+                  qty: item.qty - match.qty,
+                };
+              }),
+            };
+          }
+          return category;
+        })
+      );
+    });
+
     return () => {
       socket.off("ItemAdded");
       socket.off("ItemUpdated");
@@ -228,6 +252,8 @@ const Sales = () => {
       socket.off("customerAdded");
       socket.off("customerUpdated");
       socket.off("customerDeleted");
+
+      socket.off("ReduceQty");
     };
   }, [customers, allProducts]);
 
