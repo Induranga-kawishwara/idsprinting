@@ -543,39 +543,59 @@ const Sales = () => {
 
     // Submit payment details to backend
     try {
-      const response = await axios.post(
-        `https://candied-chartreuse-concavenator.glitch.me/payment/${selectedCustomer.id}`,
-        {
-          paymentDetails: newPaymentDetailsState,
-          transaction: {
-            ...transaction,
-            products: transaction.products.map(
-              ({
-                itemName,
-                categoryid,
-                Itemid,
-                color,
-                qty,
-                discount,
-                retailPrice,
-              }) => ({
-                itemName,
-                categoryid,
-                Itemid,
-                color,
-                qty,
-                discount,
-                retailPrice,
-                preItemsellingprice: retailPrice - discount,
-              })
-            ),
-          },
-          invoicenumber: newInvoiceNumber,
-          lastUpdatedDate: new Date(),
-        }
+      const extractCategory =
+        transaction?.products?.map((product) => ({
+          categoryid: product.categoryid,
+          qty: product.qty,
+        })) || [];
+
+      const responsetest = await axios.post(
+        `https://candied-chartreuse-concavenator.glitch.me/categories/reduceQty`,
+        extractCategory
       );
 
-      showAlert(response.data.message);
+      if (responsetest.status === 200) {
+        const response = await axios.post(
+          `https://candied-chartreuse-concavenator.glitch.me/payment/${selectedCustomer.id}`,
+          {
+            paymentDetails: newPaymentDetailsState,
+            transaction: {
+              ...transaction,
+              products: transaction.products.map(
+                ({
+                  itemName,
+                  categoryid,
+                  Itemid,
+                  color,
+                  qty,
+                  discount,
+                  retailPrice,
+                }) => ({
+                  itemName,
+                  categoryid,
+                  Itemid,
+                  color,
+                  qty,
+                  discount,
+                  retailPrice,
+                  preItemsellingprice: retailPrice - discount,
+                })
+              ),
+            },
+            invoicenumber: newInvoiceNumber,
+            lastUpdatedDate: new Date(),
+          }
+        );
+
+        showAlert(response.data.message);
+        // Open the modal to choose download, print, or share
+        // setLoadingpage(false);
+
+        setIsReceiptOptionsModalOpen(true);
+
+        // Close the payment modal
+        setIsPaymentModalOpen(false);
+      }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message ||
@@ -583,14 +603,6 @@ const Sales = () => {
       showAlert(`Error: ${errorMessage}`);
       console.error("Error processing item:", error);
     }
-
-    // Open the modal to choose download, print, or share
-    // setLoadingpage(false);
-
-    setIsReceiptOptionsModalOpen(true);
-
-    // Close the payment modal
-    setIsPaymentModalOpen(false);
   };
 
   const handleAddProductSubmit = (values) => {

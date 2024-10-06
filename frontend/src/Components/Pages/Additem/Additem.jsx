@@ -97,9 +97,6 @@ const Item = () => {
         const ItemData = await axios.get(
           "https://candied-chartreuse-concavenator.glitch.me/categories/"
         );
-
-        console.log(ItemData.data);
-
         const categoryDetails = ItemData.data.map((category) =>
           mapCategoryData(category)
         );

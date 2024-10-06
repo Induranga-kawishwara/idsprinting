@@ -40,13 +40,13 @@ export const createPayment = async (req, res) => {
     req.body;
 
   try {
-    // Reference to the specific document within the Categories collection
     const customerDoc = PaymentCollection.doc(customerId);
     const customerSnapshot = await customerDoc.get();
     if (!customerSnapshot.exists) {
       return res.status(404).send({ message: "Customer not found." });
     }
     const { payments = [], ...customerDetails } = customerSnapshot.data();
+
     const newPayment = {
       paymentId: uuidv4(),
       paymentDetails,
@@ -54,7 +54,7 @@ export const createPayment = async (req, res) => {
       invoicenumber,
       lastUpdatedDate,
     };
-    // Update the document with the new Payment
+
     await customerDoc.update({ payments: [...payments, newPayment] });
 
     const result = {
@@ -70,6 +70,7 @@ export const createPayment = async (req, res) => {
     };
 
     broadcastCustomerChanges("PaymentAdded", result);
+
     return res
       .status(200)
       .send({ message: "Payment added to customer successfully." });

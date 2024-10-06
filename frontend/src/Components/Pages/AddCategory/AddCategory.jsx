@@ -142,6 +142,23 @@ const Category = () => {
       );
     });
 
+    socket.on("ReduceQty", (reduceQty) => {
+      setCategories((prevCategories) =>
+        prevCategories.map((category) => {
+          const match = reduceQty.find(
+            (reduced) => reduced.categoryid === category.id
+          );
+          if (match) {
+            return {
+              ...category,
+              qty: category.qty - match.qty,
+            };
+          }
+          return category;
+        })
+      );
+    });
+
     return () => {
       socket.off("CategoryAdded");
       socket.off("CategoryUpdated");
@@ -152,6 +169,8 @@ const Category = () => {
       socket.off("supplierAdded");
       socket.off("supplierUpdated");
       socket.off("supplierDeleted");
+
+      socket.off("ReduceQty");
     };
   }, [suppliers, categories]);
 
