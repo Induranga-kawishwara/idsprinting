@@ -217,6 +217,33 @@ const Sales = () => {
         prevCustomers.filter((customer) => customer.id !== id)
       );
     });
+
+    socket.on("ReduceQty", (reduceQty) => {
+      setAllProducts((prevCategories) =>
+        prevCategories.map((category) => {
+          const match = reduceQty.find(
+            (reduced) => reduced.categoryid === category.categoryid
+          );
+
+          if (match) {
+            return {
+              ...category,
+              items: category.items
+                .map((item) => {
+                  const updatedQty = item.qty - match.qty;
+                  return {
+                    ...item,
+                    qty: updatedQty > 0 ? updatedQty : 0,
+                  };
+                })
+                .filter((item) => item.qty > 0),
+            };
+          }
+          return category;
+        })
+      );
+    });
+
     return () => {
       socket.off("ItemAdded");
       socket.off("ItemUpdated");
@@ -228,6 +255,8 @@ const Sales = () => {
       socket.off("customerAdded");
       socket.off("customerUpdated");
       socket.off("customerDeleted");
+
+      socket.off("ReduceQty");
     };
   }, [customers, allProducts]);
 
@@ -909,38 +938,33 @@ const Sales = () => {
                       hasData={filteredProducts.length > 0}
                     />
                   ) : (
-                    filteredProducts.map((data) => (
-                      <div>
-                        {" "}
-                        <span>{data.category}</span>
-                        {data.items.map((item) => (
-                          <button
-                            key={item.Itemid}
-                            className="product-button"
-                            onClick={() => addProductToTransaction(item)}
-                          >
-                            <span>{item.itemCode}</span>
-
-                            <span>IN- {item.itemName}</span>
-                            {/* <span>
-
-                            <span>Item Name. {item.itemName}</span>
-                            <span>Color. {item.color}</span>
-
-                            <span>
-
-                              Discount Price RS.
-                              {item.discount.toFixed(2) + "/="}
-                            </span> */}
-                            <span>
-                              Rs.{" "}
-                              {(item.retailPrice - item.discount).toFixed(2)}
-                            </span>
-                            <span>Stock. {item.qty}</span>
-                          </button>
-                        ))}
-                      </div>
-                    ))
+                    filteredProducts.map(
+                      (data) =>
+                        data.items.length > 0 && (
+                          <div key={data.categoryid}>
+                            <span>{data.category}</span>
+                            {data.items.map((item) =>
+                              item.qty > 0 ? (
+                                <button
+                                  key={item.Itemid}
+                                  className="product-button"
+                                  onClick={() => addProductToTransaction(item)}
+                                >
+                                  <span>{item.itemCode}</span>
+                                  <span>IN- {item.itemName}</span>
+                                  <span>
+                                    Rs.{" "}
+                                    {(item.retailPrice - item.discount).toFixed(
+                                      2
+                                    )}
+                                  </span>
+                                  <span>Stock. {item.qty}</span>
+                                </button>
+                              ) : null
+                            )}
+                          </div>
+                        )
+                    )
                   )}
                 </div>
               </div>
