@@ -33,7 +33,7 @@ const Customer = () => {
             surname: customer.surName,
             phone: customer.contactNumber,
             totalSpent: (customer.payments || []).reduce(
-              (sum, payment) => sum + (payment.transaction?.total || 0),
+              (sum, payment) => sum + (payment.transaction?.net || 0),
               0
             ),
             addedDate: date,
