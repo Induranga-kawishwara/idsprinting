@@ -55,15 +55,23 @@ const SalesHistory = () => {
         prevSales.filter((sale) => sale.id !== id)
       );
     });
+
+    socket.on("PaymentDeleted", ({ id }) => {
+      setSalesHistory((prevSales) =>
+        prevSales.filter((sale) => sale.paymentId !== id)
+      );
+    });
     return () => {
       socket.off("PaymentAdded");
+      socket.off("PaymentDeleted");
 
       socket.off("customerDeleted");
     };
   }, [salesHistory]);
 
   // Function to handle delete sale after admin authentication
-  const handleDeleteSale = () => {
+  const handleDeleteSale = async () => {
+    console.log(selectedSale);
     // Example admin credentials; replace with actual authentication logic
     const adminCredentials = {
       email: "admin@example.com",
@@ -74,11 +82,23 @@ const SalesHistory = () => {
       adminEmail === adminCredentials.email &&
       adminPassword === adminCredentials.password
     ) {
-      setSalesHistory((prevSales) =>
-        prevSales.filter(
-          (sale) => sale.invoiceNumber !== selectedSale.invoiceNumber
-        )
+      const confirmDelete = window.confirm(
+        `Do you want to delete: ${selectedSale.invoicenumber}?`
       );
+
+      if (confirmDelete) {
+        try {
+          const response = await axios.delete(
+            `https://candied-chartreuse-concavenator.glitch.me/payment/${selectedSale.id}/${selectedSale.paymentId}`
+          );
+
+          alert(response.data.message);
+        } catch (error) {
+          console.error("Error deleting details:", error);
+          alert("Failed to delete the details. Please try again.");
+        }
+      }
+
       handleCloseDeleteModal();
     } else {
       setDeleteError("Invalid email or password.");

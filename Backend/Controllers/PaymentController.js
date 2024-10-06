@@ -189,9 +189,9 @@ export const deletePaymentBypaymentId = async (req, res) => {
   const { customerId, paymentId } = req.params;
 
   try {
-    const categoryRef = PaymentCollection.doc(customerId);
+    const customerRef = PaymentCollection.doc(customerId);
 
-    const customerSnapshot = await categoryRef.get();
+    const customerSnapshot = await customerRef.get();
 
     if (!customerSnapshot.exists) {
       return res.status(404).send({ message: "Customer not found." });
@@ -203,8 +203,7 @@ export const deletePaymentBypaymentId = async (req, res) => {
       (Payment) => Payment.paymentId !== paymentId
     );
 
-    // await updateDoc(categoryRef, { Payments: updatedPayments });
-    await categoryRef.update({ Payments: updatedPayments });
+    await customerRef.update({ payments: updatedPayments });
 
     broadcastCustomerChanges("PaymentDeleted", { paymentId });
 
