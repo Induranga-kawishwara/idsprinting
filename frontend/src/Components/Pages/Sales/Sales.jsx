@@ -303,6 +303,11 @@ const Sales = () => {
     return allProducts
       .map((category) => {
         const filteredItems = category.items.filter((item) => {
+          // Check if the item has a quantity greater than 0
+          if (Number(item.qty) <= 0) {
+            return false; // Exclude items with qty <= 0
+          }
+
           if (searchField === "name") {
             return item.itemName
               .toLowerCase()
@@ -937,36 +942,38 @@ const Sales = () => {
                       hasData={filteredProducts.length > 0}
                     />
                   ) : (
-                    filteredProducts.map((data) => {
-                      const hasAvailableItems = data.items.some(
-                        (item) => item.qty > 0
-                      );
+                    filteredProducts.map((data) => (
+                      <div>
+                        {" "}
+                        <span>{data.category}</span>
+                        {data.items.map((item) => (
+                          <button
+                            key={item.Itemid}
+                            className="product-button"
+                            onClick={() => addProductToTransaction(item)}
+                          >
+                            <span>{item.itemCode}</span>
 
-                      return hasAvailableItems ? (
-                        <div key={data.categoryid}>
-                          <span>{data.category}</span>
-                          {data.items.map((item) =>
-                            item.qty > 0 ? (
-                              <button
-                                key={item.Itemid}
-                                className="product-button"
-                                onClick={() => addProductToTransaction(item)}
-                              >
-                                <span>{item.itemCode}</span>
-                                <span>IN- {item.itemName}</span>
-                                <span>
-                                  Rs.{" "}
-                                  {(item.retailPrice - item.discount).toFixed(
-                                    2
-                                  )}
-                                </span>
-                                <span>Stock. {item.qty}</span>
-                              </button>
-                            ) : null
-                          )}
-                        </div>
-                      ) : null;
-                    })
+                            <span>IN- {item.itemName}</span>
+                            {/* <span>
+
+                            <span>Item Name. {item.itemName}</span>
+                            <span>Color. {item.color}</span>
+
+                            <span>
+
+                              Discount Price RS.
+                              {item.discount.toFixed(2) + "/="}
+                            </span> */}
+                            <span>
+                              Rs.{" "}
+                              {(item.retailPrice - item.discount).toFixed(2)}
+                            </span>
+                            <span>Stock. {item.qty}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
