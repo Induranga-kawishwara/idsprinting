@@ -27,14 +27,13 @@ const Customer = () => {
 
         const formattedCustomers = customerData.data.map((customer) => {
           const { date, time } = ConvertToSLT(customer.addedDateAndTime);
-          console.log(customer);
           return {
             ...customer,
             id: customer.id,
             surname: customer.surName,
             phone: customer.contactNumber,
             totalSpent: (customer.payments || []).reduce(
-              (sum, payment) => sum + (payment.transaction?.total || 0),
+              (sum, payment) => sum + (payment.transaction?.net || 0),
               0
             ),
             addedDate: date,
@@ -62,11 +61,11 @@ const Customer = () => {
         ...newCustomer,
         surname: newCustomer.surName,
         phone: newCustomer.contactNumber,
-        postalCode: newCustomer.postalcode,
+        postalCode: newCustomer.postalCode,
         addedDate: date,
         addedTime: time,
         totalSpent: (newCustomer.payments || []).reduce(
-          (sum, payment) => sum + (payment.transaction?.total || 0),
+          (sum, payment) => sum + (payment.transaction?.net || 0),
           0
         ),
       };
@@ -83,7 +82,7 @@ const Customer = () => {
         addedDate: date,
         addedTime: time,
         totalSpent: (updatedCustomer.payments || []).reduce(
-          (sum, payment) => sum + (payment.transaction?.total || 0),
+          (sum, payment) => sum + (payment.transaction?.net || 0),
           0
         ),
       };
@@ -100,10 +99,63 @@ const Customer = () => {
       );
     });
 
+    socket.on("PaymentAdded", (newsale) => {
+      setCustomers((prevCustomers) =>
+        prevCustomers.map((customer) => {
+          if (customer.id === newsale.id) {
+            return {
+              ...customer,
+              payments: [
+                ...customer.payments,
+                {
+                  invoicenumber: newsale.invoicenumber,
+                  paymentId: newsale.paymentId,
+                  transaction: newsale.transaction,
+                  paymentDetails: newsale.paymentDetails,
+                  lastUpdatedDate: newsale.lastUpdatedDate,
+                },
+              ],
+              totalSpent:
+                (customer.totalSpent || 0) + (newsale.transaction?.net || 0),
+            };
+          }
+          return customer;
+        })
+      );
+    });
+
+    socket.on("PaymentDeleted", ({ customerId, paymentId }) => {
+      setCustomers((prevCustomers) =>
+        prevCustomers.map((customer) => {
+          if (customer.id === customerId) {
+            const paymentToDelete = customer.payments.find(
+              (payment) => payment.paymentId === paymentId
+            );
+
+            const updatedPayments = customer.payments.filter(
+              (payment) => payment.paymentId !== paymentId
+            );
+
+            return {
+              ...customer,
+              payments: updatedPayments,
+              totalSpent:
+                (customer.totalSpent || 0) -
+                (paymentToDelete?.transaction?.net || 0),
+            };
+          }
+          return customer;
+        })
+      );
+    });
+
     return () => {
       socket.off("customerAdded");
       socket.off("customerUpdated");
       socket.off("customerDeleted");
+
+      socket.off("PaymentAdded");
+      socket.off("PaymentDeleted");
     };
   }, [customers]);
 
@@ -135,9 +187,15 @@ const Customer = () => {
     const currentDate = new Date();
 
     const data = {
-      ...values,
+      name: values.name,
       surName: values.surname,
       contactNumber: values.phone,
+      email: values.email,
+      houseNo: values.houseNo,
+      street: values.street,
+      city: values.city,
+      postalCode: values.postalCode,
+      customerType: values.customerType,
       addedDateAndTime: currentDate.toISOString(), // Automatically include the current date and time
     };
 

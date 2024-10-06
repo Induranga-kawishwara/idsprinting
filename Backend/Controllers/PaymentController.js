@@ -205,7 +205,7 @@ export const deletePaymentBypaymentId = async (req, res) => {
 
     await customerRef.update({ payments: updatedPayments });
 
-    broadcastCustomerChanges("PaymentDeleted", { paymentId });
+    broadcastCustomerChanges("PaymentDeleted", { customerId, paymentId });
 
     return res.status(200).send({ message: "Payment deleted successfully." });
   } catch (error) {

@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 router.get("/", getAllCustomers);
-router.post("/customer", createCustomer);
+router.post("/", createCustomer);
 router.get("/:id", getCustomerById);
 router.put("/:id", updateCustomer);
 router.delete("/:id", deleteCustomer);

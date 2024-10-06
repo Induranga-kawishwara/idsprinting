@@ -56,9 +56,9 @@ const SalesHistory = () => {
       );
     });
 
-    socket.on("PaymentDeleted", ({ id }) => {
+    socket.on("PaymentDeleted", ({ paymentId }) => {
       setSalesHistory((prevSales) =>
-        prevSales.filter((sale) => sale.paymentId !== id)
+        prevSales.filter((sale) => sale.paymentId !== paymentId)
       );
     });
     return () => {
@@ -252,7 +252,7 @@ const SalesHistory = () => {
                         </td>
                         <td>{`${sale.name || ""} ${sale.surName || ""}`}</td>
                         <td>{sale.contactNumber}</td>
-                        <td>{Number(sale.transaction.total).toFixed(2)}</td>
+                        <td>{Number(sale.transaction.net).toFixed(2)}</td>
                         <td>{sale.paymentDetails.paymentMethod}</td>
                         <td>{sale.invoicenumber}</td>
                         <td>
@@ -369,7 +369,7 @@ const SalesHistory = () => {
                   </ul>
                   <p>
                     <strong>Total:</strong> Rs.
-                    {Number(selectedSale.transaction.total).toFixed(2)}
+                    {Number(selectedSale.transaction.net).toFixed(2)}
                   </p>
                   <p>
                     <strong>Payment Method:</strong>{" "}
@@ -383,7 +383,7 @@ const SalesHistory = () => {
                         DownloadReceipt(
                           {
                             name: selectedSale.name,
-                            surname: selectedSale.surname,
+                            surname: selectedSale.surName,
                             phone: selectedSale.contactNumber,
                           },
                           selectedSale.paymentDetails,
@@ -419,7 +419,7 @@ const SalesHistory = () => {
                         ShareReceipt(
                           {
                             name: selectedSale.name,
-                            surname: selectedSale.surname,
+                            surname: selectedSale.surName,
                             phone: selectedSale.contactNumber,
                           },
                           selectedSale.paymentDetails,

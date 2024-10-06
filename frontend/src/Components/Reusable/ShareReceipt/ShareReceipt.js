@@ -22,11 +22,11 @@ export const ShareReceipt = (
   const formattedDate = new Date().toLocaleDateString();
   const formattedTime = new Date().toLocaleTimeString();
 
-  let textMessage = `*IDS Printing House*\nTransaction Receipt\nInvoice Number: ${invoiceNumber}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nCustomer:\nName: '''${
-    selectedCustomer.name
-  } '''${selectedCustomer.surname}\nContact: ${
-    selectedCustomer.phone
-  }\n\nProducts:\n${transaction.products
+  let textMessage = `*IDS Printing House*\nTransaction Receipt\nInvoice Number: ${invoiceNumber}
+  \nDate: ${formattedDate}\nTime: ${formattedTime}
+  \n\nCustomer:\nName: ${`${selectedCustomer.name} ${selectedCustomer.surname}`}
+  \nContact: ${selectedCustomer.phone}
+  \n\nProducts:\n${transaction.products
     .map(
       (product) =>
         `${product.name} - ${product.qty} x Rs.${product.retailPrice.toFixed(

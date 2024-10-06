@@ -338,7 +338,7 @@ const RegEmp = () => {
         const user = userCredential.user;
 
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/users/user",
+          "https://candied-chartreuse-concavenator.glitch.me/users/",
           {
             uid: user.uid,
             isAdmin: false,
