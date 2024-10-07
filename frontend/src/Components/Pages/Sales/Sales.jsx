@@ -303,9 +303,8 @@ const Sales = () => {
     return allProducts
       .map((category) => {
         const filteredItems = category.items.filter((item) => {
-          // Check if the item has a quantity greater than 0
           if (Number(item.qty) <= 0) {
-            return false; // Exclude items with qty <= 0
+            return false;
           }
 
           if (searchField === "name") {
@@ -321,10 +320,9 @@ const Sales = () => {
               .toLowerCase()
               .includes(productSearchQuery.toLowerCase());
           }
-          return true; // Include all if no specific searchField is matched
+          return true;
         });
 
-        // Return the category with filtered items if there are any
         return filteredItems.length > 0
           ? {
               category: category.category,
