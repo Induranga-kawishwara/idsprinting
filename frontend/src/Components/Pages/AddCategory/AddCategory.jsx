@@ -18,8 +18,9 @@ const CategorySchema = Yup.object().shape({
   rawMaterialName: Yup.string().required("Raw Material Name is required"),
   size: Yup.string().required("Size is required"),
   thickness: Yup.string().required("Thickness is required"),
-  // qty: Yup.number().required("Quantity is required"),
+  qty: Yup.number().required("Quantity is required"),
   company: Yup.string(),
+  color: Yup.string().required("Color is required"),
   supplier: Yup.string().required("Supplier is required"),
   buyingPrice: Yup.number().required("Buying Price is required"),
   addedBy: Yup.string().required("Added By is required"),
@@ -142,22 +143,22 @@ const Category = () => {
       );
     });
 
-    // socket.on("ReduceQty", (reduceQty) => {
-    //   setCategories((prevCategories) =>
-    //     prevCategories.map((category) => {
-    //       const match = reduceQty.find(
-    //         (reduced) => reduced.categoryid === category.id
-    //       );
-    //       if (match) {
-    //         return {
-    //           ...category,
-    //           qty: category.qty - match.qty,
-    //         };
-    //       }
-    //       return category;
-    //     })
-    //   );
-    // });
+    socket.on("ReduceQty", (reduceQty) => {
+      setCategories((prevCategories) =>
+        prevCategories.map((category) => {
+          const match = reduceQty.find(
+            (reduced) => reduced.categoryid === category.id
+          );
+          if (match) {
+            return {
+              ...category,
+              qty: category.qty - match.qty,
+            };
+          }
+          return category;
+        })
+      );
+    });
 
     return () => {
       socket.off("CategoryAdded");
@@ -170,7 +171,7 @@ const Category = () => {
       socket.off("supplierUpdated");
       socket.off("supplierDeleted");
 
-      // socket.off("ReduceQty");
+      socket.off("ReduceQty");
     };
   }, [suppliers, categories]);
 
@@ -284,7 +285,8 @@ const Category = () => {
       { Header: "Raw Material Name", accessor: "rawMaterialName" },
       { Header: "Size", accessor: "size" },
       { Header: "Thickness (Gsm Or mm)", accessor: "thickness" },
-      // { Header: "QTY", accessor: "qty" },
+      { Header: "QTY", accessor: "qty" },
+      { Header: "Color", accessor: "color" },
       { Header: "Supplier", accessor: "supplier" },
       { Header: "Company", accessor: "company" },
       { Header: "Buying Price", accessor: "buyingPrice" },
@@ -464,7 +466,8 @@ const Category = () => {
                         rawMaterialName: editingCategory?.rawMaterialName || "",
                         size: editingCategory?.size || "",
                         thickness: editingCategory?.thickness || "",
-                        // qty: editingCategory?.qty || "",
+                        qty: editingCategory?.qty || "",
+                        color: editingCategory?.color || "",
                         supplier: editingCategory?.supplier || "",
                         company: editingCategory?.company || "",
                         buyingPrice: editingCategory?.buyingPrice || "",
@@ -505,13 +508,20 @@ const Category = () => {
                               </div>
                             ) : null}
                           </div>
-                          {/* <div className="mb-3">
+                          <div className="mb-3">
+                            <label>Color</label>
+                            <Field name="color" className="form-control" />
+                            {errors.color && touched.color && (
+                              <div className="text-danger">{errors.color}</div>
+                            )}
+                          </div>
+                          <div className="mb-3">
                             <label>QTY</label>
                             <Field name="qty" className="form-control" />
                             {errors.qty && touched.qty ? (
                               <div className="text-danger">{errors.qty}</div>
                             ) : null}
-                          </div> */}
+                          </div>
                           <div className="mb-3">
                             <label>Supplier</label>
                             <Field

@@ -9,8 +9,8 @@ export const createItem = async (req, res) => {
   const {
     itemCode,
     itemName,
-    color,
-    qty,
+    // color,
+    // qty,
     wholesale,
     company,
     retailPrice,
@@ -20,8 +20,8 @@ export const createItem = async (req, res) => {
 
   try {
     // Reference to the specific document within the Categories collection
-    const itemDoc = ItemCollection.doc(categoryId);
-    const categorySnapshot = await itemDoc.get();
+    const CategoryDoc = ItemCollection.doc(categoryId);
+    const categorySnapshot = await CategoryDoc.get();
 
     if (!categorySnapshot.exists) {
       return res.status(404).send({ message: "Category not found." });
@@ -33,8 +33,8 @@ export const createItem = async (req, res) => {
       itemId: uuidv4(),
       itemCode,
       itemName,
-      color,
-      qty,
+      // color,
+      // qty,
       wholesale,
       company,
       retailPrice,
@@ -43,7 +43,7 @@ export const createItem = async (req, res) => {
     };
 
     // Update the document with the new item
-    await itemDoc.update({ items: [...items, newItem] });
+    await CategoryDoc.update({ items: [...items, newItem] });
 
     const result = {
       category: { id: categoryId, ...categoryDetails },
@@ -102,8 +102,8 @@ export const updateItemByItemId = async (req, res) => {
   const {
     itemCode,
     itemName,
-    color,
-    qty,
+    // color,
+    // qty,
     wholesale,
     company,
     retailPrice,
@@ -128,8 +128,8 @@ export const updateItemByItemId = async (req, res) => {
           ...item,
           itemCode,
           itemName,
-          color,
-          qty,
+          // color,
+          // qty,
           wholesale,
           company,
           retailPrice,
@@ -148,8 +148,8 @@ export const updateItemByItemId = async (req, res) => {
         itemId,
         itemCode,
         itemName,
-        qty,
-        color,
+        // qty,
+        // color,
         wholesale,
         company,
         retailPrice,
@@ -174,8 +174,8 @@ export const deleteAndUpdate = async (req, res) => {
   const {
     itemCode,
     itemName,
-    qty,
-    color,
+    // qty,
+    // color,
     wholesale,
     company,
     retailPrice,
@@ -209,8 +209,8 @@ export const deleteAndUpdate = async (req, res) => {
       itemId,
       itemCode,
       itemName,
-      qty,
-      color,
+      // qty,
+      // color,
       wholesale,
       company,
       retailPrice,
@@ -281,62 +281,62 @@ export const deleteItemByItemId = async (req, res) => {
   }
 };
 
-export const reduceQty = async (req, res) => {
-  const extractCategory = req.body; // This contains the category IDs and item IDs with qty to reduce
+// export const reduceQty = async (req, res) => {
+//   const extractCategory = req.body; // This contains the category IDs and item IDs with qty to reduce
 
-  try {
-    for (const categoryData of extractCategory) {
-      const { categoryid, itemid, qty } = categoryData;
+//   try {
+//     for (const categoryData of extractCategory) {
+//       const { categoryid, itemid, qty } = categoryData;
 
-      // Find the category by ID
-      const itemDoc = ItemCollection.doc(categoryid);
-      const categorySnapshot = await itemDoc.get();
+//       // Find the category by ID
+//       const CategoryDoc = ItemCollection.doc(categoryid);
+//       const categorySnapshot = await CategoryDoc.get();
 
-      if (!categorySnapshot.exists) {
-        return res
-          .status(404)
-          .send({ message: `Category with ID ${categoryid} not found.` });
-      }
+//       if (!categorySnapshot.exists) {
+//         return res
+//           .status(404)
+//           .send({ message: `Category with ID ${categoryid} not found.` });
+//       }
 
-      const currentCategoryData = categorySnapshot.data();
-      const items = currentCategoryData.items || [];
+//       const currentCategoryData = categorySnapshot.data();
+//       const items = currentCategoryData.items || [];
 
-      // Find the item by ID within the category's items array
-      const itemIndex = items.findIndex((item) => item.itemId === itemid);
+//       // Find the item by ID within the category's items array
+//       const itemIndex = items.findIndex((item) => item.itemId === itemid);
 
-      if (itemIndex === -1) {
-        return res.status(404).send({
-          message: `Item with ID ${itemid} not found in category ${categoryid}.`,
-        });
-      }
+//       if (itemIndex === -1) {
+//         return res.status(404).send({
+//           message: `Item with ID ${itemid} not found in category ${categoryid}.`,
+//         });
+//       }
 
-      const currentItem = items[itemIndex];
-      const currentQty = Number(currentItem.qty); // Convert string to number
+//       const currentItem = items[itemIndex];
+//       const currentQty = Number(currentItem.qty); // Convert string to number
 
-      if (qty > currentQty) {
-        return res.status(400).send({
-          message: `Insufficient quantity for item ID ${itemid}. Available qty: ${currentQty}, requested to reduce: ${qty}.`,
-        });
-      }
+//       if (qty > currentQty) {
+//         return res.status(400).send({
+//           message: `Insufficient quantity for item ID ${itemid}. Available qty: ${currentQty}, requested to reduce: ${qty}.`,
+//         });
+//       }
 
-      // Reduce the qty
-      // const newQty = currentQty - qty;
+//       // Reduce the qty
+//       // const newQty = currentQty - qty;
 
-      // Update the item with the reduced qty
-      items[itemIndex].qty = String(currentQty - qty); // Store the new qty as a string
+//       // Update the item with the reduced qty
+//       items[itemIndex].qty = String(currentQty - qty); // Store the new qty as a string
 
-      // Update the category document with the updated items array
-      await itemDoc.update({ items });
-    }
+//       // Update the category document with the updated items array
+//       await CategoryDoc.update({ items });
+//     }
 
-    // Notify all clients about the change
-    broadcastCustomerChanges("ReduceQty", extractCategory);
+//     // Notify all clients about the change
+//     broadcastCustomerChanges("ReduceQty", extractCategory);
 
-    return res
-      .status(200)
-      .send({ message: "Quantities updated successfully." });
-  } catch (error) {
-    console.error("Error reducing quantities:", error);
-    return res.status(500).send({ error: error.message });
-  }
-};
+//     return res
+//       .status(200)
+//       .send({ message: "Quantities updated successfully." });
+//   } catch (error) {
+//     console.error("Error reducing quantities:", error);
+//     return res.status(500).send({ error: error.message });
+//   }
+// };
