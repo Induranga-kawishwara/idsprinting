@@ -51,7 +51,8 @@ const Sales = () => {
       itemName: item.itemName,
       category: category.rawMaterialName,
       color: item.color,
-      qty: category.qty,
+      // qty: category.qty,
+      qty: item.qty,
       gsm: category.thickness,
       buyingPrice: category.buyingPrice,
       company: category.company,
@@ -84,21 +85,39 @@ const Sales = () => {
           ),
         ]);
 
-        const newData = ItemData.data
-          .filter((category) => Number(category.qty) > 0)
-          .map((category) => {
-            const items = category.items
-              .map((item) => mapItemData(category, item))
-              .sort(
-                (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime)
-              );
+        // const newData = ItemData.data
+        //   .filter((category) => Number(category.qty) > 0)
+        //   .map((category) => {
+        //     const items = category.items
+        //       .map((item) => mapItemData(category, item))
+        //       .sort(
+        //         (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime)
+        //       );
 
-            return {
-              category: category.rawMaterialName,
-              categoryid: category.id,
-              items,
-            };
-          });
+        //     return {
+        //       category: category.rawMaterialName,
+        //       categoryid: category.id,
+        //       items,
+        //     };
+        //   });
+        const newData = ItemData.data.map((category) => {
+          const items = category.items
+            .reduce((acc, item) => {
+              if (Number(item.qty) > 0) {
+                acc.push(mapItemData(category, item));
+              }
+              return acc;
+            }, [])
+            .sort(
+              (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime) // Sort in the reduce itself
+            );
+
+          return {
+            category: category.rawMaterialName,
+            categoryid: category.id,
+            items,
+          };
+        });
 
         const formattedCustomers = customerData.data.map((customer) =>
           customerDetails(customer)
@@ -175,7 +194,7 @@ const Sales = () => {
                   category: updatedCategory.rawMaterialName,
                   size: updatedCategory.size,
                   gsm: updatedCategory.thickness,
-                  qty: updatedCategory.qty,
+                  // qty: updatedCategory.qty,
                   buyingPrice: updatedCategory.buyingPrice,
                   company: updatedCategory.company,
                 };
@@ -481,84 +500,7 @@ const Sales = () => {
     // Helper function for showing alerts
     const showAlert = (message) => alert(message);
 
-    // Helper function to handle different payment methods
-    const handlePaymentMethod = () => {
-      const {
-        paymentMethod,
-        cashGiven,
-        onlyCashGiven,
-        cardDetails,
-        bankTransferNumber,
-        chequeNumber,
-        creditAmount,
-      } = values;
-
-      switch (paymentMethod) {
-        case "Cash":
-          const balance = onlyCashGiven
-            ? onlyCashGiven - transaction.net
-            : cashGiven - transaction.net;
-
-          showAlert(
-            `Transaction completed. Change due: Rs.${balance.toFixed(2)}`
-          );
-          break;
-
-        case "Card":
-          showAlert(
-            `Transaction completed using card. Details saved: ${cardDetails}`
-          );
-          break;
-
-        case "Card and Cash":
-          const cashPart = cashGiven || 0;
-          const remainingAmount = transaction.net - cashPart;
-          cashChangeDue = cashPart - transaction.net;
-
-          if (cashPart >= transaction.net) {
-            showAlert(
-              `Transaction completed. Change due: Rs.${cashChangeDue.toFixed(
-                2
-              )}`
-            );
-          } else {
-            showAlert(
-              `Transaction partially completed with cash (Rs.${cashPart}) and remaining amount (Rs.${remainingAmount.toFixed(
-                2
-              )}) covered by card.`
-            );
-          }
-          break;
-
-        case "Bank Transfer":
-          showAlert(
-            `Transaction completed using bank transfer. Number: ${bankTransferNumber}`
-          );
-          break;
-
-        case "Cheque":
-          showAlert(
-            `Transaction completed using cheque. Number: ${chequeNumber}`
-          );
-          break;
-
-        case "Credit":
-          creditBalance = transaction.net - creditAmount;
-          showAlert(
-            `Credit payment of Rs.${creditAmount} recorded. Remaining balance: Rs.${creditBalance.toFixed(
-              2
-            )}`
-          );
-          break;
-
-        default:
-          showAlert("Invalid payment method.");
-          break;
-      }
-    };
-
     // Call the payment method handler
-    handlePaymentMethod();
 
     // Prepare payment details and invoice number
     const newPaymentDetailsState = {
@@ -577,15 +519,94 @@ const Sales = () => {
       const extractCategory =
         transaction?.products?.map((product) => ({
           categoryid: product.categoryid,
+          itemid: product.Itemid,
           qty: product.qty,
         })) || [];
 
       const responsetest = await axios.post(
-        `https://candied-chartreuse-concavenator.glitch.me/categories/reduceQty`,
+        `https://candied-chartreuse-concavenator.glitch.me/items/qty/reduceQty`,
         extractCategory
       );
 
       if (responsetest.status === 200) {
+        // Helper function to handle different payment methods
+        const handlePaymentMethod = () => {
+          const {
+            paymentMethod,
+            cashGiven,
+            onlyCashGiven,
+            cardDetails,
+            bankTransferNumber,
+            chequeNumber,
+            creditAmount,
+          } = values;
+
+          switch (paymentMethod) {
+            case "Cash":
+              const balance = onlyCashGiven
+                ? onlyCashGiven - transaction.net
+                : cashGiven - transaction.net;
+
+              showAlert(
+                `Transaction completed. Change due: Rs.${balance.toFixed(2)}`
+              );
+              break;
+
+            case "Card":
+              showAlert(
+                `Transaction completed using card. Details saved: ${cardDetails}`
+              );
+              break;
+
+            case "Card and Cash":
+              const cashPart = cashGiven || 0;
+              const remainingAmount = transaction.net - cashPart;
+              cashChangeDue = cashPart - transaction.net;
+
+              if (cashPart >= transaction.net) {
+                showAlert(
+                  `Transaction completed. Change due: Rs.${cashChangeDue.toFixed(
+                    2
+                  )}`
+                );
+              } else {
+                showAlert(
+                  `Transaction partially completed with cash (Rs.${cashPart}) and remaining amount (Rs.${remainingAmount.toFixed(
+                    2
+                  )}) covered by card.`
+                );
+              }
+              break;
+
+            case "Bank Transfer":
+              showAlert(
+                `Transaction completed using bank transfer. Number: ${bankTransferNumber}`
+              );
+              break;
+
+            case "Cheque":
+              showAlert(
+                `Transaction completed using cheque. Number: ${chequeNumber}`
+              );
+              break;
+
+            case "Credit":
+              creditBalance = transaction.net - creditAmount;
+              showAlert(
+                `Credit payment of Rs.${creditAmount} recorded. Remaining balance: Rs.${creditBalance.toFixed(
+                  2
+                )}`
+              );
+              break;
+
+            default:
+              showAlert("Invalid payment method.");
+              break;
+          }
+        };
+
+        handlePaymentMethod();
+
         const response = await axios.post(
           `https://candied-chartreuse-concavenator.glitch.me/payment/${selectedCustomer.id}`,
           {
