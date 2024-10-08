@@ -18,7 +18,7 @@ const ItemSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item Code is required"),
   itemName: Yup.string().required("Item Name is required"),
   color: Yup.string().required("Color is required"),
-  qty: Yup.string(),
+  qty: Yup.number().required("Quantity is required"),
   buyingPrice: Yup.number(),
   wholesale: Yup.number(),
   company: Yup.string(),
@@ -76,7 +76,8 @@ const Item = () => {
       itemName: item.itemName,
       category: category.rawMaterialName,
       color: item.color,
-      qty: category.qty,
+      // qty: category.qty,
+      qty: item.qty,
       buyingPrice: category.buyingPrice,
       company: category.company,
       wholesale: item.wholesale,
@@ -197,6 +198,23 @@ const Item = () => {
         prevCategory.filter((Category) => Category.id !== id)
       );
     });
+    socket.on("ReduceQty", (reduceQty) => {
+      setItems((prevItems) =>
+        prevItems.map((item) => {
+          const matchingReduce = reduceQty.find(
+            (reduced) => reduced.itemid === item.Itemid
+          );
+
+          if (matchingReduce) {
+            return {
+              ...item,
+              qty: String(Number(item.qty) - matchingReduce.qty),
+            };
+          }
+          return item;
+        })
+      );
+    });
 
     return () => {
       socket.off("ItemAdded");
@@ -206,6 +224,8 @@ const Item = () => {
       socket.off("CategoryAdded");
       socket.off("CategoryUpdated");
       socket.off("CategoryDeleted");
+
+      socket.off("ReduceQty");
     };
   }, [categoryOptions, items]);
 
@@ -288,22 +308,54 @@ const Item = () => {
     setSizeFilter("");
   };
 
-  const filteredItems = items.filter((item) => {
-    const isNameMatch =
-      item.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.itemCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.retailPrice.toString().includes(searchQuery);
+  const filteredItems = useMemo(
+    () =>
+      items.filter((item) => {
+        console.log(items); // This will log the current items array
 
-    const isSizeMatch = sizeFilter ? item.size === sizeFilter : true;
+        // Check if item is defined before accessing its properties
+        if (!item) return false; // Skip undefined items
 
-    const isDateMatch =
-      (!dateRange.start ||
-        new Date(item.addedDate) >= new Date(dateRange.start)) &&
-      (!dateRange.end || new Date(item.addedDate) <= new Date(dateRange.end));
+        const isNameMatch =
+          item.itemName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.itemCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.retailPrice?.toString().includes(searchQuery);
 
-    return isNameMatch && isSizeMatch && isDateMatch;
-  });
+        const isSizeMatch = sizeFilter ? item.size === sizeFilter : true;
 
+        const isDateMatch =
+          (!dateRange.start ||
+            new Date(item.addedDate) >= new Date(dateRange.start)) &&
+          (!dateRange.end ||
+            new Date(item.addedDate) <= new Date(dateRange.end));
+
+        return isNameMatch && isSizeMatch && isDateMatch;
+      }),
+    [items, searchQuery, sizeFilter, dateRange] // Adding dependencies for useMemo
+  );
+
+  // const filteredItems = useMemo(
+  //   () =>
+  //     items.filter((item) => {
+  //       const isNameMatch =
+  //         item.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //         item.itemCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //         item.retailPrice.toString().includes(searchQuery);
+
+  //       const isSizeMatch = sizeFilter ? item.size === sizeFilter : true;
+
+  //       const isDateMatch =
+  //         (!dateRange.start ||
+  //           new Date(item.addedDate) >= new Date(dateRange.start)) &&
+  //         (!dateRange.end ||
+  //           new Date(item.addedDate) <= new Date(dateRange.end));
+
+  //       return isNameMatch && isSizeMatch && isDateMatch;
+  //     }),
+  //   [items]
+  // );
+
+  // const filteredItems =
   // Paginate filteredItems
   const paginatedItems = useMemo(() => {
     const startIndex = currentPage * ITEMS_PER_PAGE;
@@ -325,6 +377,7 @@ const Item = () => {
       { Header: "Item Name", accessor: "itemName" },
       { Header: "Stock Category", accessor: "category" },
       { Header: "Size Category", accessor: "size" },
+      { Header: "QTY", accessor: "qty" },
       { Header: "Color", accessor: "color" },
       { Header: "company", accessor: "company" },
       { Header: "Buying Price", accessor: "buyingPrice" },
@@ -532,7 +585,8 @@ const Item = () => {
                         category:
                           editingItem?.category || selectedCategory?.name || "",
                         color: editingItem?.color || "",
-                        qty: editingItem?.qty || selectedCategory?.qty || "",
+                        // qty: editingItem?.qty || selectedCategory?.qty || "",
+                        qty: editingItem?.qty || "",
                         buyingPrice:
                           editingItem?.buyingPrice ||
                           selectedCategory?.buyingPrice ||
@@ -623,6 +677,14 @@ const Item = () => {
                             </div>
 
                             <div className="mb-3">
+                              <label>QTY</label>
+                              <Field name="qty" className="form-control" />
+                              {errors.qty && touched.qty ? (
+                                <div className="text-danger">{errors.qty}</div>
+                              ) : null}
+                            </div>
+
+                            <div className="mb-3">
                               <label>Stock Category</label>
                               <Field
                                 as="select"
@@ -656,7 +718,7 @@ const Item = () => {
                               )}
                             </div>
 
-                            <div className="mb-3">
+                            {/* <div className="mb-3">
                               <label>Qty</label>
                               <Field
                                 name="qty"
@@ -666,7 +728,7 @@ const Item = () => {
                                 }
                                 disabled
                               />
-                            </div>
+                            </div> */}
 
                             <div className="mb-3">
                               <label>Size</label>

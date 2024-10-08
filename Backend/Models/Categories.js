@@ -3,7 +3,7 @@ class Categories {
     rawMaterialName,
     size,
     thickness,
-    qty,
+    // qty,
     supplier,
     company,
     buyingPrice,
@@ -14,7 +14,7 @@ class Categories {
     this.rawMaterialName = rawMaterialName;
     this.size = size;
     this.thickness = thickness;
-    this.qty = qty;
+    // this.qty = qty;
     this.supplier = supplier;
     this.company = company;
     this.buyingPrice = buyingPrice;
