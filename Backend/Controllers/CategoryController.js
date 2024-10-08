@@ -10,7 +10,8 @@ export const createCategory = async (req, res) => {
     rawMaterialName,
     size,
     thickness,
-    // qty,
+    color,
+    qty,
     supplier,
     company,
     buyingPrice,
@@ -44,7 +45,8 @@ export const createCategory = async (req, res) => {
       lowerCaseName,
       size,
       thickness,
-      // qty,
+      color,
+      qty,
       supplier,
       company,
       buyingPrice,
@@ -145,46 +147,46 @@ export const deleteCategory = async (req, res) => {
   }
 };
 
-// export const reduceQty = async (req, res) => {
-//   const extractCategory = req.body; // This contains the category IDs and qty to reduce
+export const reduceQty = async (req, res) => {
+  const extractCategory = req.body; // This contains the category IDs and qty to reduce
 
-//   try {
-//     for (const categoryData of extractCategory) {
-//       const { categoryid, qty } = categoryData;
+  try {
+    for (const categoryData of extractCategory) {
+      const { categoryid, qty } = categoryData;
 
-//       // Find the category by ID
-//       const categoryDoc = CategoriesCollection.doc(categoryid);
-//       const categorySnapshot = await categoryDoc.get();
+      // Find the category by ID
+      const categoryDoc = CategoriesCollection.doc(categoryid);
+      const categorySnapshot = await categoryDoc.get();
 
-//       if (!categorySnapshot.exists) {
-//         return res
-//           .status(404)
-//           .send({ message: `Category with ID ${categoryid} not found.` });
-//       }
+      if (!categorySnapshot.exists) {
+        return res
+          .status(404)
+          .send({ message: `Category with ID ${categoryid} not found.` });
+      }
 
-//       const currentCategoryData = categorySnapshot.data();
+      const currentCategoryData = categorySnapshot.data();
 
-//       if (qty > currentCategoryData.qty) {
-//         return res.status(400).send({
-//           message: `Insufficient quantity for category ID ${categoryid}. Available qty: ${currentCategoryData.qty}, requested to reduce: ${qty}.`,
-//         });
-//       }
+      if (qty > currentCategoryData.qty) {
+        return res.status(400).send({
+          message: `Insufficient quantity for category ID ${categoryid}. Available qty: ${currentCategoryData.qty}, requested to reduce: ${qty}.`,
+        });
+      }
 
-//       // Reduce the qty
-//       const newQty = currentCategoryData.qty - qty;
+      // Reduce the qty
+      const newQty = currentCategoryData.qty - qty;
 
-//       // Update the category document with the reduced qty
-//       await categoryDoc.update({ qty: newQty });
-//     }
+      // Update the category document with the reduced qty
+      await categoryDoc.update({ qty: newQty });
+    }
 
-//     // Notify all clients about the change
-//     broadcastCustomerChanges("ReduceQty", extractCategory);
+    // Notify all clients about the change
+    broadcastCustomerChanges("ReduceQty", extractCategory);
 
-//     return res
-//       .status(200)
-//       .send({ message: "Quantities updated successfully." });
-//   } catch (error) {
-//     console.error("Error reducing quantities:", error);
-//     return res.status(500).send({ error: error.message });
-//   }
-// };
+    return res
+      .status(200)
+      .send({ message: "Quantities updated successfully." });
+  } catch (error) {
+    console.error("Error reducing quantities:", error);
+    return res.status(500).send({ error: error.message });
+  }
+};

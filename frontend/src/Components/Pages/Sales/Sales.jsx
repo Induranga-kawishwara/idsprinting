@@ -50,9 +50,9 @@ const Sales = () => {
       itemCode: item.itemCode,
       itemName: item.itemName,
       category: category.rawMaterialName,
-      color: item.color,
-      // qty: category.qty,
-      qty: item.qty,
+      // color: item.color,
+      qty: category.qty,
+      // qty: item.qty,
       gsm: category.thickness,
       buyingPrice: category.buyingPrice,
       company: category.company,
@@ -85,31 +85,11 @@ const Sales = () => {
           ),
         ]);
 
-        // const newData = ItemData.data
-        //   .filter((category) => Number(category.qty) > 0)
-        //   .map((category) => {
-        //     const items = category.items
-        //       .map((item) => mapItemData(category, item))
-        //       .sort(
-        //         (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime)
-        //       );
-
-        //     return {
-        //       category: category.rawMaterialName,
-        //       categoryid: category.id,
-        //       items,
-        //     };
-        //   });
         const newData = ItemData.data.map((category) => {
           const items = category.items
-            .reduce((acc, item) => {
-              if (Number(item.qty) > 0) {
-                acc.push(mapItemData(category, item));
-              }
-              return acc;
-            }, [])
+            .map((item) => mapItemData(category, item))
             .sort(
-              (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime) // Sort in the reduce itself
+              (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime)
             );
 
           return {
@@ -118,6 +98,24 @@ const Sales = () => {
             items,
           };
         });
+        // const newData = ItemData.data.map((category) => {
+        //   const items = category.items
+        //     .reduce((acc, item) => {
+        //       if (Number(item.qty) > 0) {
+        //         acc.push(mapItemData(category, item));
+        //       }
+        //       return acc;
+        //     }, [])
+        //     .sort(
+        //       (a, b) => new Date(b.addedDateTime) - new Date(a.addedDateTime) // Sort in the reduce itself
+        //     );
+
+        //   return {
+        //     category: category.rawMaterialName,
+        //     categoryid: category.id,
+        //     items,
+        //   };
+        // });
 
         const formattedCustomers = customerData.data.map((customer) =>
           customerDetails(customer)
@@ -194,7 +192,7 @@ const Sales = () => {
                   category: updatedCategory.rawMaterialName,
                   size: updatedCategory.size,
                   gsm: updatedCategory.thickness,
-                  // qty: updatedCategory.qty,
+                  qty: updatedCategory.qty,
                   buyingPrice: updatedCategory.buyingPrice,
                   company: updatedCategory.company,
                 };
@@ -524,7 +522,7 @@ const Sales = () => {
         })) || [];
 
       const responsetest = await axios.post(
-        `https://candied-chartreuse-concavenator.glitch.me/items/qty/reduceQty`,
+        `https://candied-chartreuse-concavenator.glitch.me/categories/reduceQty`,
         extractCategory
       );
 

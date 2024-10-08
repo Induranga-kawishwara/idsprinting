@@ -17,8 +17,8 @@ import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 const ItemSchema = Yup.object().shape({
   itemCode: Yup.string().required("Item Code is required"),
   itemName: Yup.string().required("Item Name is required"),
-  color: Yup.string().required("Color is required"),
-  qty: Yup.number().required("Quantity is required"),
+  // color: Yup.string().required("Color is required"),
+  qty: Yup.string(),
   buyingPrice: Yup.number(),
   wholesale: Yup.number(),
   company: Yup.string(),
@@ -75,9 +75,9 @@ const Item = () => {
       itemCode: item.itemCode,
       itemName: item.itemName,
       category: category.rawMaterialName,
-      color: item.color,
-      // qty: category.qty,
-      qty: item.qty,
+      // color: item.color,
+      qty: category.qty,
+      // qty: item.qty,
       buyingPrice: category.buyingPrice,
       company: category.company,
       wholesale: item.wholesale,
@@ -198,23 +198,23 @@ const Item = () => {
         prevCategory.filter((Category) => Category.id !== id)
       );
     });
-    socket.on("ReduceQty", (reduceQty) => {
-      setItems((prevItems) =>
-        prevItems.map((item) => {
-          const matchingReduce = reduceQty.find(
-            (reduced) => reduced.itemid === item.Itemid
-          );
+    // socket.on("ReduceQty", (reduceQty) => {
+    //   setItems((prevItems) =>
+    //     prevItems.map((item) => {
+    //       const matchingReduce = reduceQty.find(
+    //         (reduced) => reduced.itemid === item.Itemid
+    //       );
 
-          if (matchingReduce) {
-            return {
-              ...item,
-              qty: String(Number(item.qty) - matchingReduce.qty),
-            };
-          }
-          return item;
-        })
-      );
-    });
+    //       if (matchingReduce) {
+    //         return {
+    //           ...item,
+    //           qty: String(Number(item.qty) - matchingReduce.qty),
+    //         };
+    //       }
+    //       return item;
+    //     })
+    //   );
+    // });
 
     return () => {
       socket.off("ItemAdded");
@@ -225,7 +225,7 @@ const Item = () => {
       socket.off("CategoryUpdated");
       socket.off("CategoryDeleted");
 
-      socket.off("ReduceQty");
+      // socket.off("ReduceQty");
     };
   }, [categoryOptions, items]);
 
@@ -331,7 +331,7 @@ const Item = () => {
 
         return isNameMatch && isSizeMatch && isDateMatch;
       }),
-    [items, searchQuery, sizeFilter, dateRange] // Adding dependencies for useMemo
+    [items] // Adding dependencies for useMemo
   );
 
   // const filteredItems = useMemo(
@@ -377,8 +377,8 @@ const Item = () => {
       { Header: "Item Name", accessor: "itemName" },
       { Header: "Stock Category", accessor: "category" },
       { Header: "Size Category", accessor: "size" },
-      { Header: "QTY", accessor: "qty" },
-      { Header: "Color", accessor: "color" },
+      // { Header: "QTY", accessor: "qty" },
+      // { Header: "Color", accessor: "color" },
       { Header: "company", accessor: "company" },
       { Header: "Buying Price", accessor: "buyingPrice" },
       { Header: "Wholesale", accessor: "wholesale" },
@@ -584,9 +584,9 @@ const Item = () => {
                         itemName: editingItem?.itemName || "",
                         category:
                           editingItem?.category || selectedCategory?.name || "",
-                        color: editingItem?.color || "",
-                        // qty: editingItem?.qty || selectedCategory?.qty || "",
-                        qty: editingItem?.qty || "",
+                        // color: editingItem?.color || "",
+                        qty: editingItem?.qty || selectedCategory?.qty || "",
+                        // qty: editingItem?.qty || "",
                         buyingPrice:
                           editingItem?.buyingPrice ||
                           selectedCategory?.buyingPrice ||
@@ -666,7 +666,7 @@ const Item = () => {
                               )}
                             </div>
 
-                            <div className="mb-3">
+                            {/* <div className="mb-3">
                               <label>Color</label>
                               <Field name="color" className="form-control" />
                               {errors.color && touched.color && (
@@ -674,15 +674,15 @@ const Item = () => {
                                   {errors.color}
                                 </div>
                               )}
-                            </div>
+                            </div> */}
 
-                            <div className="mb-3">
+                            {/* <div className="mb-3">
                               <label>QTY</label>
                               <Field name="qty" className="form-control" />
                               {errors.qty && touched.qty ? (
                                 <div className="text-danger">{errors.qty}</div>
                               ) : null}
-                            </div>
+                            </div> */}
 
                             <div className="mb-3">
                               <label>Stock Category</label>
@@ -718,7 +718,7 @@ const Item = () => {
                               )}
                             </div>
 
-                            {/* <div className="mb-3">
+                            <div className="mb-3">
                               <label>Qty</label>
                               <Field
                                 name="qty"
@@ -728,7 +728,7 @@ const Item = () => {
                                 }
                                 disabled
                               />
-                            </div> */}
+                            </div>
 
                             <div className="mb-3">
                               <label>Size</label>
