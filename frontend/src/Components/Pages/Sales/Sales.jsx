@@ -50,7 +50,7 @@ const Sales = () => {
       itemCode: item.itemCode,
       itemName: item.itemName,
       category: category.rawMaterialName,
-      // color: item.color,
+      color: category.color,
       qty: category.qty,
       // qty: item.qty,
       gsm: category.thickness,
@@ -492,8 +492,8 @@ const Sales = () => {
   };
 
   const handlePaymentSubmit = async (values) => {
-    let creditBalance = 0;
-    let cashChangeDue = 0;
+    // let creditBalance = 0;
+    // let cashChangeDue = 0;
 
     // Helper function for showing alerts
     const showAlert = (message) => alert(message);
@@ -501,15 +501,15 @@ const Sales = () => {
     // Call the payment method handler
 
     // Prepare payment details and invoice number
-    const newPaymentDetailsState = {
-      ...values,
-      cashChangeDue: Math.max(cashChangeDue, 0),
-      creditBalance: Math.max(creditBalance, 0),
-    };
+    // const newPaymentDetailsState = {
+    //   ...values,
+    //   cashChangeDue: Math.max(cashChangeDue, 0),
+    //   creditBalance: Math.max(creditBalance, 0),
+    // };
 
     const newInvoiceNumber = generateUniqueInvoiceNumber();
 
-    setPaymentDetailsState(newPaymentDetailsState);
+    setPaymentDetailsState(values);
     setInvoiceNumber(newInvoiceNumber);
 
     // Submit payment details to backend
@@ -559,7 +559,7 @@ const Sales = () => {
             case "Card and Cash":
               const cashPart = cashGiven || 0;
               const remainingAmount = transaction.net - cashPart;
-              cashChangeDue = cashPart - transaction.net;
+              const cashChangeDue = cashPart - transaction.net;
 
               if (cashPart >= transaction.net) {
                 showAlert(
@@ -589,11 +589,11 @@ const Sales = () => {
               break;
 
             case "Credit":
-              creditBalance = transaction.net - creditAmount;
+              const creditBalance = transaction.net - creditAmount[0];
               showAlert(
-                `Credit payment of Rs.${creditAmount} recorded. Remaining balance: Rs.${creditBalance.toFixed(
-                  2
-                )}`
+                `Credit payment of Rs.${
+                  creditAmount[0]
+                } recorded. Remaining balance: Rs.${creditBalance.toFixed(2)}`
               );
               break;
 
@@ -608,7 +608,7 @@ const Sales = () => {
         const response = await axios.post(
           `https://candied-chartreuse-concavenator.glitch.me/payment/${selectedCustomer.id}`,
           {
-            paymentDetails: newPaymentDetailsState,
+            paymentDetails: values,
             transaction: {
               ...transaction,
               products: transaction.products.map(

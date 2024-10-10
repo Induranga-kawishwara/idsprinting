@@ -12,7 +12,7 @@ const PaymentSchema = (networth) =>
       then: (schema) =>
         schema
           .required("Cash given is required")
-          .min(networth, `Cash given must be at least Rs.${networth}`), // Use backticks
+          .min(networth, `Cash given must be at least Rs.${networth}`),
       otherwise: (schema) => schema.notRequired(),
     }),
 
@@ -25,27 +25,40 @@ const PaymentSchema = (networth) =>
           .max(networth - 1, `Cash given must be less than Rs.${networth}`),
       otherwise: (schema) => schema.notRequired(),
     }),
+
     cardDetails: Yup.string().when("paymentMethod", {
       is: (value) => value === "Card" || value === "Card and Cash",
       then: (schema) => schema.required("Card details are required"),
       otherwise: (schema) => schema.notRequired(),
     }),
+
     bankTransferNumber: Yup.string().when("paymentMethod", {
       is: "Bank Transfer",
       then: (schema) => schema.required("Bank transfer number is required"),
       otherwise: (schema) => schema.notRequired(),
     }),
+
     chequeNumber: Yup.string().when("paymentMethod", {
       is: "Cheque",
       then: (schema) => schema.required("Cheque number is required"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    creditAmount: Yup.number().when("paymentMethod", {
+
+    creditAmount: Yup.array().when("paymentMethod", {
       is: "Credit",
       then: (schema) =>
         schema
-          .required("Credit amount is required")
-          .min(0, "Credit amount must be at least Rs.0"),
+          .of(
+            Yup.number()
+              .required("Credit amount is required")
+              .min(1, "Credit amount must be more than Rs.0")
+              .max(
+                networth - 1,
+                `Credit amount must be less than Rs.${networth}`
+              )
+          )
+          .required("At least one credit amount is required")
+          .min(1, "At least one credit amount is required"),
       otherwise: (schema) => schema.notRequired(),
     }),
   });
@@ -73,7 +86,7 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit, networth }) => {
                 cardDetails: "",
                 bankTransferNumber: "",
                 chequeNumber: "",
-                creditAmount: "",
+                creditAmount: [],
               }}
               validationSchema={PaymentSchema(networth)}
               onSubmit={handlePaymentSubmit}
@@ -115,6 +128,7 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit, networth }) => {
                       ) : null}
                     </div>
                   )}
+
                   {values.paymentMethod === "Card" && (
                     <div className="mb-3">
                       <label>Card Details</label>
@@ -186,14 +200,18 @@ const PaymentModal = ({ isOpen, onClose, handlePaymentSubmit, networth }) => {
 
                   {values.paymentMethod === "Credit" && (
                     <div className="mb-3">
-                      <label>Paying Amount</label>
+                      <label>Credit Amount</label>
                       <Field
-                        name="creditAmount"
+                        name="creditAmount[0]"
                         type="number"
                         className="form-control"
                       />
-                      {errors.creditAmount && touched.creditAmount ? (
-                        <div className="text-danger">{errors.creditAmount}</div>
+                      {errors.creditAmount &&
+                      touched.creditAmount &&
+                      errors.creditAmount[0] ? (
+                        <div className="text-danger">
+                          {errors.creditAmount[0]}
+                        </div>
                       ) : null}
                     </div>
                   )}
