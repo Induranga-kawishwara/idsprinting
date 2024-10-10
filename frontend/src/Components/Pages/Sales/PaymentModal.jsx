@@ -45,7 +45,9 @@ const PaymentSchema = (networth) =>
       then: (schema) =>
         schema
           .required("Credit amount is required")
-          .min(0, "Credit amount must be at least Rs.0"),
+          .min(1, "Cash given must be more than Rs.0")
+          .max(networth - 1, `Cash given must be less than Rs.${networth}`),
+
       otherwise: (schema) => schema.notRequired(),
     }),
   });

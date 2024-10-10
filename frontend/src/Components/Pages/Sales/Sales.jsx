@@ -50,7 +50,7 @@ const Sales = () => {
       itemCode: item.itemCode,
       itemName: item.itemName,
       category: category.rawMaterialName,
-      // color: item.color,
+      color: category.color,
       qty: category.qty,
       // qty: item.qty,
       gsm: category.thickness,
