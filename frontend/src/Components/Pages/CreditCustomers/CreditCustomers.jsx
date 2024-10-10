@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Button, Modal } from "@mui/material";
 import jsPDF from "jspdf";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
 
 const initialCreditCustomers = [
   {
@@ -30,9 +31,7 @@ const initialCreditCustomers = [
 const ITEMS_PER_PAGE = 100;
 
 const CreditCustomers = () => {
-  const [creditCustomers, setCreditCustomers] = useState(
-    initialCreditCustomers
-  );
+  const [creditCustomers, setCreditCustomers] = useState([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -43,6 +42,60 @@ const CreditCustomers = () => {
     paidAmount: 0,
     remainingBalance: 0,
   }); // New state for receipt data
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const mapItemData = (credit) => {
+    return credit.payments.map((payment) => {
+      const totalCreditAmount = (
+        payment.paymentDetails?.creditAmount || []
+      ).reduce((sum, amount) => sum + amount, 0);
+
+      return {
+        id: credit.id,
+        name: credit.name,
+        surname: credit.surName,
+        email: credit.email,
+        phone: credit.contactNumber,
+        totalSpent: payment.transaction?.net || 0,
+        creditBalance: totalCreditAmount,
+        paymentId: payment.paymentId,
+        lastUpdatedDate: new Date(payment.lastUpdatedDate).toLocaleString(),
+        invoiceNumber: payment.invoicenumber,
+        houseNo: credit.houseNo || "",
+        street: credit.street || "",
+        city: credit.city || "",
+        postalCode: credit.postalCode || "",
+        customerType: credit.customerType || "",
+        addedDate: new Date(credit.addedDateAndTime).toLocaleDateString(),
+        addedTime: new Date(credit.addedDateAndTime).toLocaleTimeString(),
+        addedBy: "",
+      };
+    });
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const CreaditsPymentDetails = await axios.get(
+          "http://localhost:8080/payment/creditPayments"
+        );
+
+        const newData = CreaditsPymentDetails.data.flatMap((credit) => {
+          return mapItemData(credit);
+        });
+
+        setCreditCustomers(newData);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const totalPages = Math.ceil(creditCustomers.length / ITEMS_PER_PAGE);
 

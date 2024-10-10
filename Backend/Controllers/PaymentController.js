@@ -34,6 +34,40 @@ export const getAllPaymentHistory = async (req, res) => {
   }
 };
 
+// Get all CreditPaymentHistory
+export const getAllCreditPaymentHistory = async (req, res) => {
+  try {
+    const snapshot = await PaymentCollection.get();
+    const customers = snapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      const creditPayments = (data.payments || []).filter(
+        (payment) => payment.paymentDetails.paymentMethod === "Credit"
+      );
+
+      // Only return customers with credit payments
+      if (creditPayments.length > 0) {
+        return {
+          id: doc.id,
+          ...data,
+          payments: creditPayments,
+          addedDateAndTime: new Date(data.addedDateAndTime),
+        };
+      }
+
+      return null;
+    });
+
+    const sortedCustomers = customers
+      .filter((customer) => customer !== null)
+      .sort((a, b) => b.addedDateAndTime - a.addedDateAndTime);
+
+    return res.status(200).send(sortedCustomers);
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+
 export const createPayment = async (req, res) => {
   const { customerId } = req.params;
   const { paymentDetails, transaction, invoicenumber, lastUpdatedDate } =
