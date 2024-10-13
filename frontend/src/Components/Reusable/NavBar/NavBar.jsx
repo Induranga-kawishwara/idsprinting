@@ -15,6 +15,8 @@ import {
   FcBiotech,
   FcBullish,
   FcLineChart,
+  FcTodoList,
+  FcPaid,
 } from "react-icons/fc";
 import { FiAlignJustify } from "react-icons/fi";
 import classes from "./TheNavbar.module.css"; // Import the CSS module
@@ -89,8 +91,8 @@ const TheNavbar = () => {
               onClick={closeNavbar}
             >
               <RouterLink to="/additem">
-                <FcAddDatabase className={classes.iconSize} />
-                Add Item
+                <FcTodoList className={classes.iconSize} />
+                Products
               </RouterLink>
             </Nav.Link>
 
@@ -99,8 +101,8 @@ const TheNavbar = () => {
               onClick={closeNavbar}
             >
               <RouterLink to="/category">
-                <FcSalesPerformance className={classes.iconSize} />
-                Stock Category
+                <FcPaid className={classes.iconSize} />
+                Raw Materials
               </RouterLink>
             </Nav.Link>
 
