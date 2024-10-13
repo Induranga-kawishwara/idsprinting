@@ -5,7 +5,7 @@
   width: 300px;
   margin: 20px auto;
   font-family: "Arial", sans-serif;
-  background-color: #f9f9f9;
+  background-color: #000000;
   top: 10%;
   position: fixed;
 
@@ -42,9 +42,12 @@
   input[type="text"] {
     width: 100%;
     padding: 10px;
-    font-size: 1.2em;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    font-size: 2em;
+    border: 1px solid #000000;
+
+    color: white;
+    background-color: #1b1b1b;
+    border-radius: 20px;
     margin-bottom: 10px;
     text-align: right;
   }
@@ -56,28 +59,29 @@
   }
 
   button {
-    padding: 20px;
-    font-size: 1.2em;
+    padding: 15px;
+    font-size: 2em;
+    font-weight: bold;
     border: none;
-    border-radius: 5px;
+    border-radius: 100px;
     cursor: pointer;
     background-color: #eee;
     transition: background-color 0.3s ease;
   }
 
   button.highlight {
-    background-color: #234af5;
+    background-color: #fca10c;
     color: white;
   }
 
   #equal {
-    background-color: #4caf50;
+    background-color: #ff692e;
     color: white;
-    grid-column: span 4;
+    grid-column: span 2;
   }
   #del,
   #clear {
-    background-color: #e42f2f;
+    background-color: #fca10c;
   }
   #del:hover,
   #clear:hover {
