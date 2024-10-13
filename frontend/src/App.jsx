@@ -21,6 +21,7 @@ import Settings from "./Components/Pages/RegEmployee/RegEmp";
 import Quatation from "./Components/Pages/Quotation/Quotation";
 import Cashin from "./Components/Pages/Cashin/Cashin";
 import WasteManagement from "./Components/Pages/WasteManagement/WasteManagement";
+import Reports from "./Components/Pages/Reports/Reports";
 
 const Layout = () => {
   const location = useLocation();
@@ -41,6 +42,7 @@ const Layout = () => {
         <Route path="/cashups" element={<CashUp />} />
         <Route path="/sales" element={<Sales />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/quatation" element={<Quatation />} />
         <Route path="/credit-customers" element={<CreditCustomers />} />
         <Route path="/sales-history" element={<SalesHistory />} />
