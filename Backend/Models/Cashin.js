@@ -1,14 +1,14 @@
 class Cashin {
   constructor(
     reasonName,
-    profitOrOther,
+    incomeOrOther,
     reasonDetails,
     amount,
     addedDateAndTime,
     addedBy
   ) {
     this.reasonName = reasonName;
-    this.profitOrOther = profitOrOther;
+    this.incomeOrOther = incomeOrOther;
     this.reasonDetails = reasonDetails;
     this.amount = amount;
     this.addedDateAndTime = addedDateAndTime;

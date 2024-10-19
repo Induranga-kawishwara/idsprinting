@@ -7,11 +7,10 @@ const CashinsCollection = db.collection("Cashins");
 // Create a new Cashin
 export const createCashin = async (req, res) => {
   const data = req.body;
-
   try {
     const cashin = new Cashin(
       data.reasonName,
-      data.profitOrOther,
+      data.incomeOrOther,
       data.reasonDetails,
       data.amount,
       data.addedDateAndTime,
