@@ -11,6 +11,7 @@ import _ from "lodash";
 import TableChecker from "../../Reusable/TableChecker/TableChecker.js";
 import { ConvertToSLT } from "../../Utility/ConvertToSLT.js";
 import axios from "axios";
+import Loading from "../../Reusable/Loadingcomp/Loading.jsx";
 
 // Constants for pagination
 const ITEMS_PER_PAGE = 100;
@@ -42,6 +43,7 @@ const Cashin = () => {
   const [filterType, setFilterType] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [loadingpage, setLoadingpage] = useState(false);
 
   // Function to clear all filters and search inputs
   const clearFilters = () => {
@@ -170,6 +172,8 @@ const Cashin = () => {
   };
 
   const handleSubmit = async (values) => {
+    setLoadingpage(true);
+
     const currentDate = new Date();
 
     if (editingCashin) {
@@ -210,269 +214,282 @@ const Cashin = () => {
         }
       }
     }
+    setLoadingpage(false);
     setIsModalOpen(false);
     setEditingCashin(null);
   };
 
   return (
-    <div className="bodyofpage">
-      <div className="container">
-        <button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            setIsModalOpen(true);
-            setEditingCashin(null);
-          }}
-          className="addnewbtntop"
-        >
-          New Cashin
-        </button>
-
-        <div className="d-flex align-items-center mb-3">
-          <input
-            type="text"
-            placeholder="Search by Reason Name or Amount"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="searchfunctions me-2"
-          />
-          <button
-            variant="contained"
-            color="secondary"
-            onClick={clearFilters}
-            className="prevbutton"
-          >
-            Clear
-          </button>
+    <div>
+      {loadingpage ? (
+        <div>
+          <Loading />
         </div>
+      ) : (
+        <div className="bodyofpage">
+          <div className="container">
+            <button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setIsModalOpen(true);
+                setEditingCashin(null);
+              }}
+              className="addnewbtntop"
+            >
+              New Cashin
+            </button>
 
-        <div className="d-flex align-items-center mb-3">
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="formdropdown"
-          >
-            <option value="">All Types</option>
-            <option value="Income">Income</option>
-            <option value="Other">Other</option>
-          </select>
-          {/* Start Date Picker */}
-          <DatePicker
-            selected={dateRange.start}
-            onChange={(date) =>
-              setDateRange((prev) => ({ ...prev, start: date }))
-            }
-            selectsStart
-            startDate={dateRange.start}
-            endDate={dateRange.end}
-            className="searchfunctionsdate me-2"
-            placeholderText="S.Date"
-            maxDate={dateRange.end || new Date()} // Prevent selecting a start date after the end date
-          />
-
-          {/* End Date Picker */}
-          <DatePicker
-            selected={dateRange.end}
-            onChange={(date) =>
-              setDateRange((prev) => ({ ...prev, end: date }))
-            }
-            selectsEnd
-            startDate={dateRange.start}
-            endDate={dateRange.end}
-            className="searchfunctionsdate me-2"
-            placeholderText="E.Date"
-            minDate={dateRange.start} // Prevent selecting an end date before the start date
-          />
-        </div>
-
-        <div className="table-responsive">
-          {loading || error || _.isEmpty(filteredCashins) ? (
-            <TableChecker
-              loading={loading}
-              error={error}
-              hasData={filteredCashins.length > 0}
-            />
-          ) : (
-            <table className="table mt-3 custom-table">
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>Reason Name</th>
-                  <th>Income/Other</th>
-                  <th>Reason Details</th>
-                  <th>Amount Rs</th>
-                  <th>Added Date</th>
-                  <th>Added Time</th>
-                  <th>Added By</th> {/* New column for who added */}
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody className="custom-table">
-                {filteredCashins.map((cashin, index) => (
-                  <tr key={cashin.id}>
-                    <td>{index + 1}</td>
-                    <td>{cashin.reasonName}</td>
-                    <td>{cashin.incomeOrOther}</td>
-                    <td>{cashin.reasonDetails || "N/A"}</td>
-                    <td>{cashin.amount}</td>
-                    <td>{cashin.addedDate}</td>
-                    <td>{cashin.addedTime}</td>
-                    <td>{cashin.addedBy}</td> {/* Display who added */}
-                    <td>
-                      <button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => handleEdit(cashin)}
-                        className="editbtn"
-                      >
-                        Edit
-                      </button>{" "}
-                      <button
-                        variant="contained"
-                        color="secondary"
-                        size="small"
-                        onClick={() =>
-                          handleDelete(cashin.id, cashin.reasonName)
-                        }
-                        className="deletebtn"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="pagination">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-            disabled={currentPage === 0}
-          >
-            Previous
-          </button>
-          <span>
-            Page {currentPage + 1} of {totalPages}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
-            }
-            disabled={currentPage === totalPages - 1}
-          >
-            Next
-          </button>
-        </div>
-
-        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
-            <div className="modal-content custom-modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editingCashin ? "Edit Cashin" : "New Cashin"}
-                </h5>
-                <Button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Close"
-                  onClick={() => setIsModalOpen(false)}
-                />
-              </div>
-              <div className="modal-body">
-                <Formik
-                  initialValues={{
-                    reasonName: editingCashin?.reasonName || "",
-                    incomeOrOther: editingCashin?.incomeOrOther || "",
-                    reasonDetails: editingCashin?.reasonDetails || "",
-                    amount: editingCashin?.amount || "",
-                    addedBy: editingCashin?.addedBy || "", // New field for who added
-                  }}
-                  validationSchema={CashinSchema}
-                  onSubmit={handleSubmit}
-                >
-                  {({ values, errors, touched }) => (
-                    <Form>
-                      <div className="mb-3">
-                        <label>Reason Name</label>
-                        <Field name="reasonName" className="form-control" />
-                        {errors.reasonName && touched.reasonName ? (
-                          <div className="text-danger">{errors.reasonName}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Income or Other</label>
-                        <Field
-                          as="select"
-                          name="incomeOrOther"
-                          className="form-control"
-                        >
-                          <option value="" label="Select" disabled />
-                          <option value="Income">Income</option>
-                          <option value="Other">Other</option>
-                        </Field>
-                        {errors.incomeOrOther && touched.incomeOrOther ? (
-                          <div className="text-danger">
-                            {errors.incomeOrOther}
-                          </div>
-                        ) : null}
-                      </div>
-                      {values.incomeOrOther === "Other" && (
-                        <div className="mb-3">
-                          <label>Reason Details</label>
-                          <Field
-                            name="reasonDetails"
-                            className="form-control"
-                          />
-                          {errors.reasonDetails && touched.reasonDetails ? (
-                            <div className="text-danger">
-                              {errors.reasonDetails}
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
-                      <div className="mb-3">
-                        <label>Amount Rs</label>
-                        <Field name="amount" className="form-control" />
-                        {errors.amount && touched.amount ? (
-                          <div className="text-danger">{errors.amount}</div>
-                        ) : null}
-                      </div>
-                      <div className="mb-3">
-                        <label>Added By</label>
-                        <Field name="addedBy" className="form-control" />
-                        {errors.addedBy && touched.addedBy ? (
-                          <div className="text-danger">{errors.addedBy}</div>
-                        ) : null}
-                      </div>
-                      <div className="modal-footer">
-                        <button
-                          type="submit"
-                          variant="primary"
-                          className="savechangesbutton"
-                        >
-                          {editingCashin ? "Update" : "Add"}
-                        </button>
-                        <button
-                          variant="secondary"
-                          onClick={() => setIsModalOpen(false)}
-                          className="closebutton"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </Form>
-                  )}
-                </Formik>
-              </div>
+            <div className="d-flex align-items-center mb-3">
+              <input
+                type="text"
+                placeholder="Search by Reason Name or Amount"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="searchfunctions me-2"
+              />
+              <button
+                variant="contained"
+                color="secondary"
+                onClick={clearFilters}
+                className="prevbutton"
+              >
+                Clear
+              </button>
             </div>
+
+            <div className="d-flex align-items-center mb-3">
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="formdropdown"
+              >
+                <option value="">All Types</option>
+                <option value="Income">Income</option>
+                <option value="Other">Other</option>
+              </select>
+              {/* Start Date Picker */}
+              <DatePicker
+                selected={dateRange.start}
+                onChange={(date) =>
+                  setDateRange((prev) => ({ ...prev, start: date }))
+                }
+                selectsStart
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                className="searchfunctionsdate me-2"
+                placeholderText="S.Date"
+                maxDate={dateRange.end || new Date()} // Prevent selecting a start date after the end date
+              />
+
+              {/* End Date Picker */}
+              <DatePicker
+                selected={dateRange.end}
+                onChange={(date) =>
+                  setDateRange((prev) => ({ ...prev, end: date }))
+                }
+                selectsEnd
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                className="searchfunctionsdate me-2"
+                placeholderText="E.Date"
+                minDate={dateRange.start} // Prevent selecting an end date before the start date
+              />
+            </div>
+
+            <div className="table-responsive">
+              {loading || error || _.isEmpty(filteredCashins) ? (
+                <TableChecker
+                  loading={loading}
+                  error={error}
+                  hasData={filteredCashins.length > 0}
+                />
+              ) : (
+                <table className="table mt-3 custom-table">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Reason Name</th>
+                      <th>Income/Other</th>
+                      <th>Reason Details</th>
+                      <th>Amount Rs</th>
+                      <th>Added Date</th>
+                      <th>Added Time</th>
+                      <th>Added By</th> {/* New column for who added */}
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="custom-table">
+                    {filteredCashins.map((cashin, index) => (
+                      <tr key={cashin.id}>
+                        <td>{index + 1}</td>
+                        <td>{cashin.reasonName}</td>
+                        <td>{cashin.incomeOrOther}</td>
+                        <td>{cashin.reasonDetails || "N/A"}</td>
+                        <td>{cashin.amount}</td>
+                        <td>{cashin.addedDate}</td>
+                        <td>{cashin.addedTime}</td>
+                        <td>{cashin.addedBy}</td> {/* Display who added */}
+                        <td>
+                          <button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            onClick={() => handleEdit(cashin)}
+                            className="editbtn"
+                          >
+                            Edit
+                          </button>{" "}
+                          <button
+                            variant="contained"
+                            color="secondary"
+                            size="small"
+                            onClick={() =>
+                              handleDelete(cashin.id, cashin.reasonName)
+                            }
+                            className="deletebtn"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="pagination">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+                disabled={currentPage === 0}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+                }
+                disabled={currentPage === totalPages - 1}
+              >
+                Next
+              </button>
+            </div>
+
+            <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <div className="modal-dialog modal-dialog-centered custom-modal-dialog">
+                <div className="modal-content custom-modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">
+                      {editingCashin ? "Edit Cashin" : "New Cashin"}
+                    </h5>
+                    <Button
+                      type="button"
+                      className="btn-close"
+                      aria-label="Close"
+                      onClick={() => setIsModalOpen(false)}
+                    />
+                  </div>
+                  <div className="modal-body">
+                    <Formik
+                      initialValues={{
+                        reasonName: editingCashin?.reasonName || "",
+                        incomeOrOther: editingCashin?.incomeOrOther || "",
+                        reasonDetails: editingCashin?.reasonDetails || "",
+                        amount: editingCashin?.amount || "",
+                        addedBy: editingCashin?.addedBy || "", // New field for who added
+                      }}
+                      validationSchema={CashinSchema}
+                      onSubmit={handleSubmit}
+                    >
+                      {({ values, errors, touched }) => (
+                        <Form>
+                          <div className="mb-3">
+                            <label>Reason Name</label>
+                            <Field name="reasonName" className="form-control" />
+                            {errors.reasonName && touched.reasonName ? (
+                              <div className="text-danger">
+                                {errors.reasonName}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Income or Other</label>
+                            <Field
+                              as="select"
+                              name="incomeOrOther"
+                              className="form-control"
+                            >
+                              <option value="" label="Select" disabled />
+                              <option value="Income">Income</option>
+                              <option value="Other">Other</option>
+                            </Field>
+                            {errors.incomeOrOther && touched.incomeOrOther ? (
+                              <div className="text-danger">
+                                {errors.incomeOrOther}
+                              </div>
+                            ) : null}
+                          </div>
+                          {values.incomeOrOther === "Other" && (
+                            <div className="mb-3">
+                              <label>Reason Details</label>
+                              <Field
+                                name="reasonDetails"
+                                className="form-control"
+                              />
+                              {errors.reasonDetails && touched.reasonDetails ? (
+                                <div className="text-danger">
+                                  {errors.reasonDetails}
+                                </div>
+                              ) : null}
+                            </div>
+                          )}
+                          <div className="mb-3">
+                            <label>Amount Rs</label>
+                            <Field name="amount" className="form-control" />
+                            {errors.amount && touched.amount ? (
+                              <div className="text-danger">{errors.amount}</div>
+                            ) : null}
+                          </div>
+                          <div className="mb-3">
+                            <label>Added By</label>
+                            <Field name="addedBy" className="form-control" />
+                            {errors.addedBy && touched.addedBy ? (
+                              <div className="text-danger">
+                                {errors.addedBy}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="modal-footer">
+                            <button
+                              type="submit"
+                              variant="primary"
+                              className="savechangesbutton"
+                            >
+                              {editingCashin ? "Update" : "Add"}
+                            </button>
+                            <button
+                              variant="secondary"
+                              onClick={() => setIsModalOpen(false)}
+                              className="closebutton"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </Form>
+                      )}
+                    </Formik>
+                  </div>
+                </div>
+              </div>
+            </Modal>
           </div>
-        </Modal>
-      </div>
+        </div>
+      )}
     </div>
   );
 };
