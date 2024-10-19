@@ -11,6 +11,7 @@ import { app, server } from "./SocketIO/socketIO.js";
 import Categories from "./Routes/CategoryRoutes.js";
 import User from "./Routes/UserRoutes.js";
 import Payment from "./Routes/PaymentRoutes.js";
+import Cashin from "./Routes/CashinRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/items", Item);
 app.use("/suppliers", Supplier);
 app.use("/expenses", Expenses);
 app.use("/cashup", Cashup);
+app.use("/cashin", Cashin);
 app.use("/categories", Categories);
 app.use("/users", User);
 app.use("/payment", Payment);
