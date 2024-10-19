@@ -1,4 +1,4 @@
-class Cashup {
+class Cashin {
   constructor(
     reasonName,
     profitOrOther,
@@ -16,4 +16,4 @@ class Cashup {
   }
 }
 
-export default Cashup;
+export default Cashin;
