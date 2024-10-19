@@ -83,7 +83,7 @@ const Cashin = () => {
     const fetchData = async () => {
       try {
         const CashinData = await axios.get(
-          "https://candied-chartreuse-concavenator.glitch.me/cashin/"
+          "https://candied-chartreuse-concavenator.glitch.me/cashin"
         );
         const formattedCashins = CashinData.data.map((Cashin) => {
           const { date, time } = ConvertToSLT(Cashin.addedDateAndTime);
@@ -158,7 +158,7 @@ const Cashin = () => {
     if (confirmDelete) {
       try {
         const response = await axios.delete(
-          `https://candied-chartreuse-concavenator.glitch.me/cashin/Cashin/${id}`
+          `https://candied-chartreuse-concavenator.glitch.me/cashin${id}`
         );
 
         alert(response.data.message);
@@ -181,7 +181,7 @@ const Cashin = () => {
         const isoDateString = dateObject.toISOString();
 
         const response = await axios.put(
-          `https://candied-chartreuse-concavenator.glitch.me/cashin/Cashin/${editingCashin.id}`,
+          `https://candied-chartreuse-concavenator.glitch.me/cashin${editingCashin.id}`,
           { ...values, addedDateAndTime: isoDateString }
         );
 
@@ -193,7 +193,7 @@ const Cashin = () => {
     } else {
       try {
         const response = await axios.post(
-          "https://candied-chartreuse-concavenator.glitch.me/cashin/Cashin",
+          "https://candied-chartreuse-concavenator.glitch.me/cashin",
           { ...values, addedDateAndTime: currentDate }
         );
 
