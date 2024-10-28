@@ -44,11 +44,11 @@ const PdfGenarator = (
   transaction.products.forEach((product, index) => {
     const y = 67 + index * 6; // Adjust Y position for each product
 
-    const productNameX = 4.8; // Product Name X-position
+    const productNameX = 4.4; // Product Name X-position
     const qtyX = 39.5; // Quantity X-position
     const priceX = 22; // Price X-position
     const discountX = 48; // Discount X-position
-    const totalX = 63; // Total price X-position
+    const totalX = 71.6; // Total price X-position
 
     const { itemName = "", qty = 0, retailPrice = 0, discount = 0 } = product; // Avoid undefined errors
 
@@ -74,7 +74,7 @@ const PdfGenarator = (
   const totalAmountTextWidth = doc.getTextWidth(totalAmountText);
   doc.text(
     totalAmountText,
-    71.8 - totalAmountTextWidth - 4.5,
+    75.9 - totalAmountTextWidth - 4.5,
     lastProductY + 7
   );
 
@@ -83,7 +83,7 @@ const PdfGenarator = (
   doc.text(`Discount: `, 4.5, lastProductY + 11);
   const discountText = `Rs. ${transaction.discount.toFixed(2)}`;
   const discountTextWidth = doc.getTextWidth(discountText);
-  doc.text(discountText, 71.8 - discountTextWidth - 4.5, lastProductY + 11);
+  doc.text(discountText, 75.9 - discountTextWidth - 4.5, lastProductY + 11);
 
   // Payment method details
   const methodText = `${paymentDetails.paymentMethod}`;
@@ -92,16 +92,16 @@ const PdfGenarator = (
 
   // Cash Given and Change Due (if Cash payment)
   if (paymentDetails.paymentMethod === "Cash") {
-    doc.text(`Cash Given: Rs.`, 4.5, lastProductY + 15);
+    doc.text(`Cash Given:.`, 4.5, lastProductY + 15);
     const cashGivenText = `Rs.${paymentDetails.onlyCashGiven}`;
     const cashGivenTextWidth = doc.getTextWidth(cashGivenText);
-    doc.text(cashGivenText, 71.8 - cashGivenTextWidth - 4.5, lastProductY + 15);
+    doc.text(cashGivenText, 75.9 - cashGivenTextWidth - 4.5, lastProductY + 15);
 
     const changeDue = paymentDetails.onlyCashGiven - transaction.net;
     const changeDueText = `Rs.${changeDue.toFixed(2)}`;
     const changeDueTextWidth = doc.getTextWidth(changeDueText);
-    doc.text(`Change Due: Rs.`, 4.5, lastProductY + 19);
-    doc.text(changeDueText, 71.8 - changeDueTextWidth - 4.5, lastProductY + 19);
+    doc.text(`Change Due:.`, 4.5, lastProductY + 19);
+    doc.text(changeDueText, 75.9 - changeDueTextWidth - 4.5, lastProductY + 19);
   }
 
   // Footer image
