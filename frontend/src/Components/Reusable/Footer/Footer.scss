@@ -7,6 +7,9 @@
   position: relative;
   width: 100%;
   bottom: 0;
+  padding-right: 50px;
+  padding-left: 50px;
+  max-height: 70px;
 }
 
 .footer-content {
@@ -17,8 +20,22 @@
   justify-content: space-between;
 }
 
+.calculater-icon {
+  display: inline-block; /* Makes the icon behave like an inline element */
+  cursor: pointer; /* Changes the cursor to a pointer on hover */
+  padding: px; /* Optional: Add padding around the icon */
+  transition: transform 0.2s ease; /* Optional: Add hover effect */
+}
+
+.calculater-icon:hover {
+  transform: scale(1.1); /* Optional: Slightly enlarge icon on hover */
+}
+
 .footer-links {
-  margin-top: -20px;
+  margin-top: -0px;
+}
+.footer-copiright {
+  margin-top: 15px;
 }
 
 .footer-links a {
@@ -36,11 +53,14 @@
   .footer-content {
     flex-direction: row;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 10px 20px;
     font-size: 11px;
   }
 
   .footer-links {
     margin-top: -20px;
+  }
+  .calculater-icon {
+    margin-top: -15px;
   }
 }
