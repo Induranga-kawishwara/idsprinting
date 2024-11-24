@@ -126,6 +126,9 @@ const ProductSchema = Yup.object().shape({
   qty: Yup.number()
     .required("Quantity is required")
     .min(1, "Quantity must be at least 1"),
+  description: Yup.string()
+    .max(500, "Description cannot exceed 500 characters")
+    .optional(), // Make this optional if needed
 });
 
 const Quotation = () => {
@@ -295,10 +298,11 @@ const Quotation = () => {
 
   const handleAddProductSubmit = (values) => {
     const newProduct = {
-      id: new Date().getTime(), // Generate a unique id
+      id: new Date().getTime(), // Generate a unique ID
       name: values.name,
       price: Number(values.price),
       qty: Number(values.qty),
+      description: values.description || "No description provided", // Default if no description
     };
 
     setTransaction((prevTransaction) => {
@@ -316,7 +320,7 @@ const Quotation = () => {
       };
     });
 
-    setIsAddProductModalOpen(false);
+    setIsAddProductModalOpen(false); // Close the modal
   };
 
   const handleSelectCustomer = (customer) => {
@@ -430,23 +434,33 @@ const Quotation = () => {
     // });
 
     transaction.products.forEach((product, index) => {
-      const y = 91 + index * 7.5; // Adjust y position for each product
+      const y = 91 + index * 12; // Adjust y position for each product (spacing for name and description)
 
-      // Define the X positions for each part of the text
       const productNameX = 15.3; // X position for product name
+      const descriptionX = 15.3; // Same X position for description
       const qtyX = 142.8; // X position for quantity
       const priceX = 105.8; // X position for price
       const totalX = 187.8; // X position for total (qty * price)
 
-      // Draw each part of the text at the specified X positions
-      doc.text(product.name, productNameX, y);
-      doc.text(`${product.qty}`, qtyX, y, { align: "center" }); // Quantity
+      // Draw product name
+      doc.text(`${product.name}`, productNameX, y);
+
+      // Draw product description below the name
+      const descriptionY = y + 5; // Slightly below the product name
+      doc.setFontSize(10); // Slightly smaller font for the description
+      doc.text(`(${product.description || ""})`, descriptionX, descriptionY);
+
+      // Reset font size for the remaining columns
+      doc.setFontSize(12);
+
+      // Draw quantity, price, and total at their respective positions
+      doc.text(`${product.qty}`, qtyX, y, { align: "center" });
       doc.text(`Rs.${product.price.toFixed(2)}`, priceX, y, {
         align: "center",
-      }); // Unit Price
+      });
 
       const totalPrice = `Rs.${(product.qty * product.price).toFixed(2)}`;
-      doc.text(totalPrice, totalX, y, { align: "right" }); // Total price aligned
+      doc.text(totalPrice, totalX, y, { align: "right" });
     });
 
     doc.setTextColor(255, 255, 255);
@@ -578,6 +592,7 @@ const Quotation = () => {
                   <thead>
                     <tr>
                       <th>Name</th>
+                      <th>Description</th>
                       <th>Qty</th>
                       <th>Price</th>
                       <th>Total</th>
@@ -588,6 +603,8 @@ const Quotation = () => {
                     {transaction.products.map((product) => (
                       <tr key={product.id}>
                         <td>{product.name}</td>
+                        <td>{product.description}</td>{" "}
+                        {/* Display description */}
                         <td>
                           <input
                             type="number"
@@ -946,6 +963,21 @@ const Quotation = () => {
                           <div className="text-danger">{errors.qty}</div>
                         ) : null}
                       </div>
+                      <div className="mb-3">
+                        <label>Description</label>
+                        <Field
+                          name="description"
+                          className="form-control"
+                          as="textarea"
+                          rows="3"
+                        />
+                        {errors.description && touched.description ? (
+                          <div className="text-danger">
+                            {errors.description}
+                          </div>
+                        ) : null}
+                      </div>
+
                       <div className="modal-footer">
                         <button
                           className="closebutton"
