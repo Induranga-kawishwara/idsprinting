@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Ensure to use Node.js version 18
+          node-version: "18" # Ensure to use Node.js version 18
       - name: Install dependencies
         run: |
           cd frontend
@@ -33,4 +33,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IDS_PRINTING }}
           channelId: live
           projectId: ids-printing
-          entryPoint: frontend  # Specify the directory containing firebase.json
+          entryPoint: frontend # Specify the directory containing firebase.json

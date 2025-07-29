@@ -3,6 +3,7 @@ node_modules/
 
 # Logs
 *.log
+.env
 
 # Compiled files
 dist/
