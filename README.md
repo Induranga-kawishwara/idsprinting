@@ -45,17 +45,17 @@ Make sure you have the following installed on your system:
 
 1.  Clone the repo
     `sh
-    git clone https://github.com/Induranga-kawishwara/idsprinting
-    `
+git clone https://github.com/Induranga-kawishwara/idsprinting
+`
 2.  **Backend Setup** - Navigate to the `server` directory: `cd server` - Install NPM packages:
     `sh
-        npm install
-        ` - Create a `.env` file and add your environment variables (e.g., `MONGODB_URI`, `PORT`).
-3.  **Frontend Setup** - Navigate to the `client` directory: `cd client` - Install NPM packages:
+    npm install
+    ` - Create a `.env` file and add your environment variables (e.g., `MONGODB_URI`, `PORT`).
+3.  **Frontend Setup** - Navigate to the `Frontend` directory: `cd frontend` - Install NPM packages:
     `sh
-        npm install
-        `
-4.  Run the development servers. - In the `server` directory: `npm start` - In the `client` directory: `npm start`
+    npm install
+    `
+4.  Run the development servers. - In the `server` directory: `npm start` - In the `Frontend` directory: `npm start`
 
 ## Usage
 
